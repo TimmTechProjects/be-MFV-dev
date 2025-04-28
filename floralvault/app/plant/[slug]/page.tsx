@@ -34,7 +34,9 @@ export default function PlantDetailPage({
         className="rounded-xl object-cover w-full max-h-[400px] mb-6"
       />
 
-      <p className="text-base leading-relaxed mb-4">{plant.description}</p>
+      <div className="prose prose-invert max-w-none text-base leading-relaxed mb-4">
+        <div dangerouslySetInnerHTML={{ __html: `${plant.description}` }} />
+      </div>
 
       <div className="flex flex-wrap gap-2 mb-6">
         {plant.tags.map((tag, i) => (

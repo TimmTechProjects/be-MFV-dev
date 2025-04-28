@@ -12,8 +12,23 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://images.unsplash.com/photo-1500420254515-0faefa2dac99?q=80&w=3387&auto=format&fit=crop&ixlib=rb-4.0.3",
     ],
-    description:
-      "Basil is a popular culinary herb known for its aromatic leaves and use in pesto and Italian dishes.",
+    description: `
+  <h1>The Majestic <span style="color:#81a308;">Basil</span> 🌿</h1>
+  <blockquote><em>“Queen of the Herbs” - every Italian grandma, ever</em></blockquote>
+  <p><strong>Basil</strong> (<em>Ocimum basilicum</em>) is more than just pesto’s best friend.</p>
+  <h2>Why it slaps:</h2>
+  <ol>
+    <li><code>Sweet & spicy aroma</code> that punches your senses awake.</li>
+    <li><mark>Contains eugenol</mark> (yes, science!) – an anti-inflammatory warrior.</li>
+    <li>Basically <strong>immune-boosting green gold</strong>.</li>
+  </ol>
+  <pre><code class="language-javascript">
+  const aroma = "heavenly";
+  const basil = { purpose: "healing + culinary", rating: 5 };
+  </code></pre>
+  <hr />
+  <p style="font-size: 1.25rem;">Warning: May cause uncontrollable pizza cravings 🍕</p>
+`,
     userId: "user-101",
     tags: ["culinary", "medicinal", "fragrant"],
     views: 124,
@@ -32,8 +47,21 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://learn.freshcap.com/wp-content/uploads/2020/07/reishi-grow-blog-title.png",
     ],
-    description:
-      "Reishi is a medicinal mushroom traditionally used in Chinese medicine for its immune-boosting properties.",
+    description: `
+  <h1>🍄 Reishi: The <span style="color:purple;">Mushroom of Immortality</span></h1>
+  <p><strong>Ganoderma lucidum</strong> isn’t just a fungus... it’s a <em>lifestyle</em>.</p>
+  <h2>Use cases (100% wizard approved):</h2>
+  <ul>
+    <li><b>🛡️ Immune Enhancement</b> – like armor for your T-cells</li>
+    <li><b>🧘 Stress Defense</b> – instant chill with adaptogenic vibes</li>
+    <li><b>💜 Liver Protection</b> – yes, your liver has a guardian angel now</li>
+  </ul>
+  <blockquote>“Tastes like bark. Works like magic.” – herbalists, probably</blockquote>
+  <hr />
+  <p><code>reishi.mood = zen;</code></p>
+  <p><strong style="color:gold;">Drink it. Dry it. Worship it.</strong></p>
+`,
+
     userId: "user-101",
     tags: ["immune", "adaptogen", "mushroom"],
     views: 87,
@@ -52,8 +80,25 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://atalayabio.com/cdn/shop/articles/ATALAYABIO_HijuelosAloeVera-1080x1080px_77788d9f-223a-45be-abf6-1650d2c07de2.jpg?v=1715778245",
     ],
-    description:
-      "Aloe vera is a succulent plant known for its soothing and healing gel.",
+    description: `
+  <h1 style="text-decoration: underline;">Aloe Vera: Nature's First Aid Kit 🧪</h1>
+  <p><em>Aloe</em> is the friend who always has tissues, lip balm, and emotional support ready.</p>
+  <h2>Why it’s the MVP:</h2>
+  <ul>
+    <li><strong>Saves you from sunburns</strong> (a true hero)</li>
+    <li><i>Hydration</i> levels = 🌊 peak</li>
+    <li><span style="color:teal;">Soothes, cools, and conquers inflammation</span></li>
+  </ul>
+  <blockquote><em>Also fun to squish.</em></blockquote>
+  <pre><code>
+  if (burned) {
+    rub(aloeVeraGel);
+  }
+  </code></pre>
+  <hr />
+  <p style="font-weight:bold; font-size: 1.25rem;">💧 Moisture game: strong</p>
+`,
+
     userId: "user-204",
     tags: ["healing", "skin-care", "succulent"],
     views: 210,
@@ -72,8 +117,26 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://www.hishtil.com/media/20982/mentha-spicata-spanish.jpg?width=700&height=700&mode=crop",
     ],
-    description:
-      "Spearmint is a refreshing herb used in teas, desserts, and natural remedies.",
+    description: `<h3>Overview</h3>
+<p><strong>Spearmint</strong> is a refreshing perennial herb belonging to the <em>Lamiaceae</em> family, widely appreciated for its clean, sweet aroma and medicinal versatility.</p>
+
+<h4>🧪 Constituents & Benefits</h4>
+<ul>
+  <li>Contains <strong>carvone</strong> – a key compound responsible for its sweet scent</li>
+  <li>Traditionally used for <em>digestive comfort</em> and nausea reduction</li>
+  <li>Has mild sedative effects helpful in <u>stress management</u></li>
+</ul>
+
+<blockquote>“If peppermint is the bold extrovert, spearmint is its mellow cousin.”</blockquote>
+
+<h4>🌱 Common Uses</h4>
+<ul>
+  <li>Herbal teas (especially for children and sensitive stomachs)</li>
+  <li>Natural flavoring in chewing gum and toothpaste</li>
+  <li>DIY infusions for skin-soothing toners</li>
+</ul>
+
+`,
     userId: "user-302",
     tags: ["tea", "digestive", "aromatic"],
     views: 145,
@@ -92,8 +155,27 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://romencegardens.com/cdn/shop/files/lavandula_sweetromance1__72025.1711380523.1280.1280.jpg?v=1724161421&width=1214",
     ],
-    description:
-      "Lavender is a fragrant plant popular for aromatherapy and stress relief.",
+    description: `
+      <h3>Overview</h3>
+<p><strong>Lavender</strong> is a woody perennial shrub known for its calming aroma and iconic purple blossoms. It's a flagship herb in aromatherapy and skincare.</p>
+
+<h4>🧘 Therapeutic Profile</h4>
+<ul>
+  <li>Reduces anxiety, restlessness, and insomnia</li>
+  <li>Antimicrobial and anti-inflammatory effects topically</li>
+  <li>Repels moths and mosquitoes when dried</li>
+</ul>
+
+<h4>🛠️ Applications</h4>
+<ol>
+  <li>Essential oil diffusers or topical balms</li>
+  <li>Herbal compresses and bath blends</li>
+  <li>Dried flowers for sachets or drawer liners</li>
+</ol>
+
+<blockquote><em>“Lavender is to the nervous system what a hug is to the soul.”</em></blockquote>
+
+      `,
     userId: "user-302",
     tags: ["aromatherapy", "calming", "decorative"],
     views: 174,
@@ -112,8 +194,22 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://www.bluestoneperennials.com/img/ECPU/650/ECPU_0_Echinacea_Purpurea.1491333866.jpg",
     ],
-    description:
-      "Echinacea is known for boosting the immune system and is used in herbal remedies.",
+    description: `
+      <h3>Overview</h3>
+<p><strong>Echinacea</strong> is a native North American wildflower revered for its immune-modulating properties, especially during cold and flu season.</p>
+
+<h4>🌿 Medicinal Insight</h4>
+<p>All parts of the plant are used, but the <strong>root</strong> and <strong>flower heads</strong> are most potent. It stimulates macrophage activity and is commonly taken as:</p>
+
+<ul>
+  <li>Alcohol-based tinctures</li>
+  <li>Tea infusions</li>
+  <li>Capsules or lozenges</li>
+</ul>
+
+<h4>⚠️ Note</h4>
+<p>Short-term use is preferred. Long-term usage may cause immune overstimulation in sensitive individuals.</p>
+      `,
     userId: "user-104",
     tags: ["immune", "flower", "wild"],
     views: 95,
@@ -132,8 +228,22 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://www.la-saponaria.com/img/cms/mirtillo-frutto-pianta.jpg",
     ],
-    description:
-      "Bilberry is rich in antioxidants and traditionally used to support vision and circulation.",
+    description: `
+      <h3>Overview</h3>
+<p><strong>Bilberry</strong> is a low-growing European shrub bearing dark berries rich in <em>anthocyanins</em>—potent antioxidants linked to vascular health and vision support.</p>
+
+<h4>👁️ Benefits</h4>
+<ul>
+  <li>Improves <strong>night vision</strong> (famously used by WWII pilots)</li>
+  <li>Strengthens fragile capillaries and reduces bruising</li>
+  <li>Regulates blood sugar and supports insulin sensitivity</li>
+</ul>
+
+<blockquote><em>“Where blueberries whisper, bilberries roar—in phytochemical depth.”</em></blockquote>
+
+<h4>🥣 Preparation</h4>
+<p>Traditionally consumed as jam, dried fruit, or herbal syrup. Excellent for herbal formulations targeting the circulatory system.</p>
+  `,
     userId: "user-104",
     tags: ["antioxidant", "vision", "circulatory"],
     views: 96,
@@ -152,8 +262,33 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://seedsforgarden.com/cdn/shop/articles/Gynostemma_pentaphyllum_Seeds.jpg?v=1738695286",
     ],
-    description:
-      "Jiaogulan is known as the 'immortality herb' in Chinese medicine for its adaptogenic and longevity-supporting properties.",
+    description: `
+      <h2>Overview</h2>
+<p><strong>Jiaogulan</strong>, also known as <em>“The Herb of Immortality”</em>, is a vine native to China and prized in traditional medicine for its extensive health-supporting properties.</p>
+
+<h3>🧠 Nervous System Support</h3>
+<ul>
+  <li>Protects both the central and peripheral nervous systems through potent antioxidants</li>
+  <li>Boosts nitric oxide production to shield nerve cells from oxidative damage</li>
+  <li>Improves blood flow via nitric oxide’s natural vasodilating effect</li>
+</ul>
+
+<h3>🔥 Metabolic & Cellular Defense</h3>
+<ul>
+  <li>Activates AMP-activated protein kinase (AMPK) to stimulate fat burning and energy release</li>
+  <li>Induces apoptosis in damaged cells and assists with DNA repair</li>
+  <li>Boosts <strong>Super-Oxide Dismutase (SOD)</strong> production—an elite antioxidant tied to disease resistance and anti-aging</li>
+</ul>
+
+<h3>🧘 Adaptogenic Balance</h3>
+<ul>
+  <li>Helps maintain physiological equilibrium under stress</li>
+  <li>Reduces systemic inflammation</li>
+  <li>Can be prepared as a tea (using leaves) or dried root supplement</li>
+</ul>
+<blockquote>“Jiaogulan doesn’t just promote longevity—it enhances the quality of that longevity.”</blockquote>
+
+      `,
     userId: "user-888",
     tags: ["adaptogen", "longevity", "tea"],
     views: 115,
@@ -172,8 +307,31 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://thebigsmoke.com.au/wp-content/uploads/Ferula_assa-foetida_-_Kyzylkum_5-scaled.jpg",
     ],
-    description:
-      "Ferula drudeana is considered a modern candidate for the ancient medicinal plant silphium, once prized for numerous therapeutic uses.",
+    description: `
+      <h2>Overview</h2>
+<p><strong>Ferula drudeana</strong> is a rare herb found in Turkey and believed by some scholars to be the lost medicinal plant <em>Silphion</em>—a botanical treasure of the ancient world.</p>
+
+<h3>🧪 Pharmacological Highlights</h3>
+<ul>
+  <li>Contains sesquiterpene lactones—compounds shown to inhibit tumor growth and trigger apoptosis</li>
+  <li>Demonstrates antibacterial, antiviral, and antifungal activities</li>
+  <li>Offers anti-inflammatory and antioxidant benefits</li>
+</ul>
+
+<h3>💫 Historical & Reproductive Use</h3>
+<ul>
+  <li>Traditionally used for managing menstrual irregularities and reproductive health</li>
+  <li>Possibly a rediscovery of <em>Silphion</em>, once used as a digestive tonic and contraceptive</li>
+</ul>
+
+<h3>⚠️ Caution</h3>
+<ul>
+  <li><strong>Not recommended during pregnancy</strong> due to potential uterine-stimulating effects</li>
+  <li>May assist with headaches, nerve pain, and muscle discomfort</li>
+</ul>
+<blockquote>“Ferula drudeana is as much a botanical mystery as it is a therapeutic marvel.”</blockquote>
+
+      `,
     userId: "user-888",
     tags: ["ancient", "digestive", "rare"],
     views: 132,
@@ -192,8 +350,31 @@ export const plantData: Plant[] = [
     imageUrl: [
       "https://www.littlerednursery.com/cdn/shop/files/tequilla.jpg?v=1709492819",
     ],
-    description:
-      "Blue Agave (Agave tequilana) is a striking succulent native to the arid regions of Mexico, best known as the plant from which tequila is derived. Characterized by its spiky blue-green leaves that form symmetrical rosettes, this plant thrives in volcanic soils under intense sunlight. Beyond its cultural significance in spirits production, Blue Agave has also drawn attention for its high concentration of inulin, a natural prebiotic fiber believed to aid digestion and improve gut health. Traditionally used in indigenous Mexican medicine, the sap was applied topically for its antiseptic and anti-inflammatory properties, and it continues to be studied for potential metabolic and glycemic control benefits. Blue Agave's resilience to drought and its long maturation period—often 7 to 10 years—underscore its symbolic association with endurance, patience, and transformation. Whether featured ornamentally or harvested agriculturally, this plant represents a convergence of tradition, utility, and ecological adaptation.",
+    description: `
+      <h2>Overview</h2>
+<p><strong>Blue Agave</strong> is a resilient succulent native to Mexico, most famously distilled into <em>tequila</em>, but packed with metabolic and gut-supporting benefits.</p>
+
+<h3>🌿 Nutritional Powerhouse</h3>
+<ul>
+  <li>Rich in <strong>inulin</strong>, a prebiotic fiber that nurtures Bifidobacteria and Lactobacilli</li>
+  <li>Improves calcium and magnesium absorption</li>
+  <li>Slows down sugar uptake, aiding glycemic control</li>
+</ul>
+
+<h3>🩺 Traditional & Modern Uses</h3>
+<ul>
+  <li>Sap used topically for burns and wounds due to antimicrobial traits</li>
+  <li>May reduce liver fat and improve gut health</li>
+  <li>Low-glycemic alternative to conventional sweeteners</li>
+</ul>
+
+<h3>⚠️ Caution</h3>
+<ul>
+  <li>Raw agave contains oxalates and should not be consumed uncooked</li>
+</ul>
+<blockquote>“Agave isn’t just for tequila—its inulin content is a quiet revolution for gut health.”</blockquote>
+
+      `,
     userId: "user-101",
     tags: ["digestive", "prebiotic", "succulent"],
     views: 176,

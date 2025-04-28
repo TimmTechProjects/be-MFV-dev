@@ -99,3 +99,85 @@
     @apply bg-background text-foreground;
   }
 }
+
+.tiptap {
+  line-height: 1.5;
+  outline: none;
+}
+
+.tiptap h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 1rem 0;
+}
+
+.tiptap h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 1rem 0;
+}
+
+.tiptap h3 {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 1rem 0;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap ul {
+  list-style-type: disc;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+}
+
+.tiptap blockquote {
+  padding-left: 1rem;
+  border-left: 3px solid #ccc;
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+.tiptap pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-family: "JetBrainsMono", monospace;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+
+.tiptap code {
+  background: rgba(135, 131, 120, 0.15);
+  color: #eb5757;
+  font-family: "JetBrainsMono", monospace;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.3rem;
+  border-radius: 4px;
+}
+
+.tiptap hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 2rem 0;
+}
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin: 1rem 0;
+}
+
+.prose ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin: 1rem 0;
+}

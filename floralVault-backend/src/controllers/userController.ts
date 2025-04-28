@@ -1,10 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { Request, Response } from "express";
+import prisma from "../prisma/client";
 import bcrypt from "bcrypt";
-
-const prisma = new PrismaClient();
+import { getCurrentUserById } from "../services/userService";
 
 // GET all users
-export const getAllUsers = async (req, res) => {
+export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany();
 
@@ -23,13 +23,11 @@ export const getAllUsers = async (req, res) => {
 };
 
 // GET a user by ID
-export const getCurrentUser = async (req, res) => {
+export const getCurrentUser = async (req: Request, res: Response) => {
   const { id } = req.user;
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id },
-    });
+    const user = await getCurrentUserById(id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -44,7 +42,7 @@ export const getCurrentUser = async (req, res) => {
 };
 
 // PUT update a user
-export const updateUser = async (req, res) => {
+export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.user;
   const { username, firstName, lastName, email, bio, avatarUrl, password } =
     req.body;
@@ -78,7 +76,7 @@ export const updateUser = async (req, res) => {
 };
 
 // DELETE a user
-export const deleteUser = async (req, res) => {
+export const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.user;
 
   try {

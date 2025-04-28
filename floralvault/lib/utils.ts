@@ -31,7 +31,6 @@ export async function loginUser({
     const { token, user } = data;
 
     localStorage.setItem("token", token);
-    console.log("JWT Token stored:", token);
 
     return user;
   } catch (error) {
