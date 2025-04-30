@@ -1,7 +1,6 @@
-import "express";
+import { Request } from "express";
+import { JwtPayload } from "jsonwebtoken";
 
-declare module "express" {
-  interface Request {
-    user?: any; // or better: user: { id: string, email: string } depending on your token
-  }
+export interface AuthenticatedRequest extends Request {
+  user?: id | undefined | JwtPayload;
 }

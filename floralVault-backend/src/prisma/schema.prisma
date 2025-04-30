@@ -23,7 +23,7 @@ model User {
   avatarUrl String?
   bio       String?
   essence     Int      @default(0)
-  joinedAt  DateTime
+  joinedAt  DateTime @default(now())
   plants    Plant[]
 }
 
