@@ -30,6 +30,7 @@ const PlantSubmissionForm = () => {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Tag[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const form = useForm<PlantSchema>({
     resolver: zodResolver(plantSchema),
@@ -53,43 +54,53 @@ const PlantSubmissionForm = () => {
 
   // Fetch suggestions
   useEffect(() => {
-    if (!debouncedQuery) {
-      setSuggestions([]);
-      setIsPopoverOpen(false);
-      return;
-    }
-
     const fetchSuggestions = async () => {
-      const filteredTags = await getSuggestedTags(debouncedQuery);
-
-      if (!filteredTags || filteredTags.length === 0) {
+      if (!debouncedQuery) {
         setSuggestions([]);
         setIsPopoverOpen(false);
-      } else {
-        setSuggestions(filteredTags);
-        setIsPopoverOpen(true);
+        return;
+      }
+
+      try {
+        const filteredTags = await getSuggestedTags(debouncedQuery);
+
+        if (!filteredTags || filteredTags.length === 0) {
+          setSuggestions([]);
+          setIsPopoverOpen(false);
+        } else {
+          setSuggestions(filteredTags);
+          setIsPopoverOpen(true);
+        }
+      } catch (error) {
+        console.error("Failed to fetch tags:", error);
+        setSuggestions([]);
+        setIsPopoverOpen(false);
       }
     };
 
     fetchSuggestions();
   }, [debouncedQuery]);
 
-  const handleAddTag = () => {
-    const trimmed = tagInput.trim();
+  const handleAddTag = (tag?: string) => {
+    const trimmed = (tag ?? tagInput).trim();
     const currentTags = form.watch("tags") || [];
+
+    if (!trimmed) return;
 
     if (currentTags.length >= 10) {
       toast.warning("You can only add up to 10 tags.");
-      setTagInput(""); // clear input anyway
+      setTagInput("");
       return;
     }
 
-    if (trimmed && !currentTags.includes(trimmed)) {
-      const updated = [...currentTags, trimmed];
-      form.setValue("tags", updated);
+    if (!currentTags.includes(trimmed)) {
+      form.setValue("tags", [...currentTags, trimmed]);
     }
 
     setTagInput("");
+    setSuggestions([]);
+    setIsPopoverOpen(false);
+    setSelectedIndex(-1);
   };
 
   const onSubmit = async (values: PlantSchema) => {
@@ -187,28 +198,34 @@ const PlantSubmissionForm = () => {
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
-                          handleAddTag();
+                          if (
+                            selectedIndex >= 0 &&
+                            selectedIndex < suggestions.length
+                          ) {
+                            handleAddTag(suggestions[selectedIndex].name);
+                          } else {
+                            handleAddTag();
+                          }
+                        } else if (e.key === "ArrowDown") {
+                          e.preventDefault();
+                          setSelectedIndex((prev) =>
+                            Math.min(prev + 1, suggestions.length - 1)
+                          );
+                        } else if (e.key === "ArrowUp") {
+                          e.preventDefault();
+                          setSelectedIndex((prev) => Math.max(prev - 1, 0));
                         }
                       }}
                     />
                     {isPopoverOpen && suggestions.length > 0 && (
                       <div className="absolute top-full mt-2 z-50 w-full bg-[#2b2a2a] border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                        {suggestions.map((tag) => (
+                        {suggestions.map((tag, idx) => (
                           <div
                             key={tag.id}
-                            onClick={() => {
-                              const currentTags = form.watch("tags") || [];
-                              if (!currentTags.includes(tag.name)) {
-                                form.setValue("tags", [
-                                  ...currentTags,
-                                  tag.name,
-                                ]);
-                                toast.success(`Tag '${tag.name}' added!`);
-                              }
-                              setTagInput("");
-                              setIsPopoverOpen(false);
-                            }}
-                            className="cursor-pointer px-3 py-2 hover:bg-[#3a3a3a] text-sm"
+                            onClick={() => handleAddTag(tag.name)}
+                            className={`cursor-pointer px-3 py-2 text-sm hover:bg-[#3a3a3a] ${
+                              selectedIndex === idx ? "bg-[#3a3a3a]" : ""
+                            }`}
                           >
                             {tag.name}
                           </div>
