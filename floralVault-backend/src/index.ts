@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
+import tagRoutes from "./routes/tagRoutes";
 
 dotenv.config();
 
@@ -25,6 +26,8 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/tags", tagRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
