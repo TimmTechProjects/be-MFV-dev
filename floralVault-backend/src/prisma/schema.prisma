@@ -32,10 +32,13 @@ model Plant {
   commonName     String
   scientificName String
   description    String
-  tags           String[]
+  tags           Tag[]          @relation("PlantTags")
   images         Image[]
   likes          Int            @default(0)
   slug           String         @unique
+  origin         String?
+  family         String?
+  type           String
   views          Int            @default(0)
   isPublic       Boolean        @default(true)
   createdAt      DateTime       @default(now())
@@ -50,4 +53,10 @@ model Image {
   isMain   Boolean  @default(false)
   plantId  String
   plant    Plant    @relation(fields: [plantId], references: [id])
+}
+
+model Tag {
+  id     String   @id @default(cuid())
+  name   String   @unique
+  plants Plant[]  @relation("PlantTags")
 }

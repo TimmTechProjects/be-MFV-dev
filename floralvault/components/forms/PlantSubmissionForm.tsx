@@ -24,6 +24,25 @@ const PlantEditor = dynamic(() => import("@/components/editor/PlantEditor"), {
 
 const PlantSubmissionForm = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [tagInput, setTagInput] = useState("");
+
+  const handleAddTag = () => {
+    const trimmed = tagInput.trim();
+    const currentTags = form.watch("tags") || [];
+
+    if (currentTags.length >= 10) {
+      toast.warning("You can only add up to 10 tags.");
+      setTagInput(""); // clear input anyway
+      return;
+    }
+
+    if (trimmed && !currentTags.includes(trimmed)) {
+      const updated = [...currentTags, trimmed];
+      form.setValue("tags", updated);
+    }
+
+    setTagInput("");
+  };
 
   const form = useForm<PlantSchema>({
     resolver: zodResolver(plantSchema),
@@ -121,12 +140,43 @@ const PlantSubmissionForm = () => {
             name="tags"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tags (comma separated)</FormLabel>
+                <FormLabel>Tags (Limit up to 10 tags)</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="digestive, calming, inflammation"
-                    {...field}
+                    placeholder="Press Enter to add"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddTag();
+                      }
+                    }}
                   />
+                </FormControl>
+                <FormControl>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {form.watch("tags")?.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="bg-green-700 text-white px-2 py-1 rounded-full text-sm"
+                      >
+                        <span>{tag}</span>
+                        <button
+                          type="button"
+                          className="ml-1 text-white hover:text-red-300"
+                          onClick={() => {
+                            const updated = form
+                              .watch("tags")
+                              ?.filter((_, i) => i !== index);
+                            form.setValue("tags", updated);
+                          }}
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 </FormControl>
                 <FormMessage className="text-red-500" />
               </FormItem>

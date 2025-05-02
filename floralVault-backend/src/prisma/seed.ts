@@ -6,10 +6,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Gathering mock users... 🧔");
 
-  await prisma.user.deleteMany(); // Clear existing users
+  await prisma.user.deleteMany();
+  await prisma.plant.deleteMany();
+  // await prisma.tag.deleteMany();
 
   const users = [
     {
+      id: "user-101",
       username: "greenwitch",
       firstName: "Rowan",
       lastName: "Sage",
@@ -20,6 +23,7 @@ async function main() {
       joinedAt: new Date("2024-08-14"),
     },
     {
+      id: "user-204",
       username: "fungifolk",
       firstName: "Theo",
       lastName: "Myco",
@@ -30,6 +34,7 @@ async function main() {
       joinedAt: new Date("2024-10-01"),
     },
     {
+      id: "user-302",
       username: "aromaleaf",
       firstName: "Selena",
       lastName: "Hart",
@@ -40,6 +45,7 @@ async function main() {
       joinedAt: new Date("2025-01-02"),
     },
     {
+      id: "user-105",
       username: "medicinalroots",
       firstName: "Diego",
       lastName: "Ramos",
@@ -50,6 +56,7 @@ async function main() {
       joinedAt: new Date("2025-01-18"),
     },
     {
+      id: "user-102",
       username: "emptyroots",
       firstName: "Nova",
       lastName: "Lin",
@@ -60,6 +67,7 @@ async function main() {
       joinedAt: new Date("2025-03-01"),
     },
     {
+      id: "user-888",
       username: "test",
       firstName: "Testy",
       lastName: "McTestface",
@@ -70,6 +78,7 @@ async function main() {
       joinedAt: new Date("2025-04-05"),
     },
     {
+      id: "user-104",
       username: "jominime",
       firstName: "Jane",
       lastName: "Smith",
@@ -82,12 +91,19 @@ async function main() {
     },
   ];
 
+  const hashedUsers = await Promise.all(
+    users.map(async (user) => ({
+      ...user,
+      password: await bcrypt.hash(user.password, 10),
+    }))
+  );
+
   console.log("Gathering mock plants... 🌱");
   const plantData = [
     {
       id: "1",
-      scientific_name: "Ocimum basilicum",
-      common_name: "Basil",
+      scientificName: "Ocimum basilicum",
+      commonName: "Basil",
       slug: "ocimum-basilicum",
       origin: "India",
       family: "Lamiaceae",
@@ -115,14 +131,15 @@ async function main() {
       userId: "user-101",
       tags: ["culinary", "medicinal", "fragrant"],
       views: 124,
+      likes: 200,
       createdAt: new Date("2024-12-01T10:30:00Z"),
       updatedAt: new Date("2025-01-15T14:12:00Z"),
       isPublic: true,
     },
     {
       id: "2",
-      scientific_name: "Ganoderma lucidum",
-      common_name: "Reishi Mushroom",
+      scientificName: "Ganoderma lucidum",
+      commonName: "Reishi Mushroom",
       slug: "ganoderma-lucidum",
       origin: "East Asia",
       family: "Ganodermataceae",
@@ -148,14 +165,15 @@ async function main() {
       userId: "user-101",
       tags: ["immune", "adaptogen", "mushroom"],
       views: 87,
+      likes: 200,
       createdAt: new Date("2025-01-10T08:00:00Z"),
       updatedAt: new Date("2025-03-01T09:15:00Z"),
       isPublic: true,
     },
     {
       id: "3",
-      scientific_name: "Aloe vera",
-      common_name: "Aloe",
+      scientificName: "Aloe vera",
+      commonName: "Aloe",
       slug: "aloe-vera",
       origin: "Arabian Peninsula",
       family: "Asphodelaceae",
@@ -185,14 +203,15 @@ async function main() {
       userId: "user-204",
       tags: ["healing", "skin-care", "succulent"],
       views: 210,
+      likes: 200,
       createdAt: new Date("2025-02-15T09:00:00Z"),
       updatedAt: new Date("2025-03-20T16:45:00Z"),
       isPublic: true,
     },
     {
       id: "4",
-      scientific_name: "Mentha spicata",
-      common_name: "Spearmint",
+      scientificName: "Mentha spicata",
+      commonName: "Spearmint",
       slug: "mentha-spicata",
       origin: "Europe",
       family: "Lamiaceae",
@@ -223,14 +242,15 @@ async function main() {
       userId: "user-302",
       tags: ["tea", "digestive", "aromatic"],
       views: 145,
+      likes: 200,
       createdAt: new Date("2025-02-02T10:30:00Z"),
       updatedAt: new Date("2025-03-05T11:12:00Z"),
       isPublic: true,
     },
     {
       id: "5",
-      scientific_name: "Lavandula angustifolia",
-      common_name: "Lavender",
+      scientificName: "Lavandula angustifolia",
+      commonName: "Lavender",
       slug: "lavandula-angustifolia",
       origin: "Mediterranean",
       family: "Lamiaceae",
@@ -262,14 +282,15 @@ async function main() {
       userId: "user-302",
       tags: ["aromatherapy", "calming", "decorative"],
       views: 174,
+      likes: 200,
       createdAt: new Date("2025-01-20T14:10:00Z"),
       updatedAt: new Date("2025-02-18T13:00:00Z"),
       isPublic: true,
     },
     {
       id: "6",
-      scientific_name: "Echinacea purpurea",
-      common_name: "Echinacea",
+      scientificName: "Echinacea purpurea",
+      commonName: "Echinacea",
       slug: "echinacea-purpurea",
       origin: "North America",
       family: "Asteraceae",
@@ -296,14 +317,15 @@ async function main() {
       userId: "user-104",
       tags: ["immune", "flower", "wild"],
       views: 95,
+      likes: 200,
       createdAt: new Date("2025-02-12T07:20:00Z"),
       updatedAt: new Date("2025-03-01T08:35:00Z"),
       isPublic: true,
     },
     {
       id: "7",
-      scientific_name: "Vaccinium myrtillus",
-      common_name: "Bilberry",
+      scientificName: "Vaccinium myrtillus",
+      commonName: "Bilberry",
       slug: "vaccinium-myrtillus",
       origin: "Europe",
       family: "Ericaceae",
@@ -330,14 +352,15 @@ async function main() {
       userId: "user-104",
       tags: ["antioxidant", "vision", "circulatory"],
       views: 96,
+      likes: 200,
       createdAt: new Date("2025-02-11T10:00:00Z"),
       updatedAt: new Date("2025-03-02T12:00:00Z"),
       isPublic: true,
     },
     {
       id: "8",
-      scientific_name: "Gynostemma pentaphyllum",
-      common_name: "Jiaogulan",
+      scientificName: "Gynostemma pentaphyllum",
+      commonName: "Jiaogulan",
       slug: "gynostemma-pentaphyllum",
       origin: "China",
       family: "Cucurbitaceae",
@@ -375,14 +398,15 @@ async function main() {
       userId: "user-888",
       tags: ["adaptogen", "longevity", "tea"],
       views: 115,
+      likes: 200,
       createdAt: new Date("2025-01-25T09:45:00Z"),
       updatedAt: new Date("2025-02-28T11:20:00Z"),
       isPublic: true,
     },
     {
       id: "9",
-      scientific_name: "Ferula drudeana",
-      common_name: "Ferula",
+      scientificName: "Ferula drudeana",
+      commonName: "Ferula",
       slug: "ferula-drudeana",
       origin: "Turkey",
       family: "Apiaceae",
@@ -418,14 +442,15 @@ async function main() {
       userId: "user-888",
       tags: ["ancient", "digestive", "rare"],
       views: 132,
+      likes: 200,
       createdAt: new Date("2025-01-12T08:30:00Z"),
       updatedAt: new Date("2025-03-03T10:00:00Z"),
       isPublic: true,
     },
     {
       id: "10",
-      scientific_name: "Agave tequilana",
-      common_name: "Blue Agave",
+      scientificName: "Agave tequilana",
+      commonName: "Blue Agave",
       slug: "agave-tequilana",
       origin: "Mexico",
       family: "Asparagaceae",
@@ -461,25 +486,38 @@ async function main() {
       userId: "user-101",
       tags: ["digestive", "prebiotic", "succulent"],
       views: 176,
+      likes: 200,
       createdAt: new Date("2025-02-01T14:00:00Z"),
       updatedAt: new Date("2025-03-10T16:30:00Z"),
       isPublic: true,
     },
   ];
 
-  const hashedUsers = await Promise.all(
-    users.map(async (user) => ({
-      ...user,
-      password: await bcrypt.hash(user.password, 10),
-    }))
-  );
-
   console.log("🧔 Seeding mock users...");
   await prisma.user.createMany({ data: hashedUsers });
 
   console.log("🌱 Seeding mock plants...");
-  await prisma.plant.createMany({ data: plantData });
+  for (const plant of plantData) {
+    const { tags, imageUrl, ...rest } = plant;
 
+    await prisma.plant.create({
+      data: {
+        ...rest,
+        tags: {
+          connectOrCreate: tags.map((tagName) => ({
+            where: { name: tagName },
+            create: { name: tagName },
+          })),
+        },
+        images: {
+          create: imageUrl.map((url, index) => ({
+            url,
+            isMain: index === 0,
+          })),
+        },
+      },
+    });
+  }
   console.log("✅ Mock users seeded successfully.");
 }
 
