@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import { plantSchema, PlantSchema } from "@/schemas/plantSchema";
 import ImageUploadField from "./ImageUploadField";
+import { Tag } from "@/types/tags";
+import { getSuggestedTags } from "@/lib/utils";
 const PlantEditor = dynamic(() => import("@/components/editor/PlantEditor"), {
   ssr: false,
 });
@@ -25,6 +27,52 @@ const PlantEditor = dynamic(() => import("@/components/editor/PlantEditor"), {
 const PlantSubmissionForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [tagInput, setTagInput] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<Tag[]>([]);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  const form = useForm<PlantSchema>({
+    resolver: zodResolver(plantSchema),
+    defaultValues: {
+      name: "",
+      scientificName: "",
+      description: "",
+      tags: [],
+      images: [],
+    },
+  });
+
+  // Debounce input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(tagInput.trim().toLowerCase());
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [tagInput]);
+
+  // Fetch suggestions
+  useEffect(() => {
+    if (!debouncedQuery) {
+      setSuggestions([]);
+      setIsPopoverOpen(false);
+      return;
+    }
+
+    const fetchSuggestions = async () => {
+      const filteredTags = await getSuggestedTags(debouncedQuery);
+
+      if (!filteredTags || filteredTags.length === 0) {
+        setSuggestions([]);
+        setIsPopoverOpen(false);
+      } else {
+        setSuggestions(filteredTags);
+        setIsPopoverOpen(true);
+      }
+    };
+
+    fetchSuggestions();
+  }, [debouncedQuery]);
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim();
@@ -43,17 +91,6 @@ const PlantSubmissionForm = () => {
 
     setTagInput("");
   };
-
-  const form = useForm<PlantSchema>({
-    resolver: zodResolver(plantSchema),
-    defaultValues: {
-      name: "",
-      scientificName: "",
-      description: "",
-      tags: [],
-      images: [],
-    },
-  });
 
   const onSubmit = async (values: PlantSchema) => {
     setIsLoading(true);
@@ -138,22 +175,50 @@ const PlantSubmissionForm = () => {
           <FormField
             control={form.control}
             name="tags"
-            render={({ field }) => (
+            render={() => (
               <FormItem>
                 <FormLabel>Tags (Limit up to 10 tags)</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Press Enter to add"
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddTag();
-                      }
-                    }}
-                  />
+                  <div className="relative">
+                    <Input
+                      placeholder="Press Enter to add"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                    />
+                    {isPopoverOpen && suggestions.length > 0 && (
+                      <div className="absolute top-full mt-2 z-50 w-full bg-[#2b2a2a] border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {suggestions.map((tag) => (
+                          <div
+                            key={tag.id}
+                            onClick={() => {
+                              const currentTags = form.watch("tags") || [];
+                              if (!currentTags.includes(tag.name)) {
+                                form.setValue("tags", [
+                                  ...currentTags,
+                                  tag.name,
+                                ]);
+                                toast.success(`Tag '${tag.name}' added!`);
+                              }
+                              setTagInput("");
+                              setIsPopoverOpen(false);
+                            }}
+                            className="cursor-pointer px-3 py-2 hover:bg-[#3a3a3a] text-sm"
+                          >
+                            {tag.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
+
+                {/* Tags list */}
                 <FormControl>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {form.watch("tags")?.map((tag, index) => (
@@ -161,7 +226,7 @@ const PlantSubmissionForm = () => {
                         key={index}
                         className="bg-green-700 text-white px-2 py-1 rounded-full text-sm"
                       >
-                        <span>{tag}</span>
+                        {tag}
                         <button
                           type="button"
                           className="ml-1 text-white hover:text-red-300"
@@ -170,6 +235,8 @@ const PlantSubmissionForm = () => {
                               .watch("tags")
                               ?.filter((_, i) => i !== index);
                             form.setValue("tags", updated);
+
+                            toast.info(`Tag ${tag} removed`);
                           }}
                         >
                           &times;
@@ -178,6 +245,7 @@ const PlantSubmissionForm = () => {
                     ))}
                   </div>
                 </FormControl>
+
                 <FormMessage className="text-red-500" />
               </FormItem>
             )}
