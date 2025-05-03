@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 // Extend Request interface to allow adding `user` property
 interface AuthenticatedRequest extends Request {
-  user?: string | JwtPayload; // adjust type if you structure your token payload differently
+  user?: string; // user Id
 }
 
 const verifyToken = (
@@ -24,7 +24,7 @@ const verifyToken = (
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
       id: string;
     };
-    req.user = decoded;
+    req.user = decoded.id;
     next();
   } catch (error) {
     console.error("Token verification error:", error);

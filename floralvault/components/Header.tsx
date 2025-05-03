@@ -162,6 +162,13 @@ const Header = () => {
                 </Link>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {user && (
+                <DropdownMenuItem>
+                  <Link href={`/profile/${user.username}/plants/new`}>
+                    Add a Plant
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem>
                 <Link href="/settings">Settings</Link>
               </DropdownMenuItem>
@@ -200,6 +207,14 @@ const Header = () => {
                   </p>
                 </Link>
               ))}
+
+              {user && (
+                <Link href={`/profile/${user.username}/plants/new`}>
+                  <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
+                    Add a Plant
+                  </p>
+                </Link>
+              )}
             </div>
           </SheetContent>
         </Sheet>

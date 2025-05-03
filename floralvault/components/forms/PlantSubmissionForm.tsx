@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -11,6 +12,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -19,7 +27,11 @@ import dynamic from "next/dynamic";
 import { plantSchema, PlantSchema } from "@/schemas/plantSchema";
 import ImageUploadField from "./ImageUploadField";
 import { Tag } from "@/types/tags";
-import { getSuggestedTags } from "@/lib/utils";
+import { getSuggestedTags, submitPlant } from "@/lib/utils";
+import { Checkbox } from "../ui/checkbox";
+import { useUser } from "@/context/UserContext";
+import { boolean } from "zod";
+
 const PlantEditor = dynamic(() => import("@/components/editor/PlantEditor"), {
   ssr: false,
 });
@@ -32,14 +44,19 @@ const PlantSubmissionForm = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
+  const router = useRouter();
+  const { user } = useUser();
+  const isProUser = user?.plan === "pro";
+
   const form = useForm<PlantSchema>({
     resolver: zodResolver(plantSchema),
     defaultValues: {
-      name: "",
-      scientificName: "",
+      commonName: "",
+      botanicalName: "",
       description: "",
       tags: [],
       images: [],
+      isPublic: true,
     },
   });
 
@@ -105,18 +122,23 @@ const PlantSubmissionForm = () => {
 
   const onSubmit = async (values: PlantSchema) => {
     setIsLoading(true);
-    console.log("Submitted values:", values);
+    const result = await submitPlant(values);
 
-    // TODO: connect to backend using submitPlant() util
-    toast.success("Plant submitted successfully!");
-    setIsLoading(false);
-    form.reset();
+    if (result?.slug) {
+      toast.success("Plant submitted successfully!");
+      router.push(`/plants/${result.slug}`);
+    } else {
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   return (
     <div className="max-w-7xl mx-auto text-white p-10">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6 border-hidden"
+        >
           <FormField
             control={form.control}
             name="images"
@@ -137,7 +159,7 @@ const PlantSubmissionForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="name"
+              name="commonName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Common Name</FormLabel>
@@ -151,14 +173,73 @@ const PlantSubmissionForm = () => {
 
             <FormField
               control={form.control}
-              name="scientificName"
+              name="botanicalName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Scientific Name</FormLabel>
+                  <FormLabel>Botanical Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Lavandula angustifolia" {...field} />
                   </FormControl>
                   <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div>
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger className="w-full md:w-[300px] bg-transparent border text-white rounded-md">
+                      <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#2b2a2a] text-white">
+                      <SelectItem value="herb">Herb</SelectItem>
+                      <SelectItem value="shrub">Shrub</SelectItem>
+                      <SelectItem value="flower">Flower</SelectItem>
+                      <SelectItem value="tree">Tree</SelectItem>
+                      <SelectItem value="vine">Vine</SelectItem>
+                      <SelectItem value="succulent">Succulent</SelectItem>
+                      <SelectItem value="fungus">Fungus</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isPublic"
+              render={({ field }) => (
+                <FormItem className="flex items-center space-x-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={(checked) => {
+                        if (isProUser) field.onChange(checked);
+                      }}
+                      disabled={!isProUser}
+                    />
+                  </FormControl>
+                  <FormLabel className="cursor-pointer">
+                    Public Post
+                    {!isProUser && (
+                      <span
+                        className="ml-2 text-xs text-yellow-400"
+                        title="Upgrade plan to enable private saves"
+                      >
+                        🔒
+                      </span>
+                    )}
+                  </FormLabel>
                 </FormItem>
               )}
             />
@@ -171,7 +252,7 @@ const PlantSubmissionForm = () => {
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <div className="rounded-lg border border-border bg-transparent shadow-sm p-4">
+                  <div className="rounded-lg border-hidden bg-transparent shadow-sm p-4">
                     <PlantEditor
                       content={field.value}
                       onChange={field.onChange}

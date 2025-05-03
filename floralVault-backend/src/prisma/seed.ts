@@ -6,9 +6,9 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Gathering mock users... 🧔");
 
-  await prisma.user.deleteMany();
-  await prisma.plant.deleteMany();
-  // await prisma.tag.deleteMany();
+  prisma.tag.deleteMany();
+  prisma.plant.deleteMany();
+  prisma.user.deleteMany();
 
   const users = [
     {
@@ -102,7 +102,7 @@ async function main() {
   const plantData = [
     {
       id: "1",
-      scientificName: "Ocimum basilicum",
+      botanicalName: "Ocimum basilicum",
       commonName: "Basil",
       slug: "ocimum-basilicum",
       origin: "India",
@@ -138,7 +138,7 @@ async function main() {
     },
     {
       id: "2",
-      scientificName: "Ganoderma lucidum",
+      botanicalName: "Ganoderma lucidum",
       commonName: "Reishi Mushroom",
       slug: "ganoderma-lucidum",
       origin: "East Asia",
@@ -172,7 +172,7 @@ async function main() {
     },
     {
       id: "3",
-      scientificName: "Aloe vera",
+      botanicalName: "Aloe vera",
       commonName: "Aloe",
       slug: "aloe-vera",
       origin: "Arabian Peninsula",
@@ -210,7 +210,7 @@ async function main() {
     },
     {
       id: "4",
-      scientificName: "Mentha spicata",
+      botanicalName: "Mentha spicata",
       commonName: "Spearmint",
       slug: "mentha-spicata",
       origin: "Europe",
@@ -249,7 +249,7 @@ async function main() {
     },
     {
       id: "5",
-      scientificName: "Lavandula angustifolia",
+      botanicalName: "Lavandula angustifolia",
       commonName: "Lavender",
       slug: "lavandula-angustifolia",
       origin: "Mediterranean",
@@ -289,7 +289,7 @@ async function main() {
     },
     {
       id: "6",
-      scientificName: "Echinacea purpurea",
+      botanicalName: "Echinacea purpurea",
       commonName: "Echinacea",
       slug: "echinacea-purpurea",
       origin: "North America",
@@ -324,7 +324,7 @@ async function main() {
     },
     {
       id: "7",
-      scientificName: "Vaccinium myrtillus",
+      botanicalName: "Vaccinium myrtillus",
       commonName: "Bilberry",
       slug: "vaccinium-myrtillus",
       origin: "Europe",
@@ -359,7 +359,7 @@ async function main() {
     },
     {
       id: "8",
-      scientificName: "Gynostemma pentaphyllum",
+      botanicalName: "Gynostemma pentaphyllum",
       commonName: "Jiaogulan",
       slug: "gynostemma-pentaphyllum",
       origin: "China",
@@ -405,7 +405,7 @@ async function main() {
     },
     {
       id: "9",
-      scientificName: "Ferula drudeana",
+      botanicalName: "Ferula drudeana",
       commonName: "Ferula",
       slug: "ferula-drudeana",
       origin: "Turkey",
@@ -449,7 +449,7 @@ async function main() {
     },
     {
       id: "10",
-      scientificName: "Agave tequilana",
+      botanicalName: "Agave tequilana",
       commonName: "Blue Agave",
       slug: "agave-tequilana",
       origin: "Mexico",
