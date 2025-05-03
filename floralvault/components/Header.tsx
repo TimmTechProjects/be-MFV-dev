@@ -200,21 +200,26 @@ const Header = () => {
             </SheetHeader>
 
             <div className="flex flex-col text-white gap-5 pl-10">
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
-                    {link.label}
-                  </p>
-                </Link>
-              ))}
-
-              {user && (
-                <Link href={`/profile/${user.username}/plants/new`}>
-                  <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
-                    Add a Plant
-                  </p>
-                </Link>
-              )}
+              {navLinks.map((link) => {
+                const isAfterMyCollection =
+                  link.label === "My Collection" && user;
+                return (
+                  <React.Fragment key={link.href}>
+                    <Link href={link.href}>
+                      <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
+                        {link.label}
+                      </p>
+                    </Link>
+                    {isAfterMyCollection && (
+                      <Link href={`/profile/${user.username}/plants/new`}>
+                        <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
+                          Add a Plant
+                        </p>
+                      </Link>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </SheetContent>
         </Sheet>

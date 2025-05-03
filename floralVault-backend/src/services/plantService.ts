@@ -1,12 +1,14 @@
 import prisma from "../prisma/client";
 import slugify from "slugify";
-import { nanoid } from "nanoid";
 
 export const createPlant = async (data: any) => {
-  const slug =
-    slugify(data.botanicalName, { lower: true, strict: true }) +
-    "-" +
-    nanoid(8);
+  const baseSlug = slugify(data.botanicalName, { lower: true, strict: true });
+  let slug = baseSlug;
+  let counter = 1;
+
+  while (await prisma.plant.findUnique({ where: { slug } })) {
+    slug = `${baseSlug}-${counter++}`;
+  }
 
   const newPlant = await prisma.plant.create({
     data: {

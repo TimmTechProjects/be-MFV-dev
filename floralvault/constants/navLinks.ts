@@ -12,10 +12,6 @@ export const navLinks = [
     href: "/my-collection",
   },
   {
-    label: "Add a Plant",
-    href: "/plants/new",
-  },
-  {
     label: "About",
     href: "/about",
   },

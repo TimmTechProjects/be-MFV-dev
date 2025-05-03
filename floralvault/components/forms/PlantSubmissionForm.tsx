@@ -30,7 +30,6 @@ import { Tag } from "@/types/tags";
 import { getSuggestedTags, submitPlant } from "@/lib/utils";
 import { Checkbox } from "../ui/checkbox";
 import { useUser } from "@/context/UserContext";
-import { boolean } from "zod";
 
 const PlantEditor = dynamic(() => import("@/components/editor/PlantEditor"), {
   ssr: false,
@@ -186,31 +185,135 @@ const PlantSubmissionForm = () => {
             />
           </div>
 
-          <div>
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger className="w-full md:w-[300px] bg-transparent border text-white rounded-md">
+                    <SelectValue placeholder="Select a type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#2b2a2a] text-white">
+                    <SelectItem value="herb">Herb</SelectItem>
+                    <SelectItem value="shrub">Shrub</SelectItem>
+                    <SelectItem value="flower">Flower</SelectItem>
+                    <SelectItem value="tree">Tree</SelectItem>
+                    <SelectItem value="vine">Vine</SelectItem>
+                    <SelectItem value="succulent">Succulent</SelectItem>
+                    <SelectItem value="fungus">Fungus</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <div className="rounded-lg border-hidden bg-transparent shadow-sm p-4">
+                    <PlantEditor
+                      content={field.value}
+                      onChange={field.onChange}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage className="text-red-500" />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="type"
-              render={({ field }) => (
+              name="tags"
+              render={() => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="w-full md:w-[300px] bg-transparent border text-white rounded-md">
-                      <SelectValue placeholder="Select a type" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#2b2a2a] text-white">
-                      <SelectItem value="herb">Herb</SelectItem>
-                      <SelectItem value="shrub">Shrub</SelectItem>
-                      <SelectItem value="flower">Flower</SelectItem>
-                      <SelectItem value="tree">Tree</SelectItem>
-                      <SelectItem value="vine">Vine</SelectItem>
-                      <SelectItem value="succulent">Succulent</SelectItem>
-                      <SelectItem value="fungus">Fungus</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
+                  <FormLabel>Tags (Limit up to 10 tags)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        placeholder="Press Enter to add"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (
+                              selectedIndex >= 0 &&
+                              selectedIndex < suggestions.length
+                            ) {
+                              handleAddTag(suggestions[selectedIndex].name);
+                            } else {
+                              handleAddTag();
+                            }
+                          } else if (e.key === "ArrowDown") {
+                            e.preventDefault();
+                            setSelectedIndex((prev) =>
+                              Math.min(prev + 1, suggestions.length - 1)
+                            );
+                          } else if (e.key === "ArrowUp") {
+                            e.preventDefault();
+                            setSelectedIndex((prev) => Math.max(prev - 1, 0));
+                          }
+                        }}
+                      />
+                      {isPopoverOpen && suggestions.length > 0 && (
+                        <div className="absolute top-full mt-2 z-50 w-full bg-[#2b2a2a] border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                          {suggestions.map((tag, idx) => (
+                            <div
+                              key={tag.id}
+                              onClick={() => handleAddTag(tag.name)}
+                              className={`cursor-pointer px-3 py-2 text-sm hover:bg-[#3a3a3a] ${
+                                selectedIndex === idx ? "bg-[#3a3a3a]" : ""
+                              }`}
+                            >
+                              {tag.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
+
+                  {/* Tags list */}
+                  <FormControl>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {form.watch("tags")?.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="bg-green-700 text-white px-2 py-1 rounded-full text-sm"
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            className="ml-1 text-white hover:text-red-300"
+                            onClick={() => {
+                              const updated = form
+                                .watch("tags")
+                                ?.filter((_, i) => i !== index);
+                              form.setValue("tags", updated);
+
+                              toast.info(`Tag ${tag} removed`);
+                            }}
+                          >
+                            &times;
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </FormControl>
+
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
@@ -219,7 +322,7 @@ const PlantSubmissionForm = () => {
               control={form.control}
               name="isPublic"
               render={({ field }) => (
-                <FormItem className="flex items-center space-x-2">
+                <FormItem className="flex items-center space-x-2 justify-end">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -244,110 +347,6 @@ const PlantSubmissionForm = () => {
               )}
             />
           </div>
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <div className="rounded-lg border-hidden bg-transparent shadow-sm p-4">
-                    <PlantEditor
-                      content={field.value}
-                      onChange={field.onChange}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage className="text-red-500" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="tags"
-            render={() => (
-              <FormItem>
-                <FormLabel>Tags (Limit up to 10 tags)</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      placeholder="Press Enter to add"
-                      value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          if (
-                            selectedIndex >= 0 &&
-                            selectedIndex < suggestions.length
-                          ) {
-                            handleAddTag(suggestions[selectedIndex].name);
-                          } else {
-                            handleAddTag();
-                          }
-                        } else if (e.key === "ArrowDown") {
-                          e.preventDefault();
-                          setSelectedIndex((prev) =>
-                            Math.min(prev + 1, suggestions.length - 1)
-                          );
-                        } else if (e.key === "ArrowUp") {
-                          e.preventDefault();
-                          setSelectedIndex((prev) => Math.max(prev - 1, 0));
-                        }
-                      }}
-                    />
-                    {isPopoverOpen && suggestions.length > 0 && (
-                      <div className="absolute top-full mt-2 z-50 w-full bg-[#2b2a2a] border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                        {suggestions.map((tag, idx) => (
-                          <div
-                            key={tag.id}
-                            onClick={() => handleAddTag(tag.name)}
-                            className={`cursor-pointer px-3 py-2 text-sm hover:bg-[#3a3a3a] ${
-                              selectedIndex === idx ? "bg-[#3a3a3a]" : ""
-                            }`}
-                          >
-                            {tag.name}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </FormControl>
-
-                {/* Tags list */}
-                <FormControl>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {form.watch("tags")?.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="bg-green-700 text-white px-2 py-1 rounded-full text-sm"
-                      >
-                        {tag}
-                        <button
-                          type="button"
-                          className="ml-1 text-white hover:text-red-300"
-                          onClick={() => {
-                            const updated = form
-                              .watch("tags")
-                              ?.filter((_, i) => i !== index);
-                            form.setValue("tags", updated);
-
-                            toast.info(`Tag ${tag} removed`);
-                          }}
-                        >
-                          &times;
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                </FormControl>
-
-                <FormMessage className="text-red-500" />
-              </FormItem>
-            )}
-          />
 
           <Button type="submit" className="w-full">
             {isLoading ? "Submitting..." : "Submit Plant →"}

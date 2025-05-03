@@ -1,7 +1,11 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { createPlant } from "../services/plantService";
+import { AuthenticatedRequest } from "../types/express";
 
-export const createPlantPost = async (req: Request, res: Response) => {
+export const createPlantPost = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
     const {
       commonName,
@@ -13,7 +17,7 @@ export const createPlantPost = async (req: Request, res: Response) => {
       isPublic = true,
     } = req.body;
 
-    const userId = (req as any).user?.id;
+    const userId = req.user;
 
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });

@@ -13,6 +13,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Plan {
+  free
+  pro
+  premium
+}
+
 model User {
   id        String   @id @default(uuid())
   username  String   @unique
@@ -22,8 +28,9 @@ model User {
   lastName  String
   avatarUrl String?
   bio       String?
-  essence     Int      @default(0)
+  essence     Int    @default(0)
   joinedAt  DateTime @default(now())
+  plan      Plan     @default(free)
   plants    Plant[]
 }
 

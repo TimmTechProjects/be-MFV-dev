@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
+import { Plan } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -21,6 +22,7 @@ async function main() {
       bio: "Herbalist and garden witch specializing in culinary and healing herbs.",
       avatarUrl: "https://i.pravatar.cc/150?img=12",
       joinedAt: new Date("2024-08-14"),
+      plan: Plan.free,
     },
     {
       id: "user-204",
@@ -32,6 +34,7 @@ async function main() {
       bio: "Mushroom forager and eastern herbal medicine enthusiast.",
       avatarUrl: "https://i.pravatar.cc/150?img=22",
       joinedAt: new Date("2024-10-01"),
+      plan: Plan.free,
     },
     {
       id: "user-302",
@@ -43,6 +46,7 @@ async function main() {
       bio: "Tea grower and wildflower collector with a love for aromatic species.",
       avatarUrl: "https://i.pravatar.cc/150?img=5",
       joinedAt: new Date("2025-01-02"),
+      plan: Plan.free,
     },
     {
       id: "user-105",
@@ -54,6 +58,7 @@ async function main() {
       bio: "Preserving indigenous plant medicine across Latin America.",
       avatarUrl: "https://i.pravatar.cc/150?img=9",
       joinedAt: new Date("2025-01-18"),
+      plan: Plan.free,
     },
     {
       id: "user-102",
@@ -65,6 +70,7 @@ async function main() {
       bio: "Just getting started with plant journaling 🌱",
       avatarUrl: "https://i.pravatar.cc/150?img=30",
       joinedAt: new Date("2025-03-01"),
+      plan: Plan.free,
     },
     {
       id: "user-888",
@@ -76,6 +82,7 @@ async function main() {
       bio: "This is a test user account for local dev.",
       avatarUrl: "https://i.pravatar.cc/150?img=33",
       joinedAt: new Date("2025-04-05"),
+      plan: Plan.pro,
     },
     {
       id: "user-104",
@@ -88,6 +95,7 @@ async function main() {
       avatarUrl:
         "https://static.myfigurecollection.net/upload/users/200/216069_1617412905.jpeg",
       joinedAt: new Date("2025-04-05"),
+      plan: Plan.pro,
     },
   ];
 
