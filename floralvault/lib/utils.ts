@@ -5,7 +5,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 const baseUrl = process.env.NEXT_PUBLIC_FLORAL_VAULT_API_URL;
-const devUrl = "http://localhost:5000";
+// const devUrl = "http://localhost:5000";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -83,7 +83,7 @@ export function getCurrentUser() {
 export async function getSuggestedTags(debouncedQuery: string) {
   try {
     const response = await fetch(
-      devUrl + `/api/tags/suggest?query=${debouncedQuery}`
+      baseUrl + `/api/tags/suggest?query=${debouncedQuery}`
       // {
       //   method: "GET",
       //   headers: {
@@ -117,7 +117,7 @@ export async function submitPlant(
   }
 
   try {
-    const response = await fetch(devUrl + "/api/plants", {
+    const response = await fetch(baseUrl + "/api/plants", {
       method: "POST",
       headers: {
         "content-type": "application/json",
