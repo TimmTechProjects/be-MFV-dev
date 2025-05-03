@@ -9,6 +9,7 @@ export const userData: User[] = [
     bio: "Herbalist and garden witch specializing in culinary and healing herbs.",
     avatarUrl: "https://i.pravatar.cc/150?img=12",
     joinedAt: new Date("2024-08-14"),
+    plan: "free",
   },
   {
     id: "user-204",
@@ -18,6 +19,7 @@ export const userData: User[] = [
     bio: "Mushroom forager and eastern herbal medicine enthusiast.",
     avatarUrl: "https://i.pravatar.cc/150?img=22",
     joinedAt: new Date("2024-10-01"),
+    plan: "free",
   },
   {
     id: "user-302",
@@ -27,6 +29,7 @@ export const userData: User[] = [
     bio: "Tea grower and wildflower collector with a love for aromatic species.",
     avatarUrl: "https://i.pravatar.cc/150?img=5",
     joinedAt: new Date("2025-01-02"),
+    plan: "free",
   },
   {
     id: "user-888",
@@ -36,6 +39,7 @@ export const userData: User[] = [
     bio: "Preserving indigenous plant medicine across Latin America.",
     avatarUrl: "https://i.pravatar.cc/150?img=9",
     joinedAt: new Date("2025-01-18"),
+    plan: "free",
   },
   {
     id: "user-999",
@@ -45,6 +49,7 @@ export const userData: User[] = [
     bio: "Just getting started with plant journaling 🌱",
     avatarUrl: "https://i.pravatar.cc/150?img=30",
     joinedAt: new Date("2025-03-01"),
+    plan: "free",
   },
   {
     id: "user-1000",
@@ -54,6 +59,7 @@ export const userData: User[] = [
     bio: "This is a test user account for local dev.",
     avatarUrl: "https://i.pravatar.cc/150?img=33",
     joinedAt: new Date("2025-04-05"),
+    plan: "free",
   },
   {
     id: "user-14",
@@ -64,6 +70,7 @@ export const userData: User[] = [
     avatarUrl:
       "https://static.myfigurecollection.net/upload/users/200/216069_1617412905.jpeg",
     joinedAt: new Date("2025-04-05"),
+    plan: "free",
   },
 ];
 

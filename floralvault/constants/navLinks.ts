@@ -12,7 +12,7 @@ export const navLinks = [
     href: "/my-collection",
   },
   {
-    label: "Submit Plant",
-    href: "/submit",
+    label: "About",
+    href: "/about",
   },
 ];

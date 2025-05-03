@@ -1,35 +1,45 @@
-import { PrismaClient } from "@prisma/client";
+import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
+import {
+  checkForExistingEmail,
+  checkForExistingUsername,
+  createNewUser,
+  signJWT,
+} from "../services/authService";
 
-const prisma = new PrismaClient();
+const generateToken = async (userId: string) => {
+  const secret = process.env.JWT_SECRET;
 
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "30d",
-  });
+  if (!secret) {
+    throw new Error("JWT_SECRET missing from env");
+  }
+
+  const signedJWT = await signJWT(userId, secret);
+
+  return signedJWT;
 };
 
 // POST /api/auth/login
-export const loginUser = async (req, res) => {
+export const loginUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { username, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { username },
-    });
+    const user = await checkForExistingUsername(username);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: "User not found" });
     } else {
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        return res.status(401).json({ message: "Invalid credentials" });
+        res.status(401).json({ message: "Invalid credentials" });
       }
-      const token = generateToken(user.id);
+      const token = await generateToken(user.id);
 
-      return res.status(200).json({
+      res.status(200).json({
         token,
         user: {
           id: user.id,
@@ -50,20 +60,29 @@ export const loginUser = async (req, res) => {
 };
 
 // POST create a new user
-export const registerUser = async (req, res) => {
+export const registerUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { username, firstName, lastName, email, password, bio, avatarUrl } =
     req.body;
 
+  const dataToCreate = {
+    username,
+    firstName,
+    lastName,
+    email,
+    password,
+    bio,
+    avatarUrl,
+  };
+
   const errors = [];
 
-  const existingUserEmail = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
-  const existingUserUsername = await prisma.user.findUnique({
-    where: { username },
-  });
+  const existingUserEmail = await checkForExistingEmail(email);
+
+  const existingUserUsername = await checkForExistingUsername(username);
 
   if (existingUserEmail) {
     errors.push({ message: "Email is already registered", field: "email" });
@@ -74,26 +93,15 @@ export const registerUser = async (req, res) => {
   }
 
   if (errors.length > 0) {
-    return res.status(409).json({ errors });
+    res.status(409).json({ errors });
   }
 
   try {
-    const newUser = await prisma.user.create({
-      data: {
-        username,
-        firstName,
-        lastName,
-        email,
-        password: await bcrypt.hash(password, 10),
-        bio: bio ?? "",
-        avatarUrl,
-        joinedAt: new Date(),
-      },
-    });
+    const newUser = await createNewUser(dataToCreate);
 
-    const token = generateToken(newUser.id);
+    const token = await generateToken(newUser.id);
 
-    return res.status(201).json({
+    res.status(201).json({
       token,
       user: {
         id: newUser.id,
@@ -108,6 +116,6 @@ export const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating user:", error);
-    return res.status(500).json({ message: "Failed to create user" });
+    res.status(500).json({ message: "Failed to create user" });
   }
 };

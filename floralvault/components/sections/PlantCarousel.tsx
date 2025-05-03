@@ -74,7 +74,7 @@ export default function PlantCarousel() {
                   >
                     {/* Clickable Card */}
                     <Link
-                      href={`/plant/${plant.slug}`}
+                      href={`/plants/${plant.slug}`}
                       className="block relative rounded-2xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-[1.03] cursor-pointer"
                     >
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />

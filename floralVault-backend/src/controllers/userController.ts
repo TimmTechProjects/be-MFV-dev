@@ -1,10 +1,10 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-
-const prisma = new PrismaClient();
+import { Response } from "express";
+import { AuthenticatedRequest } from "../types/express";
+import prisma from "../prisma/client";
+import { getCurrentUserById, updateUserById } from "../services/userService";
 
 // GET all users
-export const getAllUsers = async (req, res) => {
+export const getAllUsers = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const users = await prisma.user.findMany();
 
@@ -23,20 +23,20 @@ export const getAllUsers = async (req, res) => {
 };
 
 // GET a user by ID
-export const getCurrentUser = async (req, res) => {
+export const getCurrentUser = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   const { id } = req.user;
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id },
-    });
+    const user = await getCurrentUserById(id);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: "User not found" });
     }
 
-    const { password, ...userWithoutPassword } = user;
-    return res.status(200).json(userWithoutPassword);
+    res.status(200).json(user);
   } catch (error) {
     console.log("Error fetching user:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -44,7 +44,7 @@ export const getCurrentUser = async (req, res) => {
 };
 
 // PUT update a user
-export const updateUser = async (req, res) => {
+export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.user;
   const { username, firstName, lastName, email, bio, avatarUrl, password } =
     req.body;
@@ -55,22 +55,14 @@ export const updateUser = async (req, res) => {
       firstName,
       lastName,
       email,
+      password,
       bio,
       avatarUrl,
     };
 
-    if (password && password.trim() !== "") {
-      dataToUpdate.password = await bcrypt.hash(password, 10);
-    }
+    const updatedUser = await updateUserById(id, dataToUpdate);
 
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: dataToUpdate,
-    });
-
-    const { password: _password, ...userWithoutPassword } = updatedUser;
-
-    res.status(200).json(userWithoutPassword);
+    res.status(200).json(updatedUser);
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ message: "Failed to update user" });
@@ -78,7 +70,7 @@ export const updateUser = async (req, res) => {
 };
 
 // DELETE a user
-export const deleteUser = async (req, res) => {
+export const deleteUser = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.user;
 
   try {
@@ -86,9 +78,7 @@ export const deleteUser = async (req, res) => {
       where: { id },
     });
 
-    return res
-      .status(200)
-      .json({ message: "User account successfully deleted." });
+    res.status(200).json({ message: "User account successfully deleted." });
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Failed to delete user" });

@@ -2,8 +2,12 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import userRoutes from "./routes/userRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes";
+import authRoutes from "./routes/authRoutes";
+import tagRoutes from "./routes/tagRoutes";
+import plantRoutes from "./routes/plantRoutes";
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +27,10 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/tags", tagRoutes);
+
+app.use("/api/plants", plantRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

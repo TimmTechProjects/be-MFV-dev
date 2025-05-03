@@ -7,6 +7,7 @@ export interface User {
   bio?: string;
   avatarUrl?: string;
   joinedAt: Date;
+  plan: string;
 }
 
 export interface UserCredentials extends Pick<User, "id" | "username"> {
