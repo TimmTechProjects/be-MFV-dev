@@ -4,6 +4,6 @@ import { createPlantPost } from "../controllers/plantController";
 
 const router = Router();
 
-router.post("/", verifyToken, createPlantPost);
+router.post("/new", verifyToken, createPlantPost);
 
 export default router;
