@@ -114,12 +114,30 @@ const Header = () => {
           placeholder="Search plants, users, tags, or ailments..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => {
+            if (suggestions.length > 0 && debouncedQuery) {
+              setIsPopoverOpen(true);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleSearch(e);
+              setIsPopoverOpen(false);
+            }
+          }}
+          onBlur={() => {
+            setTimeout(() => setIsPopoverOpen(false), 100);
+          }}
           className="pr-10 rounded-2xl bg-white border-0"
         />
         <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 cursor-pointer" />
         {/* Popover-style dropdown */}
         {isPopoverOpen && (
-          <div className="absolute top-full mt-2 z-50 w-full bg-transparent rounded-md shadow-lg p-2 max-h-[800px] overflow-y-hidden">
+          <div
+            onMouseDown={(e) => e.preventDefault()}
+            className="absolute top-full mt-2 z-50 w-full bg-transparent rounded-md shadow-lg p-2 max-h-[800px] overflow-y-hidden"
+          >
             {suggestions.map((plant: Plant) => (
               <div
                 key={plant.id}
