@@ -20,7 +20,7 @@ const ResultsCard = ({ plant, compact = false }: ResultsCardProps) => {
     >
       {/* Main clickable content */}
       <Link
-        href={`/plant/${plant.slug}`}
+        href={`/profiles/${plant.user.username}/plants/${plant.slug}`}
         className="flex flex-col sm:flex-row w-full"
       >
         {/* Image */}

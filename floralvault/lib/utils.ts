@@ -5,7 +5,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 const baseUrl = process.env.NEXT_PUBLIC_FLORAL_VAULT_API_URL;
-// const devUrl = "http://localhost:5000";
+const devUrl = "http://localhost:5000";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -16,7 +16,7 @@ export async function loginUser({
   password,
 }: UserCredentials): Promise<User | null> {
   try {
-    const response = await fetch(baseUrl + "/api/auth/login", {
+    const response = await fetch(devUrl + "/api/auth/login", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -49,7 +49,7 @@ export async function registerUser(input: RegisterUser): Promise<{
   errors?: { field: string; message: string }[];
 } | null> {
   try {
-    const response = await fetch(baseUrl + "/api/auth/register", {
+    const response = await fetch(devUrl + "/api/auth/register", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -83,7 +83,7 @@ export function getCurrentUser() {
 export async function getSuggestedTags(debouncedQuery: string) {
   try {
     const response = await fetch(
-      baseUrl + `/api/tags/suggest?query=${debouncedQuery}`
+      devUrl + `/api/tags/suggest?query=${debouncedQuery}`
       // {
       //   method: "GET",
       //   headers: {
@@ -117,7 +117,7 @@ export async function submitPlant(
   }
 
   try {
-    const response = await fetch(baseUrl + "/api/plants/new", {
+    const response = await fetch(devUrl + "/api/plants/new", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -145,7 +145,7 @@ export async function submitPlant(
 
 export async function getPlantBySlug(slug: string): Promise<Plant | null> {
   try {
-    const res = await fetch(`${baseUrl}/api/plants/${slug}`, {
+    const res = await fetch(`${devUrl}/api/plants/${slug}`, {
       cache: "no-store",
     });
     if (!res.ok) return null;
@@ -156,7 +156,7 @@ export async function getPlantBySlug(slug: string): Promise<Plant | null> {
 }
 
 export async function getAllPlants(): Promise<Plant[]> {
-  const res = await fetch("http://localhost:5000/api/plants", {
+  const res = await fetch(`${devUrl}/api/plants`, {
     cache: "no-store",
   });
   if (!res.ok) throw new Error("Failed to fetch plants");

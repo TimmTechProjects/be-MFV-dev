@@ -128,7 +128,7 @@ const PlantSubmissionForm = () => {
 
     if (result?.slug) {
       toast.success("Plant submitted successfully!");
-      router.push(`/profile/${result.user.username}/plants/${result.slug}`);
+      router.push(`/profiles/${result.user.username}/plants/${result.slug}`);
     } else {
       toast.error("Something went wrong. Please try again.");
     }

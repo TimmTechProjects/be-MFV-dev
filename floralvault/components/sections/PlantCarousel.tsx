@@ -90,7 +90,7 @@ export default function PlantCarousel() {
                     <Link
                       href={
                         plant.user?.username
-                          ? `/profile/${plant.user.username}/plants/${plant.slug}`
+                          ? `/profiles/${plant.user.username}/plants/${plant.slug}`
                           : "#"
                       }
                       className="block relative rounded-2xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-[1.03] cursor-pointer"
