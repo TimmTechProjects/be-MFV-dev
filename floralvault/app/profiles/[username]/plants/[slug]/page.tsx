@@ -13,7 +13,7 @@ type PageProps = {
 
 export default async function PlantDetailPage({ params }: PageProps) {
   const { username, slug } = await params;
-  const plant = await getPlantBySlug(slug);
+  const plant = await getPlantBySlug(slug, username);
   if (!plant || !plant.slug) return notFound();
 
   return (

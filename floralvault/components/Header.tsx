@@ -9,7 +9,7 @@ import { usePathname, useRouter } from "next/navigation";
 import ResultsCard from "./cards/ResultsCard";
 
 import { Plant } from "@/types/plants";
-import { plantData } from "@/mock/plantData";
+import { getAllPlants } from "../lib/utils";
 import { navLinks } from "@/constants/navLinks";
 import {
   Sheet,
@@ -53,25 +53,33 @@ const Header = () => {
 
   // Popover
   useEffect(() => {
-    if (!debouncedQuery) {
-      setSuggestions([]);
-      setIsPopoverOpen(false);
-      return;
-    }
+    const fetchSuggestions = async () => {
+      if (!debouncedQuery) {
+        setSuggestions([]);
+        setIsPopoverOpen(false);
+        return;
+      }
 
-    const filtered = plantData
-      .filter((plant) => {
-        const match =
-          plant.common_name?.toLowerCase().includes(debouncedQuery) ||
-          plant.scientific_name.toLowerCase().includes(debouncedQuery) ||
-          plant.description.toLowerCase().includes(debouncedQuery) ||
-          plant.tags.some((tag) => tag.toLowerCase().includes(debouncedQuery));
-        return match;
-      })
-      .slice(0, 5);
+      const plantData: Plant[] = await getAllPlants();
 
-    setSuggestions(filtered);
-    setIsPopoverOpen(filtered.length > 0);
+      const filtered = plantData
+        .filter((plant) => {
+          const match =
+            plant.commonName?.toLowerCase().includes(debouncedQuery) ||
+            plant.botanicalName.toLowerCase().includes(debouncedQuery) ||
+            plant.description.toLowerCase().includes(debouncedQuery) ||
+            plant.tags.some((tag) =>
+              tag.name.toLowerCase().includes(debouncedQuery)
+            );
+          return match;
+        })
+        .slice(0, 5);
+
+      setSuggestions(filtered);
+      setIsPopoverOpen(filtered.length > 0);
+    };
+
+    fetchSuggestions();
   }, [debouncedQuery]);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -106,17 +114,37 @@ const Header = () => {
           placeholder="Search plants, users, tags, or ailments..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => {
+            if (suggestions.length > 0 && debouncedQuery) {
+              setIsPopoverOpen(true);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleSearch(e);
+              setIsPopoverOpen(false);
+            }
+          }}
+          onBlur={() => {
+            setTimeout(() => setIsPopoverOpen(false), 100);
+          }}
           className="pr-10 rounded-2xl bg-white border-0"
         />
         <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 cursor-pointer" />
         {/* Popover-style dropdown */}
         {isPopoverOpen && (
-          <div className="absolute top-full mt-2 z-50 w-full bg-transparent rounded-md shadow-lg p-2 max-h-[800px] overflow-y-hidden">
+          <div
+            onMouseDown={(e) => e.preventDefault()}
+            className="absolute top-full mt-2 z-50 w-full bg-transparent rounded-md shadow-lg p-2 max-h-[800px] overflow-y-hidden"
+          >
             {suggestions.map((plant: Plant) => (
               <div
                 key={plant.id}
                 onClick={() => {
-                  router.push(`/plant/${plant.slug}`);
+                  router.push(
+                    `/profiles/${plant.user.username}/plants/${plant.slug}`
+                  );
                   setIsPopoverOpen(false);
                 }}
               >
@@ -157,14 +185,14 @@ const Header = () => {
 
             <DropdownMenuContent className=" bg-[#2b2a2a] text-white items-center justify-center cursor-pointer rounded-2xl w-48 mt-1 mr-5 scrollbar-none">
               <DropdownMenuLabel>
-                <Link href={`/profile/${user.username}`} className="text-lg">
+                <Link href={`/profiles/${user.username}`} className="text-lg">
                   {user.username}&apos;s Profile
                 </Link>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {user && (
                 <DropdownMenuItem>
-                  <Link href={`/profile/${user.username}/plants/new`}>
+                  <Link href={`/profiles/${user.username}/plants/new`}>
                     Add a Plant
                   </Link>
                 </DropdownMenuItem>
@@ -211,7 +239,7 @@ const Header = () => {
                       </p>
                     </Link>
                     {isAfterMyCollection && (
-                      <Link href={`/profile/${user.username}/plants/new`}>
+                      <Link href={`/profiles/${user.username}/plants/new`}>
                         <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
                           Add a Plant
                         </p>

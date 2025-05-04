@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
       "seedsforgarden.com",
       "thebigsmoke.com.au",
       "www.littlerednursery.com",
+      "upload.wikimedia.org",
     ],
   },
 };

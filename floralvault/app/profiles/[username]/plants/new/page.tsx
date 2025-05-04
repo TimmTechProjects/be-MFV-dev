@@ -12,7 +12,7 @@ const NewPlantPage = () => {
 
   useEffect(() => {
     if (!user) {
-      router.replace(`/login?redirect=/profile/${username}/plants/new`);
+      router.replace(`/login?redirect=/profiles/${username}/plants/new`);
       return;
     }
 

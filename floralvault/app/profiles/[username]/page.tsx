@@ -1,4 +1,4 @@
-// app/profile/page.tsx
+// app/profiles/page.tsx
 "use client";
 
 import React from "react";
