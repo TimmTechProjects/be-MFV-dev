@@ -1,34 +1,28 @@
-import { plantData } from "@/mock/plantData";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
 import { notFound } from "next/navigation";
-import { use } from "react";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
+import { getPlantBySlug } from "@/lib/utils";
 
-export default function PlantDetailPage({
+export default async function PlantDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { username: string; slug: string };
 }) {
-  const { slug } = use(params);
-
-  const plant = plantData.find((p) => p.slug === slug);
-
-  if (!plant) {
-    notFound(); // Optional: Can be a full 404 page
-  }
+  const plant = await getPlantBySlug(params.slug);
+  if (!plant || !plant.slug) return notFound();
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 text-white">
       <h1 className="text-4xl font-bold mb-2 text-[#81a308]">
-        {plant.common_name || plant.scientific_name}
+        {plant.commonName || plant.botanicalName}
       </h1>
       <h2 className="text-lg italic mb-4 text-gray-400">
-        {plant.scientific_name}
+        {plant.botanicalName}
       </h2>
 
       <Image
-        src={plant.imageUrl[0]}
-        alt={plant.common_name || plant.scientific_name}
+        src={plant.images[0].url}
+        alt={plant.commonName || plant.botanicalName}
         width={800}
         height={400}
         className="rounded-xl object-cover w-full max-h-[400px] mb-6"
@@ -44,7 +38,7 @@ export default function PlantDetailPage({
             key={i}
             className="text-xs px-2 py-1 bg-[#81a308]/10 text-[#81a308] border border-[#81a308]/30"
           >
-            {tag}
+            {tag.name}
           </Badge>
         ))}
       </div>

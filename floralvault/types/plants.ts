@@ -1,7 +1,7 @@
 export interface Plant {
   id: string;
-  scientific_name: string;
-  common_name?: string;
+  botanicalName: string;
+  commonName?: string;
   slug: string;
   origin: string;
   family: string;
@@ -19,14 +19,26 @@ export interface Plant {
     | "bulb"
     | "aquatic"
     | "mushroom";
-  imageUrl: string[];
   description: string;
-  userId: string;
-  tags: string[];
   views: number;
   createdAt: Date;
   updatedAt: Date;
   isPublic: boolean;
+
+  user: {
+    username: string;
+  };
+
+  tags: {
+    id: string;
+    name: string;
+  }[];
+
+  images: {
+    id: string;
+    url: string;
+    isMain: boolean;
+  }[];
 }
 
 export interface EditSuggestion {

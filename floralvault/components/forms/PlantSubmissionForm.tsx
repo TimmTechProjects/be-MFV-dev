@@ -52,6 +52,9 @@ const PlantSubmissionForm = () => {
     defaultValues: {
       commonName: "",
       botanicalName: "",
+      type: "",
+      origin: "",
+      family: "",
       description: "",
       tags: [],
       images: [],
@@ -63,7 +66,7 @@ const PlantSubmissionForm = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(tagInput.trim().toLowerCase());
-    }, 500);
+    }, 250);
 
     return () => clearTimeout(timer);
   }, [tagInput]);
@@ -125,7 +128,7 @@ const PlantSubmissionForm = () => {
 
     if (result?.slug) {
       toast.success("Plant submitted successfully!");
-      router.push(`/plants/${result.slug}`);
+      router.push(`/profile/${result.user.username}/plants/${result.slug}`);
     } else {
       toast.error("Something went wrong. Please try again.");
     }
@@ -185,33 +188,63 @@ const PlantSubmissionForm = () => {
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger className="w-full md:w-[300px] bg-transparent border text-white rounded-md">
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#2b2a2a] text-white">
-                    <SelectItem value="herb">Herb</SelectItem>
-                    <SelectItem value="shrub">Shrub</SelectItem>
-                    <SelectItem value="flower">Flower</SelectItem>
-                    <SelectItem value="tree">Tree</SelectItem>
-                    <SelectItem value="vine">Vine</SelectItem>
-                    <SelectItem value="succulent">Succulent</SelectItem>
-                    <SelectItem value="fungus">Fungus</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger className="w-[300px] sm:w-full bg-transparent border text-white rounded-md">
+                      <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#2b2a2a] text-white">
+                      <SelectItem value="herb">Herb</SelectItem>
+                      <SelectItem value="shrub">Shrub</SelectItem>
+                      <SelectItem value="flower">Flower</SelectItem>
+                      <SelectItem value="tree">Tree</SelectItem>
+                      <SelectItem value="vine">Vine</SelectItem>
+                      <SelectItem value="succulent">Succulent</SelectItem>
+                      <SelectItem value="fungus">Fungus</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="origin"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Origin</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Mediterranean region" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="family"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Plant Family</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Lamiaceae" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}

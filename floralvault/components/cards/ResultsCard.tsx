@@ -25,8 +25,8 @@ const ResultsCard = ({ plant, compact = false }: ResultsCardProps) => {
       >
         {/* Image */}
         <Image
-          src={plant.imageUrl[0]}
-          alt={plant.common_name ?? "Unknown Plant"}
+          src={plant.images?.[0]?.url || "/fallback.jpg"}
+          alt={plant.commonName ?? "Unknown Plant"}
           width={compact ? 50 : 200}
           height={compact ? 50 : 200}
           className={`rounded-xl object-cover flex-shrink-0 ${
@@ -40,10 +40,10 @@ const ResultsCard = ({ plant, compact = false }: ResultsCardProps) => {
             <h2
               className={`${compact ? "text-sm" : "text-2xl"} text-[#81a308]`}
             >
-              {plant.common_name}
+              {plant.commonName}
             </h2>
             <h3 className={`${compact ? "text-xs" : "text-base"}`}>
-              {plant.scientific_name}
+              {plant.botanicalName}
             </h3>
           </div>
 
@@ -64,12 +64,12 @@ const ResultsCard = ({ plant, compact = false }: ResultsCardProps) => {
         }
       >
         {plant.tags.slice(0, 3).map((tag, i) => (
-          <Link href={`/results?tag=${encodeURIComponent(tag)}`} key={i}>
+          <Link href={`/results?tag=${encodeURIComponent(tag.name)}`} key={i}>
             <Badge
               variant="secondary"
               className="text-[12px] justify-center px-2 py-0.5 max-w-[80px] truncate hover:bg-[#5f9f6a] hover:rounded-2xl hover:text-white"
             >
-              {tag}
+              {tag.name}
             </Badge>
           </Link>
         ))}
