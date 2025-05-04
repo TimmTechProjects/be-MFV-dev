@@ -37,12 +37,12 @@ model User {
 model Plant {
   id             String         @id @default(cuid())
   commonName     String
-  botanicalName  String         @unique
+  botanicalName  String
   description    String
   tags           Tag[]          @relation("PlantTags")
   images         Image[]
   likes          Int            @default(0)
-  slug           String         @unique
+  slug           String
   origin         String?
   family         String?
   type           String
@@ -52,6 +52,8 @@ model Plant {
   updatedAt      DateTime       @updatedAt
   userId         String
   user           User           @relation(fields: [userId], references: [id])
+  @@unique([slug, userId], name: "slug_userId")
+
 }
 
 model Image {

@@ -117,7 +117,7 @@ export async function submitPlant(
   }
 
   try {
-    const response = await fetch(baseUrl + "/api/plants", {
+    const response = await fetch(baseUrl + "/api/plants/new", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -141,4 +141,28 @@ export async function submitPlant(
     console.error("Unknown error:", error);
     return null;
   }
+}
+
+export async function getPlantBySlug(
+  slug: string,
+  username: string
+): Promise<Plant | null> {
+  try {
+    const res = await fetch(`${baseUrl}/api/plants/${username}/${slug}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching plant by slug:", error);
+    return null;
+  }
+}
+
+export async function getAllPlants(): Promise<Plant[]> {
+  const res = await fetch(`${baseUrl}/api/plants`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch plants");
+  return res.json();
 }
