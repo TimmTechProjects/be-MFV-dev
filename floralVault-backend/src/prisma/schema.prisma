@@ -52,7 +52,8 @@ model Plant {
   updatedAt      DateTime       @updatedAt
   userId         String
   user           User           @relation(fields: [userId], references: [id])
-  @@unique([slug, userId])
+  @@unique([slug, userId], name: "slug_userId")
+
 }
 
 model Image {

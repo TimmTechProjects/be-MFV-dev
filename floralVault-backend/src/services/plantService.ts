@@ -19,9 +19,21 @@ export const getAllPlants = async () => {
   });
 };
 
-export const getPlantBySlug = async (slug: string) => {
+export const getPlantBySlug = async (slug: string, username: string) => {
+  const user = await prisma.user.findUnique({
+    where: { username },
+    select: { id: true },
+  });
+
+  if (!user) return null;
+
   return await prisma.plant.findUnique({
-    where: { slug },
+    where: {
+      slug_userId: {
+        slug,
+        userId: user.id,
+      },
+    },
     include: {
       user: {
         select: {

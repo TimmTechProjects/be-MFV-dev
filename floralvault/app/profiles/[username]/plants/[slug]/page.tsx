@@ -5,14 +5,15 @@ import PlantImageGallery from "@/components/PlantImageGallery";
 import Link from "next/link";
 
 type PageProps = {
-  params: {
+  params: Promise<{
     username: string;
     slug: string;
-  };
+  }>;
 };
 
 export default async function PlantDetailPage({ params }: PageProps) {
-  const plant = await getPlantBySlug(params.slug);
+  const { username, slug } = await params;
+  const plant = await getPlantBySlug(slug, username);
   if (!plant || !plant.slug) return notFound();
 
   return (
@@ -47,6 +48,8 @@ export default async function PlantDetailPage({ params }: PageProps) {
 
         {/* INFO COLUMN */}
         <div className="order-4 lg:order-none text-sm text-gray-400 space-y-2 border-t lg:border-t-0 lg:border-l pt-6 lg:pt-0 lg:pl-4 border-[#444]">
+          <div>{username}</div>
+
           <div className="flex flex-col gap-1">
             <Badge className="text-sm bg-muted">🌍 {plant.origin}</Badge>
             <Badge className="text-sm bg-muted">Family: {plant.family}</Badge>

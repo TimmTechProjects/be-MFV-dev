@@ -17,9 +17,9 @@ export const getPlants = async (req: Request, res: Response) => {
 };
 
 export const getPlantBySlug = async (req: Request, res: Response) => {
-  const { slug } = req.params;
+  const { slug, username } = req.params;
 
-  const plant = await fetchPlantBySlug(slug);
+  const plant = await fetchPlantBySlug(slug, username);
 
   if (!plant) {
     res.status(404).json({ message: "Plant not found" });

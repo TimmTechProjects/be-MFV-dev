@@ -143,14 +143,18 @@ export async function submitPlant(
   }
 }
 
-export async function getPlantBySlug(slug: string): Promise<Plant | null> {
+export async function getPlantBySlug(
+  slug: string,
+  username: string
+): Promise<Plant | null> {
   try {
-    const res = await fetch(`${baseUrl}/api/plants/${slug}`, {
+    const res = await fetch(`${baseUrl}/api/plants/${username}/${slug}`, {
       cache: "no-store",
     });
     if (!res.ok) return null;
     return res.json();
-  } catch {
+  } catch (error) {
+    console.error("Error fetching plant by slug:", error);
     return null;
   }
 }

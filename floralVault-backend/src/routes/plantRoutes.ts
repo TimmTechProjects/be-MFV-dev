@@ -10,7 +10,7 @@ const router = Router();
 
 router.get("/", getPlants);
 
-router.get("/:slug", getPlantBySlug);
+router.get("/:username/:slug", getPlantBySlug);
 
 router.post("/new", verifyToken, createPlantPost);
 
