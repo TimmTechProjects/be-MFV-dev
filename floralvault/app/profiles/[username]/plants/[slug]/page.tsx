@@ -4,11 +4,14 @@ import { getPlantBySlug } from "@/lib/utils";
 import PlantImageGallery from "@/components/PlantImageGallery";
 import Link from "next/link";
 
-export default async function PlantDetailPage({
-  params,
-}: {
-  params: { username: string; slug: string };
-}) {
+type PageProps = {
+  params: {
+    username: string;
+    slug: string;
+  };
+};
+
+export default async function PlantDetailPage({ params }: PageProps) {
   const plant = await getPlantBySlug(params.slug);
   if (!plant || !plant.slug) return notFound();
 
