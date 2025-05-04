@@ -56,9 +56,11 @@ const ResultsPage = async ({
       {/* Results cards */}
 
       {filteredResults.length === 0 ? (
-        <p className="text-center text-base text-muted-foreground py-10">
-          No matching plants found.
-        </p>
+        <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-10 space-y-2">
+          <p className="text-3xl">🌱</p>
+          <p className="text-base">No plants matched your search.</p>
+          <p className="text-sm text-muted">Try a different tag or name.</p>
+        </div>
       ) : (
         <div className="flex flex-col w-full justify-center items-center ">
           {filteredResults.map((plant: Plant) => (
