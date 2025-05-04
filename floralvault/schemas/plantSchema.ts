@@ -14,9 +14,10 @@ export const plantSchema = z.object({
     .array(z.string().min(1, "Each tag must be at least 1 character"))
     .max(10, "You can only add up to 10 tags")
     .optional(),
-  images: z
-    .array(z.object({ url: z.string().url(), isMain: z.boolean().optional() }))
-    .min(1, "At least one image is required"),
+  images: z.array(
+    z.object({ url: z.string().url(), isMain: z.boolean().optional() })
+  ),
+  // .min(1, "At least one image is required"),
 });
 
 export type PlantSchema = z.infer<typeof plantSchema>;

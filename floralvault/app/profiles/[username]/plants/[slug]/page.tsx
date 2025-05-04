@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
 import { getPlantBySlug } from "@/lib/utils";
+import PlantImageGallery from "@/components/PlantImageGallery";
+import Link from "next/link";
 
 export default async function PlantDetailPage({
   params,
@@ -12,43 +13,59 @@ export default async function PlantDetailPage({
   if (!plant || !plant.slug) return notFound();
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4 text-white">
-      <h1 className="text-4xl font-bold mb-2 text-[#81a308]">
-        {plant.commonName || plant.botanicalName}
-      </h1>
-      <h2 className="text-lg italic mb-4 text-gray-400">
-        {plant.botanicalName}
-      </h2>
-
-      <Image
-        src={plant.images[0].url}
-        alt={plant.commonName || plant.botanicalName}
-        width={800}
-        height={400}
-        className="rounded-xl object-cover w-full max-h-[400px] mb-6"
-      />
-
-      <div className="prose prose-invert max-w-none text-base leading-relaxed mb-4">
-        <div dangerouslySetInnerHTML={{ __html: `${plant.description}` }} />
+    <div className="pb-10 sm:pb-0">
+      {/* NAME + BOTANICAL NAME + TAGS */}
+      <div className="flex flex-col px-10 pt-5">
+        <h1 className="flex text-2xl md:text-4xl justify-center w-full font-bold mb-2 text-[#81a308]">
+          {plant.commonName || plant.botanicalName}
+        </h1>
+        <h2 className="flex text-lg italic mb-4 text-gray-400 justify-center">
+          {plant.botanicalName}
+        </h2>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {plant.tags.map((tag, i) => (
-          <Badge
-            key={i}
-            className="text-xs px-2 py-1 bg-[#81a308]/10 text-[#81a308] border border-[#81a308]/30"
-          >
-            {tag.name}
-          </Badge>
-        ))}
-      </div>
+      {/* Grid */}
+      <div className="max-w-[100rem] mx-auto md:py-10 px-4 text-white grid grid-cols-1 lg:grid-cols-[2.5fr_3fr_1fr] gap-5 md:gap-12 items-start">
+        {/* TAGS */}
+        <div className="lg:col-span-1 lg:col-start-1 order-1 text-center lg:text-left"></div>
 
-      <div className="text-sm text-gray-400 space-y-1">
-        <p>Origin: {plant.origin}</p>
-        <p>Family: {plant.family}</p>
-        <p>Type: {plant.type}</p>
-        <p>Added: {new Date(plant.createdAt).toLocaleDateString()}</p>
-        <p>Views: {plant.views}</p>
+        {/* IMAGE GALLERY */}
+        <div className="order-2 lg:order-none flex justify-center lg:block">
+          <PlantImageGallery
+            images={plant.images}
+            alt={plant.commonName || plant.botanicalName}
+          />
+        </div>
+
+        {/* DESCRIPTION */}
+        <div className="order-3 lg:order-none prose prose-invert max-w-none text-base md:text-[1.05rem] leading-relaxed">
+          <div dangerouslySetInnerHTML={{ __html: `${plant.description}` }} />
+        </div>
+
+        {/* INFO COLUMN */}
+        <div className="order-4 lg:order-none text-sm text-gray-400 space-y-2 border-t lg:border-t-0 lg:border-l pt-6 lg:pt-0 lg:pl-4 border-[#444]">
+          <div className="flex flex-col gap-1">
+            <Badge className="text-sm bg-muted">🌍 {plant.origin}</Badge>
+            <Badge className="text-sm bg-muted">Family: {plant.family}</Badge>
+            <Badge className="text-sm bg-muted">Type: {plant.type}</Badge>
+            <Badge className="text-sm bg-muted">
+              Added: {new Date(plant.createdAt).toLocaleDateString()}
+            </Badge>
+            <Badge className="text-sm bg-muted">Views: {plant.views}</Badge>
+          </div>
+          <div className="flex flex-wrap justify-start gap-2 mt-5">
+            {plant.tags.map((tag, i) => (
+              <Link
+                href={`/results?tag=${encodeURIComponent(tag.name)}`}
+                key={i}
+              >
+                <Badge className="text-xs px-3 py-1 break-words whitespace-nowrap bg-[#81a308]/10 text-[#81a308] border border-[#81a308]/30 hover:bg-[#81a308]/20 transition-colors">
+                  {tag.name}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
