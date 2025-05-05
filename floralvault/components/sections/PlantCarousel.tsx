@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
+import { getAllPlants } from "@/lib/utils";
 
 export default function PlantCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -22,8 +23,8 @@ export default function PlantCarousel() {
   useEffect(() => {
     const fetchPlants = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/plants");
-        const data = await res.json();
+        const data = await getAllPlants();
+
         setPlants(data);
       } catch (error) {
         console.error("Failed to fetch plants:", error);
