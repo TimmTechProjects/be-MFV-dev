@@ -87,6 +87,7 @@ const Header = () => {
     const trimmed = searchQuery.trim();
     if (trimmed) {
       router.push(`/results?query=${encodeURIComponent(trimmed)}`);
+      setIsPopoverOpen(false);
     }
   };
 
