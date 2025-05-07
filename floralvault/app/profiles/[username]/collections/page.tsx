@@ -1,13 +1,20 @@
+"use client";
+
 import React from "react";
+import { useUser } from "@/context/UserContext"; // Assuming you have this
 
 interface CollectionsPageProps {
-  params: {
+  params: Promise<{
     username: string;
-  };
+  }>;
 }
 
 const CollectionsPage = ({ params }: CollectionsPageProps) => {
-  // Later: fetch collections by params.username
+  const { user } = useUser();
+
+  const { username } = React.use(params);
+
+  // Simulated collection type
   interface Collection {
     id: string;
     name: string;
@@ -16,24 +23,33 @@ const CollectionsPage = ({ params }: CollectionsPageProps) => {
 
   const collections: Collection[] = []; // mock empty array for now
 
+  // Determine if the logged-in user is the owner of this profile
+  const isOwner = user?.username === username;
+
   return (
     <div className="text-white p-6">
-      <h2 className="text-2xl font-bold mb-4">
-        {params.username}&apos;s Collections
-      </h2>
+      <h2 className="text-2xl font-bold mb-4">{username}&apos;s Collections</h2>
 
       {collections.length === 0 ? (
         <div className="flex flex-col items-center justify-center mt-10">
-          <p className="mb-4 text-lg">
-            No collections yet. Start your first one!
-          </p>
-          <button className="bg-[#81a308] hover:bg-[#6ca148] text-white font-semibold py-2 px-4 rounded-2xl">
-            Create Collection
-          </button>
+          {isOwner ? (
+            <>
+              <p className="mb-4 text-lg">
+                No collections yet. Start your first one!
+              </p>
+              <button className="bg-[#81a308] hover:bg-[#6ca148] text-white font-semibold py-2 px-4 rounded-2xl">
+                Create Collection
+              </button>
+            </>
+          ) : (
+            <p className="text-lg">
+              {username} hasn&apos;t added any collections yet. Check back
+              later!
+            </p>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {/* Later you'll map over real collections here */}
           {collections.map((collection) => (
             <div
               key={collection.id}
