@@ -16,7 +16,6 @@ import { getAllPlants } from "@/lib/utils";
 export default function PlantCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const carouselApiRef = useRef<any>(null);
-  const apiRef = useRef<any>(null);
   const [plants, setPlants] = useState<any[]>([]);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -34,24 +33,17 @@ export default function PlantCarousel() {
     fetchPlants();
   }, []);
 
-  const updateActiveIndex = () => {
-    if (carouselApiRef.current) {
-      const newIndex = carouselApiRef.current.selectedScrollSnap();
-      setActiveIndex(newIndex);
-    }
-  };
-
   useEffect(() => {
     const interval = setInterval(() => {
-      if (apiRef.current && !isHovered) {
+      if (carouselApiRef.current && !isHovered && plants.length > 0) {
         const nextIndex =
-          (apiRef.current.selectedScrollSnap() + 1) % plants.length;
-        apiRef.current.scrollTo(nextIndex);
+          (carouselApiRef.current.selectedScrollSnap() + 1) % plants.length;
+        carouselApiRef.current.scrollTo(nextIndex);
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isHovered]);
+  }, [isHovered, plants.length]);
 
   return (
     <div className="w-full bg-[#121212] text-white py-12 px-4">
@@ -74,11 +66,12 @@ export default function PlantCarousel() {
             <Carousel
               opts={{ align: "start", loop: true }}
               className="w-full"
-              onSelect={updateActiveIndex}
               setApi={(api) => {
                 carouselApiRef.current = api;
-                apiRef.current = api;
-                api?.on("select", updateActiveIndex);
+                api?.on("select", () => {
+                  const newIndex = api.selectedScrollSnap();
+                  setActiveIndex(newIndex);
+                });
               }}
             >
               <CarouselContent>
