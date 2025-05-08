@@ -5,7 +5,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 const baseUrl = process.env.NEXT_PUBLIC_FLORAL_VAULT_API_URL;
-// const devUrl = "http://localhost:5000";
+const devUrl = "http://localhost:5000";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -164,5 +164,11 @@ export async function getAllPlants(): Promise<Plant[]> {
     cache: "no-store",
   });
   if (!res.ok) throw new Error("Failed to fetch plants");
+  return res.json();
+}
+
+export async function getUserCollections(username: string) {
+  const res = await fetch(`${devUrl}/api/collections/${username}`);
+  if (!res.ok) throw new Error("Failed to fetch user's collections");
   return res.json();
 }

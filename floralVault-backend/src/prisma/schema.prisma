@@ -20,52 +20,72 @@ enum Plan {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
-  avatarUrl String?
-  bio       String?
-  essence     Int    @default(0)
-  joinedAt  DateTime @default(now())
-  plan      Plan     @default(free)
-  plants    Plant[]
+  id          String       @id @default(uuid())
+  username    String       @unique
+  email       String       @unique
+  password    String
+  firstName   String
+  lastName    String
+  avatarUrl   String?
+  bio         String?
+  essence     Int          @default(0)
+  joinedAt    DateTime     @default(now())
+  plan        Plan         @default(free)
+  plants      Plant[]
+  collections Collection[]
 }
 
 model Plant {
-  id             String         @id @default(cuid())
-  commonName     String
-  botanicalName  String
-  description    String
-  tags           Tag[]          @relation("PlantTags")
-  images         Image[]
-  likes          Int            @default(0)
-  slug           String
-  origin         String?
-  family         String?
-  type           String
-  views          Int            @default(0)
-  isPublic       Boolean        @default(true)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  userId         String
-  user           User           @relation(fields: [userId], references: [id])
-  @@unique([slug, userId], name: "slug_userId")
+  id            String     @id @default(cuid())
+  commonName    String
+  botanicalName String
+  description   String
+  tags          Tag[]      @relation("PlantTags")
+  images        Image[]
+  likes         Int        @default(0)
+  slug          String
+  origin        String?
+  family        String?
+  type          String
+  views         Int        @default(0)
+  isPublic      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  userId        String
+  user          User       @relation(fields: [userId], references: [id])
+  collection    Collection @relation(fields: [collectionId], references: [id])
+  collectionId  String
 
+  @@unique([slug, userId], name: "slug_userId")
 }
 
 model Image {
-  id       String   @id @default(cuid())
-  url      String
-  isMain   Boolean  @default(false)
-  plantId  String
-  plant    Plant    @relation(fields: [plantId], references: [id])
+  id         String       @id @default(cuid())
+  url        String
+  isMain     Boolean      @default(false)
+  plantId    String
+  plant      Plant        @relation(fields: [plantId], references: [id])
+  Collection Collection[]
 }
 
 model Tag {
-  id     String   @id @default(cuid())
-  name   String   @unique
-  plants Plant[]  @relation("PlantTags")
+  id     String  @id @default(cuid())
+  name   String  @unique
+  plants Plant[] @relation("PlantTags")
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user             User    @relation(fields: [userId], references: [id])
+  userId           String
+  plants           Plant[]
+  thumbnailImage   Image?  @relation(fields: [thumbnailImageId], references: [id])
+  thumbnailImageId String?
 }

@@ -160,13 +160,25 @@ const Header = () => {
       <div className="hidden lg:flex items-center gap-5">
         {/* NavLinks */}
         <div className="flex text-white gap-5">
-          {navLinks.map((link) => (
-            <Link key={link.href} href={link.href}>
-              <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
-                {link.label}
-              </p>
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            let href = link.href;
+
+            if (link.label === "My Collection") {
+              href = user
+                ? `/profiles/${user.username}/collections`
+                : `/login?redirect=/profiles/temp/collections`; // fallback target if not logged in
+            }
+
+            return (
+              <React.Fragment key={link.href}>
+                <Link href={href}>
+                  <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
+                    {link.label}
+                  </p>
+                </Link>
+              </React.Fragment>
+            );
+          })}
         </div>
 
         {/* Login */}
@@ -230,22 +242,21 @@ const Header = () => {
 
             <div className="flex flex-col text-white gap-5 pl-10">
               {navLinks.map((link) => {
-                const isAfterMyCollection =
-                  link.label === "My Collection" && user;
+                let href = link.href;
+
+                if (link.label === "My Collection") {
+                  href = user
+                    ? `/profiles/${user.username}/collections`
+                    : `/login?redirect=/profiles/temp/collections`;
+                }
+
                 return (
                   <React.Fragment key={link.href}>
-                    <Link href={link.href}>
+                    <Link href={href}>
                       <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
                         {link.label}
                       </p>
                     </Link>
-                    {isAfterMyCollection && (
-                      <Link href={`/profiles/${user.username}/plants/new`}>
-                        <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
-                          Add a Plant
-                        </p>
-                      </Link>
-                    )}
                   </React.Fragment>
                 );
               })}

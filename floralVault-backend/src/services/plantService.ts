@@ -77,6 +77,9 @@ export const createPlant = async (data: any) => {
       family: data.family,
       slug,
       user: data.user,
+      collection: {
+        connect: { id: data.collectionId },
+      },
       images: {
         create:
           data.images?.map((img: any) => ({
