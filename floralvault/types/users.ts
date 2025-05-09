@@ -6,7 +6,7 @@ export interface User {
   email?: string;
   bio?: string;
   avatarUrl?: string;
-  joinedAt: Date;
+  joinedAt: string | Date;
   plan: string;
 }
 

@@ -25,7 +25,7 @@ const Hero = () => {
           {/* <span> 🌿</span> */}
         </section>
         <TextEffect
-          delay={1}
+          delay={0.5}
           speedReveal={0.5}
           speedSegment={0.15}
           className="z-10 text-lg"

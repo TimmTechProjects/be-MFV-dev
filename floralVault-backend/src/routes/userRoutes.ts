@@ -3,6 +3,7 @@ import verifyToken from "../middleware/verifyToken";
 import {
   deleteUser,
   getAllUsers,
+  getUserByUsername,
   getCurrentUser,
   updateUser,
 } from "../controllers/userController";
@@ -11,6 +12,9 @@ const router = express.Router();
 
 // GET /api/users
 router.get("/", getAllUsers);
+
+// GET /api/users/:username
+router.get("/:username", getUserByUsername);
 
 // GET /api/users/me
 router.get("/me", verifyToken, getCurrentUser);

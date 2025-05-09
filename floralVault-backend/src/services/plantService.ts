@@ -108,3 +108,25 @@ export const createPlant = async (data: any) => {
 
   return newPlant;
 };
+
+export const getUserCollectionWithPlants = async (
+  username: string,
+  collectionSlug: string
+) => {
+  return prisma.collection.findFirst({
+    where: {
+      slug: collectionSlug,
+      user: {
+        is: { username },
+      },
+    },
+    include: {
+      plants: {
+        include: {
+          tags: true,
+          images: true,
+        },
+      },
+    },
+  });
+};

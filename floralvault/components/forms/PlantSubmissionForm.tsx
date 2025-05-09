@@ -45,7 +45,7 @@ const PlantSubmissionForm = () => {
 
   const router = useRouter();
   const { user } = useUser();
-  const isProUser = user?.plan === "pro";
+  const isFreeUser = user?.plan === "free";
 
   const form = useForm<PlantSchema>({
     resolver: zodResolver(plantSchema),
@@ -360,14 +360,14 @@ const PlantSubmissionForm = () => {
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={(checked) => {
-                        if (isProUser) field.onChange(checked);
+                        if (isFreeUser) field.onChange(checked);
                       }}
-                      disabled={!isProUser}
+                      disabled={!isFreeUser}
                     />
                   </FormControl>
                   <FormLabel className="cursor-pointer">
                     Public Post
-                    {!isProUser && (
+                    {!isFreeUser && (
                       <span
                         className="ml-2 text-xs text-yellow-400"
                         title="Upgrade plan to enable private saves"
@@ -381,9 +381,11 @@ const PlantSubmissionForm = () => {
             />
           </div>
 
-          <Button type="submit" className="w-full">
-            {isLoading ? "Submitting..." : "Submit Plant →"}
-          </Button>
+          <div className="flex items-center justify-center">
+            <Button type="submit" className="w-24 rounded-2xl">
+              {isLoading ? "Saving..." : "Save →"}
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

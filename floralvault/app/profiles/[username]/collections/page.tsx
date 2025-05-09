@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useUser } from "@/context/UserContext"; // Assuming you have this
+import { useUser } from "@/context/UserContext";
 import { getUserCollections } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 interface CollectionsPageProps {
   params: Promise<{
@@ -15,6 +16,7 @@ interface CollectionsPageProps {
 interface Collection {
   id: string;
   name: string;
+  slug: string;
   description: string;
   thumbnailImage?: {
     url: string;
@@ -30,11 +32,10 @@ const CollectionsPage = ({ params }: CollectionsPageProps) => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useUser();
 
+  const { user } = useUser();
   const { username } = React.use(params);
 
-  // Determine if the logged-in user is the owner of this profile
   const isOwner = user?.username === username;
 
   useEffect(() => {
@@ -55,8 +56,11 @@ const CollectionsPage = ({ params }: CollectionsPageProps) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] text-white">
-        Loading collections...
+      <div className="flex h-[80vh] items-center justify-center text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#81a308] mx-auto mb-4"></div>
+          <p>Loading profile...</p>
+        </div>
       </div>
     );
   }
@@ -70,29 +74,45 @@ const CollectionsPage = ({ params }: CollectionsPageProps) => {
   }
 
   return (
-    <div className="text-white p-6">
-      <h2 className="text-2xl font-bold mb-4">{username}&apos;s Collections</h2>
+    <div className="text-white px-10 py-10">
+      <h2 className="text-2xl font-bold mb-10 ml-4">
+        <Link href={`/profiles/${username}`}>
+          <span className="text-white capitalize hover:text-[#81a308]">
+            {username}&apos;s
+          </span>
+        </Link>{" "}
+        <span className="text-white">Albums</span>
+      </h2>
 
       {collections.length === 0 ? (
-        <div className="flex flex-col items-center justify-center mt-10">
+        <div className="flex flex-col justify-center mt-28 pl-10">
           {isOwner ? (
-            <>
-              <p className="mb-4 text-lg">
-                No collections yet. Start your first one!
-              </p>
-              <button className="bg-[#81a308] hover:bg-[#6ca148] text-white font-semibold py-2 px-4 rounded-2xl">
-                Create Collection
-              </button>
-            </>
+            <div className="w-56 h-72 sm:w-60 sm:h-80 flex group items-center justify-center">
+              <Link
+                href={`/profiles/${username}/collections/new`}
+                // onClick={() => setShowModal(true)}
+                className="flex flex-col items-center justify-center gap-2 text-gray-300 group hover:text-[#81a308] transition duration-200 cursor-pointer"
+              >
+                <div className="flex items-center justify-center w-16 h-16 border-2 border-gray-300 rounded-full group-hover:border-[#81a308] transition duration-200">
+                  <Plus className="w-8 h-8" />
+                </div>
+                <span className="text-sm font-semibold text-center mt-2 text-gray-300">
+                  Add New Album
+                </span>
+              </Link>
+            </div>
           ) : (
-            <p className="text-lg">
-              {username} hasn&apos;t added any collections yet. Check back
-              later!
-            </p>
+            <div className="flex flex-col justify-center mt-28">
+              <p className="text-lg justify-center text-center">
+                {username} hasn&apos;t added any collections yet. Check back
+                later!
+              </p>
+            </div>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="flex flex-wrap gap-16">
+          {/* Existing collections */}
           {collections.map((collection) => {
             const imgUrl =
               collection.thumbnailImage?.url ??
@@ -102,16 +122,12 @@ const CollectionsPage = ({ params }: CollectionsPageProps) => {
             return (
               <Link
                 key={collection.id}
-                href={`/profiles/${username}/collections/${collection.id}`}
+                href={`/profiles/${username}/collections/${collection.slug}`}
               >
-                <div
-                  key={collection.id}
-                  className="relative group rounded-2xl overflow-hidden w-56 h-72 sm:w-60 sm:h-80 cursor-pointer shadow hover:shadow-lg transition-shadow duration-200"
-                >
-                  {/* Image */}
+                <div className="relative group rounded-2xl overflow-hidden w-56 h-72 sm:w-60 sm:h-80 cursor-pointer shadow hover:shadow-lg transition-shadow duration-200">
                   <Image
                     src={imgUrl}
-                    alt={collection.name}
+                    alt={collection.name || "Collection thumbnail"}
                     fill
                     className="object-cover object-center transition-transform duration-300 group-hover:scale-102"
                   />
@@ -129,6 +145,24 @@ const CollectionsPage = ({ params }: CollectionsPageProps) => {
               </Link>
             );
           })}
+
+          {/* New Collection Card */}
+          {isOwner && (
+            <div className="w-56 h-72 sm:w-60 sm:h-80 flex items-center justify-center">
+              <Link
+                href={`/profiles/${username}/collections/new`}
+                // onClick={() => setShowModal(true)}
+                className="flex flex-col items-center justify-center gap-2 text-gray-300 group hover:text-[#81a308] transition duration-200 cursor-pointer"
+              >
+                <div className="flex items-center justify-center w-16 h-16 border-2 border-gray-300 rounded-full transition duration-200">
+                  <Plus className="w-8 h-8" />
+                </div>
+                <span className="text-sm font-semibold text-center mt-2 text-gray-300">
+                  Add New Album
+                </span>
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,60 +1,79 @@
-// app/profiles/page.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-
-import { userData } from "@/mock/userData";
 import { useParams } from "next/navigation";
+import { User } from "@/types/users";
+import { getUserByUsername } from "@/lib/utils";
 
 const ProfilePage = () => {
   const { user, logout } = useUser();
   const { username } = useParams();
+  const [profileUser, setProfileUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user?.username === username) {
+        setProfileUser(user);
+      } else if (typeof username === "string") {
+        const fetchedUser = await getUserByUsername(username);
+        setProfileUser(fetchedUser);
+      }
+      setLoading(false);
+    };
+
+    fetchProfile();
+  }, [username, user]);
 
   const isOwnProfile = user?.username === username;
-  const displayUser = isOwnProfile
-    ? user
-    : userData.find((u) => u.username === username);
-  // if (!user) {
-  //   return (
-  //     <div className="flex h-screen items-center justify-center text-white">
-  //       <p>You must be logged in to view this page.</p>
-  //     </div>
-  //   );
-  // }
+  // const profileUser = isOwnProfile ? user : null;
 
-  return !displayUser ? (
-    <div className="flex h-[80vh] items-center justify-center text-white">
-      <p>User not found</p>
-    </div>
-  ) : (
+  if (loading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#81a308] mx-auto mb-4"></div>
+          <p>Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profileUser) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center text-white">
+        <p>User not found</p>
+      </div>
+    );
+  }
+
+  return (
     <div className="min-h-screen px-4 py-8 md:px-12 bg-gradient-to-r from-[#3A3A38] to-[#151512] text-white">
       <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center space-x-4">
-          <Avatar className="w-20 h-20">
+        <div className="flex flex-col items-center space-x-4 gap-4 pb-10">
+          <Avatar className="w-28 h-28">
             <AvatarImage
-              src={displayUser?.avatarUrl}
-              alt={displayUser?.username}
+              src={profileUser?.avatarUrl}
+              alt={profileUser?.username}
             />
             <AvatarFallback>
-              {displayUser?.username?.slice(0, 2).toUpperCase()}
+              {profileUser?.username?.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
 
           <h1>
-            {displayUser?.firstName} {displayUser?.lastName}
+            <p>@{profileUser?.username}</p>
           </h1>
-          <p>@{displayUser?.username}</p>
-          <p>{displayUser?.email}</p>
-          <p>{displayUser?.bio || "No bio available yet."}</p>
-          {displayUser?.joinedAt && (
+          {profileUser?.joinedAt && (
             <p className="text-sm text-gray-300">
-              {new Date(displayUser.joinedAt).toLocaleDateString("en-US", {
+              {new Date(profileUser.joinedAt).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
-              })}
+              })}{" "}
+              {profileUser.plan}
             </p>
           )}
         </div>
@@ -62,15 +81,15 @@ const ProfilePage = () => {
         <div className="space-y-2">
           <h2 className="text-lg font-semibold">Bio</h2>
           <p className="text-sm text-gray-300">
-            {displayUser?.bio || "No bio available yet."}
+            {profileUser?.bio || "No bio available yet."}
           </p>
         </div>
 
         <div className="space-y-2">
           <h2 className="text-lg font-semibold">Member since</h2>
-          {displayUser?.joinedAt && (
+          {profileUser?.joinedAt && (
             <p className="text-sm text-gray-300">
-              {new Date(displayUser.joinedAt).toLocaleDateString()}
+              {new Date(profileUser.joinedAt).toLocaleDateString()}
             </p>
           )}
         </div>

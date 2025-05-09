@@ -1,7 +1,11 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../types/express";
 import prisma from "../prisma/client";
-import { getCurrentUserById, updateUserById } from "../services/userService";
+import {
+  getCurrentUserById,
+  getUserWithUsername,
+  updateUserById,
+} from "../services/userService";
 
 // GET all users
 export const getAllUsers = async (req: AuthenticatedRequest, res: Response) => {
@@ -19,6 +23,29 @@ export const getAllUsers = async (req: AuthenticatedRequest, res: Response) => {
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getUserByUsername = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { username } = req.params;
+
+  try {
+    const user = await getUserWithUsername(username);
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json(user);
+    return;
+  } catch (error) {
+    console.error("Error fetching user by username:", error);
+    res.status(500).json({ message: "Failed to fetch user" });
+    return;
   }
 };
 

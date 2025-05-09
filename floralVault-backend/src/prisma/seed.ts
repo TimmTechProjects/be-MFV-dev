@@ -1,15 +1,16 @@
 import { PrismaClient, Plan } from "@prisma/client";
 import bcrypt from "bcrypt";
+import slugify from "slugify";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🧹 Clearing old data...");
-  // await prisma.tag.deleteMany();
-  // await prisma.image.deleteMany();
-  // await prisma.plant.deleteMany();
-  // await prisma.collection.deleteMany();
-  // await prisma.user.deleteMany();
+  await prisma.tag.deleteMany();
+  await prisma.image.deleteMany();
+  await prisma.plant.deleteMany();
+  await prisma.collection.deleteMany();
+  await prisma.user.deleteMany();
 
   console.log("🧔 Seeding mock users...");
   const users = [
@@ -96,7 +97,7 @@ async function main() {
       avatarUrl:
         "https://static.myfigurecollection.net/upload/users/200/216069_1617412905.jpeg",
       joinedAt: new Date("2025-04-05"),
-      plan: Plan.pro,
+      plan: Plan.premium,
     },
   ];
 
@@ -113,9 +114,12 @@ async function main() {
   const collectionsMap: Record<string, string> = {}; // store collection IDs by userId
 
   for (const user of hashedUsers) {
+    const name = `${user.firstName ?? "Untitled"}'s First Album`;
+
     const collection = await prisma.collection.create({
       data: {
         name: `${user.firstName}'s First Album`,
+        slug: slugify(name, { lower: true, strict: true }),
         description: `${user.firstName}'s starter collection of plants.`,
         isPublic: true,
         userId: user.id,

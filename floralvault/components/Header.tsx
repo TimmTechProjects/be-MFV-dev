@@ -10,7 +10,7 @@ import ResultsCard from "./cards/ResultsCard";
 
 import { Plant } from "@/types/plants";
 import { getAllPlants } from "../lib/utils";
-import { navLinks } from "@/constants/navLinks";
+import { authUserLinks, navLinks } from "@/constants/navLinks";
 import {
   Sheet,
   SheetContent,
@@ -22,14 +22,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useUser } from "@/context/UserContext";
+import Image from "next/image";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -98,6 +97,7 @@ const Header = () => {
         className="hidden sm:flex text-3xl md:text-4xl text-white font-bold tracking-tight cursor-pointer"
         onClick={() => (window.location.href = "/")}
       >
+        <span className="text-[#ecfaec]">My</span>
         <span className="bg-gradient-to-r from-[#dab9df] to-[#e5b3ec] bg-clip-text text-transparent">
           Floral
         </span>
@@ -196,24 +196,51 @@ const Header = () => {
               </Avatar>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className=" bg-[#2b2a2a] text-white items-center justify-center cursor-pointer rounded-2xl w-48 mt-1 mr-5 scrollbar-none">
-              <DropdownMenuLabel>
-                <Link href={`/profiles/${user.username}`} className="text-lg">
-                  {user.username}&apos;s Profile
-                </Link>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {user && (
-                <DropdownMenuItem>
-                  <Link href={`/profiles/${user.username}/plants/new`}>
-                    Add a Plant
-                  </Link>
-                </DropdownMenuItem>
-              )}
+            <DropdownMenuContent className="flex flex-col bg-[#2b2a2a] text-white justify-center cursor-pointer rounded-2xl w-48 mt-1 mr-5 scrollbar-none">
               <DropdownMenuItem>
-                <Link href="/settings">Settings</Link>
+                <Link
+                  href={`/profiles/${user.username}`}
+                  className="hover:text-[#dab9df]"
+                >
+                  Profile
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" onClick={logout}>
+              {user &&
+                authUserLinks.map((link) => (
+                  <DropdownMenuItem key={link.href}>
+                    <Link href={link.href} className="hover:text-[#dab9df]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 flex items-center justify-center">
+                          {link.icon && (
+                            <Image
+                              src={link.icon}
+                              alt={link.label}
+                              width={16}
+                              height={16}
+                              className="invert"
+                            />
+                          )}
+                        </div>
+
+                        <span>{link.label}</span>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              <DropdownMenuItem>
+                <Link href="/membership" className="hover:text-[#dab9df]">
+                  Membership
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/settings" className="hover:text-[#dab9df]">
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-red-400"
+                onClick={logout}
+              >
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
