@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ResultsCard from "@/components/cards/ResultsCard";
 import GoBackButton from "@/components/ui/GoBackButton";
@@ -8,7 +8,7 @@ import { searchEverything } from "@/lib/utils";
 import { Plant } from "@/types/plants";
 import { UserResult } from "@/types/users";
 
-const ResultsPage = () => {
+const ResultsPageContent = () => {
   const searchParams = useSearchParams();
   const tag = searchParams.get("tag");
   const query = searchParams.get("query");
@@ -144,6 +144,14 @@ const ResultsPage = () => {
         </div>
       )}
     </div>
+  );
+};
+
+const ResultsPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResultsPageContent />
+    </Suspense>
   );
 };
 
