@@ -77,7 +77,7 @@ const Header = () => {
     e.preventDefault();
     const trimmed = searchQuery.trim();
     if (trimmed) {
-      router.push(`/results?query=${encodeURIComponent(trimmed)}`);
+      router.push(`/the-vault/results?query=${encodeURIComponent(trimmed)}`);
       setIsPopoverOpen(false);
     }
   };
@@ -107,7 +107,7 @@ const Header = () => {
       >
         <Input
           type="text"
-          placeholder="Search plants, users, tags, or ailments..."
+          placeholder="Search plants, users, tags, or albums..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => {
@@ -134,23 +134,6 @@ const Header = () => {
             onMouseDown={(e) => e.preventDefault()}
             className="absolute top-full mt-2 z-50 w-full bg-transparent rounded-md shadow-lg p-2 max-h-[800px] overflow-y-hidden"
           >
-            {userSuggestions.length > 0 && (
-              <>
-                <p className="bg-[#2b2a2a] text-xs text-gray-400 px-2 pb-1 mt-2">
-                  Users
-                </p>
-                {userSuggestions.map((user) => (
-                  <div key={user.id} onClick={() => setIsPopoverOpen(false)}>
-                    <ResultsCard user={user} compact />
-                  </div>
-                ))}
-              </>
-            )}
-
-            {plantSuggestions.length > 0 && userSuggestions.length > 0 && (
-              <hr className="my-2 bg-[#2b2a2a] border-gray-600" />
-            )}
-
             {plantSuggestions.length > 0 && (
               <>
                 <p className="bg-[#2b2a2a] text-xs text-gray-400 px-2 pb-1">
@@ -171,6 +154,23 @@ const Header = () => {
                 ))}
               </>
             )}
+
+            {/* {plantSuggestions.length > 0 && userSuggestions.length > 0 && (
+              <hr className="my-2 bg-[#2b2a2a] border-gray-600" />
+            )}
+
+            {userSuggestions.length > 0 && (
+              <>
+                <p className="bg-[#2b2a2a] text-xs text-gray-400 px-2 pb-1 mt-2">
+                  Users
+                </p>
+                {userSuggestions.map((user) => (
+                  <div key={user.id} onClick={() => setIsPopoverOpen(false)}>
+                    <ResultsCard user={user} compact />
+                  </div>
+                ))}
+              </>
+            )} */}
           </div>
         )}
       </form>

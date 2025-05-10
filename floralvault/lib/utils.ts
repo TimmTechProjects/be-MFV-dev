@@ -1,4 +1,5 @@
 import { PlantSchema } from "@/schemas/plantSchema";
+import { Collection } from "@/types/collections";
 import { Plant } from "@/types/plants";
 import { RegisterUser, User, UserCredentials, UserResult } from "@/types/users";
 import { clsx, type ClassValue } from "clsx";
@@ -218,6 +219,7 @@ export async function getAllPlants(): Promise<Plant[]> {
 export async function searchEverything(query: string): Promise<{
   plants: Plant[];
   users: UserResult[];
+  collections: Collection[];
 }> {
   try {
     const res = await fetch(
@@ -226,13 +228,13 @@ export async function searchEverything(query: string): Promise<{
 
     if (!res.ok) {
       console.error("Search failed");
-      return { plants: [], users: [] };
+      return { plants: [], users: [], collections: [] };
     }
 
     return await res.json();
   } catch (err) {
     console.error("Error searching plants:", err);
-    return { plants: [], users: [] };
+    return { plants: [], users: [], collections: [] };
   }
 }
 

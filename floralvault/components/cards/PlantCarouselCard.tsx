@@ -45,7 +45,10 @@ const PlantCarouselCard = ({ plant }: PlantCarouselCardProps) => {
       {plant.tags?.length > 0 && (
         <div className="absolute bottom-3 left-6 z-30 flex gap-1 flex-wrap">
           {plant.tags.slice(0, 3).map((tag, i) => (
-            <Link key={i} href={`/results?tag=${encodeURIComponent(tag.name)}`}>
+            <Link
+              key={i}
+              href={`/the-vault/results?tag=${encodeURIComponent(tag.name)}`}
+            >
               <Badge
                 variant="secondary"
                 className="text-[12px] px-2 py-0.5 max-w-[80px] truncate hover:bg-[#5f9f6a] hover:text-white hover:rounded-2xl"

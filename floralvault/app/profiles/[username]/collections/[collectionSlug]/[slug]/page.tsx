@@ -62,7 +62,7 @@ export default async function PlantDetailPage({ params }: PageProps) {
           <div className="flex flex-wrap justify-start gap-2 mt-5">
             {plant.tags.map((tag, i) => (
               <Link
-                href={`/results?tag=${encodeURIComponent(tag.name)}`}
+                href={`/the-vault/results?tag=${encodeURIComponent(tag.name)}`}
                 key={i}
               >
                 <Badge className="text-xs px-3 py-1 break-words whitespace-nowrap bg-[#81a308]/10 text-[#81a308] border border-[#81a308]/30 hover:bg-[#81a308]/20 transition-colors">

@@ -1,7 +1,7 @@
 import prisma from "../prisma/client";
 
 export const querySearch = async (q: string) => {
-  return await Promise.all([
+  const [plants, users, collections] = await Promise.all([
     prisma.plant.findMany({
       where: {
         OR: [
@@ -41,5 +41,22 @@ export const querySearch = async (q: string) => {
       },
       take: 5,
     }),
+
+    prisma.collection.findMany({
+      where: {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } },
+        ],
+      },
+      include: {
+        user: { select: { username: true } },
+      },
+      take: 5,
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
+
+  // ✅ Return as an object now:
+  return { plants, users, collections };
 };

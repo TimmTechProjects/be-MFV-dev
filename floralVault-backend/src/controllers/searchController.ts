@@ -10,9 +10,9 @@ export const searchDB = async (req: Request, res: Response) => {
   }
 
   try {
-    const [plants, users] = await querySearch(q);
+    const { plants, users, collections } = await querySearch(q);
 
-    res.status(200).json({ plants, users });
+    res.status(200).json({ plants, users, collections });
     return;
   } catch (error) {
     console.error("Error fetching data", error);
