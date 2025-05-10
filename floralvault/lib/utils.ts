@@ -274,3 +274,28 @@ export async function getCollectionBySlug(
     return null;
   }
 }
+
+export async function getPaginatedPlants(
+  page = 1,
+  limit = 20
+): Promise<{
+  plants: Plant[];
+  total: number;
+}> {
+  try {
+    const res = await fetch(
+      `${devUrl}/api/plants?page=${page}&limit=${limit}`,
+      {
+        cache: "no-store",
+      }
+    );
+    if (!res.ok) {
+      console.error("Failed to fetch paginated plants");
+      return { plants: [], total: 0 };
+    }
+    return res.json();
+  } catch (err) {
+    console.error("Error fetching paginated plants:", err);
+    return { plants: [], total: 0 };
+  }
+}
