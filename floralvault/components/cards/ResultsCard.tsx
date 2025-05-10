@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -100,6 +102,7 @@ const ResultsCard = ({ plant, user, compact = false }: ResultsCardProps) => {
               <Badge
                 variant="secondary"
                 className="text-[12px] justify-center px-2 py-0.5 max-w-[80px] truncate hover:bg-[#5f9f6a] hover:rounded-2xl hover:text-white"
+                onClick={(e) => e.stopPropagation()}
               >
                 {tag.name}
               </Badge>
