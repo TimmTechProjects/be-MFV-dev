@@ -1,33 +1,16 @@
 import React from "react";
-import { Metadata } from "next";
 import { getCollectionWithPlants } from "@/lib/utils";
 import ClientCollectionView from "@/components/ClientCollectionView";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { username: string; collectionSlug: string };
-}): Promise<Metadata> {
-  const { username, collectionSlug } = params;
-
-  return {
-    title: `${collectionSlug.replace(/-/g, " ")} by ${username} | Floral Vault`,
-    description: `Browse the ${collectionSlug.replace(
-      /-/g,
-      " "
-    )} album from ${username}'s collection on Floral Vault.`,
-  };
-}
-
 interface UserCollectionPageProps {
-  params: {
+  params: Promise<{
     username: string;
     collectionSlug: string;
-  };
+  }>;
 }
 
 const UserCollectionPage = async ({ params }: UserCollectionPageProps) => {
-  const { username, collectionSlug } = params;
+  const { username, collectionSlug } = await params;
 
   const collectionData = await getCollectionWithPlants(
     username,
