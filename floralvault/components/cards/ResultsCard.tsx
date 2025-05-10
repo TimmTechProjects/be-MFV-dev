@@ -70,9 +70,10 @@ const ResultsCard = ({ plant, user, compact = false }: ResultsCardProps) => {
               </div>
 
               {!compact && (
-                <p className="text-sm mt-auto line-clamp-3 pointer-events-none">
-                  {plant!.description}
-                </p>
+                <div
+                  className="text-sm mt-auto prose prose-invert max-w-none line-clamp-3 pointer-events-none"
+                  dangerouslySetInnerHTML={{ __html: plant!.description }}
+                ></div>
               )}
             </>
           ) : (
