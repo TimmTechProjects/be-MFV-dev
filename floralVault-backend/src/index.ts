@@ -6,6 +6,8 @@ import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
 import tagRoutes from "./routes/tagRoutes";
 import plantRoutes from "./routes/plantRoutes";
+import collectionRoutes from "./routes/collectionRoutes";
+import searchRoutes from "./routes/searchRoutes";
 
 dotenv.config();
 
@@ -32,6 +34,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/tags", tagRoutes);
 
 app.use("/api/plants", plantRoutes);
+
+app.use("/api/collections", collectionRoutes);
+
+app.use("/api/search", searchRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

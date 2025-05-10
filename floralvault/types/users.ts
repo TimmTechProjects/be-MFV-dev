@@ -6,7 +6,7 @@ export interface User {
   email?: string;
   bio?: string;
   avatarUrl?: string;
-  joinedAt: Date;
+  joinedAt: string | Date;
   plan: string;
 }
 
@@ -22,5 +22,13 @@ export interface RegisterUser {
   email: string;
   password: string;
   bio?: string;
+  avatarUrl?: string;
+}
+
+export interface UserResult {
+  id: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
   avatarUrl?: string;
 }

@@ -12,8 +12,30 @@ export const getCurrentUserById = async (id: string) => {
   }
 
   const { password, ...userWithoutPassword } = user;
-
   return userWithoutPassword;
+};
+
+export const getUserWithUsername = async (username: string) => {
+  const user = await prisma.user.findUnique({
+    where: { username },
+    select: {
+      id: true,
+      username: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      bio: true,
+      avatarUrl: true,
+      joinedAt: true,
+      plan: true,
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  return user;
 };
 
 export const updateUserById = async (

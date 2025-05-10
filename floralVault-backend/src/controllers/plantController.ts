@@ -3,6 +3,7 @@ import {
   createPlant,
   getAllPlants,
   getPlantBySlug as fetchPlantBySlug,
+  querySearch,
 } from "../services/plantService";
 import { AuthenticatedRequest } from "../types/express";
 
@@ -14,6 +15,23 @@ export const getPlants = async (req: Request, res: Response) => {
   }
 
   res.status(200).json(plants);
+};
+
+export const searchPlants = async (req: Request, res: Response) => {
+  const query = req.query.q as string;
+
+  if (!query) {
+    res.status(400).json({ message: "Query required" });
+    return;
+  }
+
+  try {
+    const results = await querySearch(query);
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Error fetching data", error);
+  }
 };
 
 export const getPlantBySlug = async (req: Request, res: Response) => {
@@ -33,6 +51,8 @@ export const createPlantPost = async (
   res: Response
 ) => {
   try {
+    console.log("REQ BODY:", req.body);
+
     const {
       commonName,
       botanicalName,
@@ -43,12 +63,18 @@ export const createPlantPost = async (
       images,
       type,
       isPublic = true,
+      collectionId,
     } = req.body;
 
     const userId = req.user;
 
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    if (!collectionId) {
+      res.status(400).json({ message: "Collection ID is required." });
       return;
     }
 
@@ -63,6 +89,7 @@ export const createPlantPost = async (
       user: { connect: { id: userId } },
       tags,
       images,
+      collectionId,
     });
 
     res.status(201).json(newPlant);

@@ -9,16 +9,15 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Badge } from "../ui/badge";
-import Image from "next/image";
 import { getAllPlants } from "@/lib/utils";
+import PlantCarouselCard from "../cards/PlantCarouselCard";
 
 export default function PlantCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const carouselApiRef = useRef<any>(null);
-  const apiRef = useRef<any>(null);
   const [plants, setPlants] = useState<any[]>([]);
   const [isHovered, setIsHovered] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPlants = async () => {
@@ -29,29 +28,34 @@ export default function PlantCarousel() {
       } catch (error) {
         console.error("Failed to fetch plants:", error);
       }
+      setLoading(false);
     };
 
     fetchPlants();
   }, []);
 
-  const updateActiveIndex = () => {
-    if (carouselApiRef.current) {
-      const newIndex = carouselApiRef.current.selectedScrollSnap();
-      setActiveIndex(newIndex);
-    }
-  };
-
   useEffect(() => {
     const interval = setInterval(() => {
-      if (apiRef.current && !isHovered) {
+      if (carouselApiRef.current && !isHovered && plants.length > 0) {
         const nextIndex =
-          (apiRef.current.selectedScrollSnap() + 1) % plants.length;
-        apiRef.current.scrollTo(nextIndex);
+          (carouselApiRef.current.selectedScrollSnap() + 1) % plants.length;
+        carouselApiRef.current.scrollTo(nextIndex);
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isHovered]);
+  }, [isHovered, plants.length]);
+
+  if (loading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#81a308] mx-auto mb-4"></div>
+          <p>Loading Newly Added Plants...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-[#121212] text-white py-12 px-4">
@@ -74,11 +78,12 @@ export default function PlantCarousel() {
             <Carousel
               opts={{ align: "start", loop: true }}
               className="w-full"
-              onSelect={updateActiveIndex}
               setApi={(api) => {
                 carouselApiRef.current = api;
-                apiRef.current = api;
-                api?.on("select", updateActiveIndex);
+                api?.on("select", () => {
+                  const newIndex = api.selectedScrollSnap();
+                  setActiveIndex(newIndex);
+                });
               }}
             >
               <CarouselContent>
@@ -87,57 +92,7 @@ export default function PlantCarousel() {
                     key={plant.id}
                     className="md:basis-1/3 lg:basis-1/5 px-4 relative"
                   >
-                    {/* Clickable Card */}
-                    <Link
-                      href={
-                        plant.user?.username
-                          ? `/profiles/${plant.user.username}/plants/${plant.slug}`
-                          : "#"
-                      }
-                      className="block relative rounded-2xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-[1.03] cursor-pointer"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
-
-                      <Image
-                        src={plant.images?.[0]?.url || "/fallback.jpg"}
-                        alt={plant.commonName || plant.botanicalName}
-                        width={400}
-                        height={320}
-                        className="w-full h-80 object-cover rounded-md"
-                      />
-
-                      <div className="absolute inset-0 flex flex-col justify-end p-4 z-20 bottom-8">
-                        <h3 className="text-lg font-bold leading-tight line-clamp-2">
-                          {plant.commonName}
-                        </h3>
-                        <p className="text-sm font-medium opacity-90">
-                          {plant.botanicalName}
-                        </p>
-                        <p className="text-sm opacity-80 line-clamp-1">
-                          {plant.description.replace(/<[^>]*>/g, "")}
-                        </p>
-                      </div>
-                    </Link>
-
-                    {/* Tags - separate from the Link */}
-                    <div className="absolute bottom-3 left-6 z-30 flex gap-1 flex-wrap">
-                      {plant.tags
-                        ?.map((tag: { name: string }) => tag.name)
-                        .slice(0, 3)
-                        .map((tag: string, i: number) => (
-                          <Link
-                            key={i}
-                            href={`/results?tag=${encodeURIComponent(tag)}`}
-                          >
-                            <Badge
-                              variant="secondary"
-                              className="text-[12px] px-2 py-0.5 max-w-[80px] truncate hover:bg-[#5f9f6a] hover:text-white hover:rounded-2xl"
-                            >
-                              {tag}
-                            </Badge>
-                          </Link>
-                        ))}
-                    </div>
+                    <PlantCarouselCard plant={plant} />
                   </CarouselItem>
                 ))}
               </CarouselContent>

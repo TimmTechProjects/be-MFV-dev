@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       "thebigsmoke.com.au",
       "www.littlerednursery.com",
       "upload.wikimedia.org",
+      "static.myfigurecollection.net",
+      "i.pravatar.cc",
     ],
   },
 };

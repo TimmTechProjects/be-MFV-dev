@@ -9,8 +9,8 @@ import { usePathname, useRouter } from "next/navigation";
 import ResultsCard from "./cards/ResultsCard";
 
 import { Plant } from "@/types/plants";
-import { getAllPlants } from "../lib/utils";
-import { navLinks } from "@/constants/navLinks";
+import { searchEverything } from "../lib/utils";
+import { authUserLinks, navLinks } from "@/constants/navLinks";
 import {
   Sheet,
   SheetContent,
@@ -22,19 +22,21 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useUser } from "@/context/UserContext";
+import Image from "next/image";
+import { UserResult } from "@/types/users";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<Plant[]>([]);
+  const [plantSuggestions, setPlantSuggestions] = useState<Plant[]>([]);
+  const [userSuggestions, setUserSuggestions] = useState<UserResult[]>([]);
+
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const { user, logout } = useUser();
@@ -55,28 +57,17 @@ const Header = () => {
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (!debouncedQuery) {
-        setSuggestions([]);
+        setPlantSuggestions([]);
+        setUserSuggestions([]);
         setIsPopoverOpen(false);
         return;
       }
 
-      const plantData: Plant[] = await getAllPlants();
+      const { plants, users } = await searchEverything(debouncedQuery);
+      setPlantSuggestions(plants);
+      setUserSuggestions(users);
 
-      const filtered = plantData
-        .filter((plant) => {
-          const match =
-            plant.commonName?.toLowerCase().includes(debouncedQuery) ||
-            plant.botanicalName.toLowerCase().includes(debouncedQuery) ||
-            plant.description.toLowerCase().includes(debouncedQuery) ||
-            plant.tags.some((tag) =>
-              tag.name.toLowerCase().includes(debouncedQuery)
-            );
-          return match;
-        })
-        .slice(0, 5);
-
-      setSuggestions(filtered);
-      setIsPopoverOpen(filtered.length > 0);
+      setIsPopoverOpen(plants.length > 0 || users.length > 0);
     };
 
     fetchSuggestions();
@@ -86,10 +77,13 @@ const Header = () => {
     e.preventDefault();
     const trimmed = searchQuery.trim();
     if (trimmed) {
-      router.push(`/results?query=${encodeURIComponent(trimmed)}`);
+      router.push(`/the-vault/results?query=${encodeURIComponent(trimmed)}`);
       setIsPopoverOpen(false);
     }
   };
+
+  const hasSuggestions =
+    plantSuggestions.length > 0 || userSuggestions.length > 0;
 
   return (
     <div className="bg-[#2b2a2a] flex w-full h-24 px-6 md:px-10 md:pt-2 items-center justify-between ">
@@ -98,6 +92,7 @@ const Header = () => {
         className="hidden sm:flex text-3xl md:text-4xl text-white font-bold tracking-tight cursor-pointer"
         onClick={() => (window.location.href = "/")}
       >
+        <span className="text-[#ecfaec]">My</span>
         <span className="bg-gradient-to-r from-[#dab9df] to-[#e5b3ec] bg-clip-text text-transparent">
           Floral
         </span>
@@ -112,11 +107,11 @@ const Header = () => {
       >
         <Input
           type="text"
-          placeholder="Search plants, users, tags, or ailments..."
+          placeholder="Search plants, users, tags, or albums..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => {
-            if (suggestions.length > 0 && debouncedQuery) {
+            if (hasSuggestions && debouncedQuery) {
               setIsPopoverOpen(true);
             }
           }}
@@ -139,19 +134,43 @@ const Header = () => {
             onMouseDown={(e) => e.preventDefault()}
             className="absolute top-full mt-2 z-50 w-full bg-transparent rounded-md shadow-lg p-2 max-h-[800px] overflow-y-hidden"
           >
-            {suggestions.map((plant: Plant) => (
-              <div
-                key={plant.id}
-                onClick={() => {
-                  router.push(
-                    `/profiles/${plant.user.username}/plants/${plant.slug}`
-                  );
-                  setIsPopoverOpen(false);
-                }}
-              >
-                <ResultsCard plant={plant} compact />
-              </div>
-            ))}
+            {plantSuggestions.length > 0 && (
+              <>
+                <p className="bg-[#2b2a2a] text-xs text-gray-400 px-2 pb-1">
+                  Plants
+                </p>
+                {plantSuggestions.map((plant) => (
+                  <div
+                    key={plant.id}
+                    onClick={() => {
+                      router.push(
+                        `/profiles/${plant.user.username}/plants/${plant.slug}`
+                      );
+                      setIsPopoverOpen(false);
+                    }}
+                  >
+                    <ResultsCard plant={plant} compact />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* {plantSuggestions.length > 0 && userSuggestions.length > 0 && (
+              <hr className="my-2 bg-[#2b2a2a] border-gray-600" />
+            )}
+
+            {userSuggestions.length > 0 && (
+              <>
+                <p className="bg-[#2b2a2a] text-xs text-gray-400 px-2 pb-1 mt-2">
+                  Users
+                </p>
+                {userSuggestions.map((user) => (
+                  <div key={user.id} onClick={() => setIsPopoverOpen(false)}>
+                    <ResultsCard user={user} compact />
+                  </div>
+                ))}
+              </>
+            )} */}
           </div>
         )}
       </form>
@@ -160,13 +179,25 @@ const Header = () => {
       <div className="hidden lg:flex items-center gap-5">
         {/* NavLinks */}
         <div className="flex text-white gap-5">
-          {navLinks.map((link) => (
-            <Link key={link.href} href={link.href}>
-              <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
-                {link.label}
-              </p>
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            let href = link.href;
+
+            if (link.label === "My Collection") {
+              href = user
+                ? `/profiles/${user.username}/collections`
+                : `/login?redirect=/profiles/temp/collections`; // fallback target if not logged in
+            }
+
+            return (
+              <React.Fragment key={link.href}>
+                <Link href={href}>
+                  <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
+                    {link.label}
+                  </p>
+                </Link>
+              </React.Fragment>
+            );
+          })}
         </div>
 
         {/* Login */}
@@ -184,24 +215,51 @@ const Header = () => {
               </Avatar>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className=" bg-[#2b2a2a] text-white items-center justify-center cursor-pointer rounded-2xl w-48 mt-1 mr-5 scrollbar-none">
-              <DropdownMenuLabel>
-                <Link href={`/profiles/${user.username}`} className="text-lg">
-                  {user.username}&apos;s Profile
-                </Link>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {user && (
-                <DropdownMenuItem>
-                  <Link href={`/profiles/${user.username}/plants/new`}>
-                    Add a Plant
-                  </Link>
-                </DropdownMenuItem>
-              )}
+            <DropdownMenuContent className="flex flex-col bg-[#2b2a2a] text-white justify-center cursor-pointer rounded-2xl w-48 mt-1 mr-5 scrollbar-none">
               <DropdownMenuItem>
-                <Link href="/settings">Settings</Link>
+                <Link
+                  href={`/profiles/${user.username}`}
+                  className="hover:text-[#dab9df]"
+                >
+                  Profile
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" onClick={logout}>
+              {user &&
+                authUserLinks.map((link) => (
+                  <DropdownMenuItem key={link.href}>
+                    <Link href={link.href} className="hover:text-[#dab9df]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 flex items-center justify-center">
+                          {link.icon && (
+                            <Image
+                              src={link.icon}
+                              alt={link.label}
+                              width={16}
+                              height={16}
+                              className="invert"
+                            />
+                          )}
+                        </div>
+
+                        <span>{link.label}</span>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              <DropdownMenuItem>
+                <Link href="/membership" className="hover:text-[#dab9df]">
+                  Membership
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/settings" className="hover:text-[#dab9df]">
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-red-400"
+                onClick={logout}
+              >
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -230,22 +288,21 @@ const Header = () => {
 
             <div className="flex flex-col text-white gap-5 pl-10">
               {navLinks.map((link) => {
-                const isAfterMyCollection =
-                  link.label === "My Collection" && user;
+                let href = link.href;
+
+                if (link.label === "My Collection") {
+                  href = user
+                    ? `/profiles/${user.username}/collections`
+                    : `/login?redirect=/profiles/temp/collections`;
+                }
+
                 return (
                   <React.Fragment key={link.href}>
-                    <Link href={link.href}>
+                    <Link href={href}>
                       <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
                         {link.label}
                       </p>
                     </Link>
-                    {isAfterMyCollection && (
-                      <Link href={`/profiles/${user.username}/plants/new`}>
-                        <p className="text-white hover:bg-gradient-to-r from-[#6ca148] to-[#756b56] bg-clip-text hover:text-transparent duration-200 ease-in-out">
-                          Add a Plant
-                        </p>
-                      </Link>
-                    )}
                   </React.Fragment>
                 );
               })}

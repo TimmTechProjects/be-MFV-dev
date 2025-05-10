@@ -50,6 +50,8 @@ export const loginUser = async (
           bio: user.bio,
           avatarUrl: user.avatarUrl,
           essence: user.essence,
+          joinedAt: user.joinedAt,
+          plan: user.plan,
         },
       });
     }
