@@ -20,14 +20,14 @@ export async function generateMetadata({
 }
 
 interface UserCollectionPageProps {
-  params: {
+  params: Promise<{
     username: string;
     collectionSlug: string;
-  };
+  }>;
 }
 
 const UserCollectionPage = async ({ params }: UserCollectionPageProps) => {
-  const { username, collectionSlug } = params;
+  const { username, collectionSlug } = await params;
 
   const collectionData = await getCollectionWithPlants(
     username,
