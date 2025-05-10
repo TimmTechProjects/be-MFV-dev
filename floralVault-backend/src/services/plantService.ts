@@ -49,6 +49,10 @@ export const getPlantBySlug = async (slug: string, username: string) => {
 export const createPlant = async (data: any) => {
   const userId = data.user.connect.id;
 
+  if (!data.collectionId) {
+    throw new Error("Collection ID is required.");
+  }
+
   // 1. Check if this user already added this plant
   const existingPlant = await prisma.plant.findFirst({
     where: {

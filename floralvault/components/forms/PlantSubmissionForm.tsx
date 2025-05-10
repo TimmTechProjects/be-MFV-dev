@@ -28,14 +28,18 @@ import { plantSchema, PlantSchema } from "@/schemas/plantSchema";
 import ImageUploadField from "./ImageUploadField";
 import { Tag } from "@/types/tags";
 import { getSuggestedTags, submitPlant } from "@/lib/utils";
-import { Checkbox } from "../ui/checkbox";
 import { useUser } from "@/context/UserContext";
+import { Switch } from "../ui/switch";
 
 const PlantEditor = dynamic(() => import("@/components/editor/PlantEditor"), {
   ssr: false,
 });
 
-const PlantSubmissionForm = () => {
+interface PlantSubmissionFormProps {
+  collectionId: string;
+}
+
+const PlantSubmissionForm = ({ collectionId }: PlantSubmissionFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -124,11 +128,14 @@ const PlantSubmissionForm = () => {
 
   const onSubmit = async (values: PlantSchema) => {
     setIsLoading(true);
-    const result = await submitPlant(values);
+
+    const result = await submitPlant(values, collectionId);
 
     if (result?.slug) {
       toast.success("Plant submitted successfully!");
-      router.push(`/profiles/${result.user.username}/plants/${result.slug}`);
+      router.push(
+        `/profiles/${result.user.username}/collections/${result.collection?.slug}/${result.slug}`
+      );
     } else {
       toast.error("Something went wrong. Please try again.");
     }
@@ -357,17 +364,17 @@ const PlantSubmissionForm = () => {
               render={({ field }) => (
                 <FormItem className="flex items-center space-x-2 justify-end">
                   <FormControl>
-                    <Checkbox
+                    <Switch
                       checked={field.value}
-                      onCheckedChange={(checked) => {
-                        if (isFreeUser) field.onChange(checked);
-                      }}
-                      disabled={!isFreeUser}
+                      onCheckedChange={field.onChange}
+                      disabled={isFreeUser}
+                      aria-readonly
+                      className="cursor-pointer"
                     />
                   </FormControl>
                   <FormLabel className="cursor-pointer">
                     Public Post
-                    {!isFreeUser && (
+                    {isFreeUser && (
                       <span
                         className="ml-2 text-xs text-yellow-400"
                         title="Upgrade plan to enable private saves"
@@ -382,7 +389,11 @@ const PlantSubmissionForm = () => {
           </div>
 
           <div className="flex items-center justify-center">
-            <Button type="submit" className="w-24 rounded-2xl">
+            <Button
+              type="submit"
+              className="w-24 rounded-2xl disabled:opacity-50"
+              disabled={isLoading}
+            >
               {isLoading ? "Saving..." : "Save →"}
             </Button>
           </div>

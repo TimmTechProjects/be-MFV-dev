@@ -2,6 +2,11 @@ export interface Plant {
   id: string;
   botanicalName: string;
   commonName?: string;
+  collection: {
+    id: string;
+    slug: string;
+    name?: string;
+  } | null;
   slug: string;
   origin: string;
   family: string;

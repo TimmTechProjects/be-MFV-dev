@@ -33,6 +33,8 @@ export const createPlantPost = async (
   res: Response
 ) => {
   try {
+    console.log("REQ BODY:", req.body);
+
     const {
       commonName,
       botanicalName,
@@ -43,12 +45,18 @@ export const createPlantPost = async (
       images,
       type,
       isPublic = true,
+      collectionId,
     } = req.body;
 
     const userId = req.user;
 
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    if (!collectionId) {
+      res.status(400).json({ message: "Collection ID is required." });
       return;
     }
 
@@ -63,6 +71,7 @@ export const createPlantPost = async (
       user: { connect: { id: userId } },
       tags,
       images,
+      collectionId,
     });
 
     res.status(201).json(newPlant);

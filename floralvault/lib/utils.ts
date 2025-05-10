@@ -149,7 +149,8 @@ export async function getSuggestedTags(debouncedQuery: string) {
 }
 
 export async function submitPlant(
-  formData: PlantSchema
+  formData: PlantSchema,
+  collectionId: string
 ): Promise<Plant | null> {
   if (typeof window === "undefined") {
     console.error("submitPlant called during SSR — aborting.");
@@ -164,13 +165,13 @@ export async function submitPlant(
   }
 
   try {
-    const response = await fetch(baseUrl + "/api/plants/new", {
+    const response = await fetch(devUrl + "/api/plants/new", {
       method: "POST",
       headers: {
         "content-type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({ ...formData, collectionId }),
     });
 
     const data = await response.json();
@@ -230,4 +231,23 @@ export async function getCollectionWithPlants(
   if (!res.ok)
     throw new Error("Failed to fetch users plant data from collections");
   return res.json();
+}
+
+export async function getCollectionBySlug(
+  username: string,
+  collectionSlug: string
+) {
+  try {
+    const res = await fetch(
+      `${devUrl}/api/collections/${username}/collections/${collectionSlug}`
+    );
+    if (!res.ok) {
+      console.error("Failed to fetch collection");
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("Failed to fetch collection:", err);
+    return null;
+  }
 }
