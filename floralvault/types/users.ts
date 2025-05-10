@@ -24,3 +24,11 @@ export interface RegisterUser {
   bio?: string;
   avatarUrl?: string;
 }
+
+export interface UserResult {
+  id: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+}

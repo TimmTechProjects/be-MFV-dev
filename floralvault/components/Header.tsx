@@ -9,7 +9,7 @@ import { usePathname, useRouter } from "next/navigation";
 import ResultsCard from "./cards/ResultsCard";
 
 import { Plant } from "@/types/plants";
-import { getAllPlants } from "../lib/utils";
+import { searchEverything } from "../lib/utils";
 import { authUserLinks, navLinks } from "@/constants/navLinks";
 import {
   Sheet,
@@ -29,11 +29,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useUser } from "@/context/UserContext";
 import Image from "next/image";
+import { UserResult } from "@/types/users";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<Plant[]>([]);
+  const [plantSuggestions, setPlantSuggestions] = useState<Plant[]>([]);
+  const [userSuggestions, setUserSuggestions] = useState<UserResult[]>([]);
+
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const { user, logout } = useUser();
@@ -54,28 +57,17 @@ const Header = () => {
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (!debouncedQuery) {
-        setSuggestions([]);
+        setPlantSuggestions([]);
+        setUserSuggestions([]);
         setIsPopoverOpen(false);
         return;
       }
 
-      const plantData: Plant[] = await getAllPlants();
+      const { plants, users } = await searchEverything(debouncedQuery);
+      setPlantSuggestions(plants);
+      setUserSuggestions(users);
 
-      const filtered = plantData
-        .filter((plant) => {
-          const match =
-            plant.commonName?.toLowerCase().includes(debouncedQuery) ||
-            plant.botanicalName.toLowerCase().includes(debouncedQuery) ||
-            plant.description.toLowerCase().includes(debouncedQuery) ||
-            plant.tags.some((tag) =>
-              tag.name.toLowerCase().includes(debouncedQuery)
-            );
-          return match;
-        })
-        .slice(0, 5);
-
-      setSuggestions(filtered);
-      setIsPopoverOpen(filtered.length > 0);
+      setIsPopoverOpen(plants.length > 0 || users.length > 0);
     };
 
     fetchSuggestions();
@@ -89,6 +81,9 @@ const Header = () => {
       setIsPopoverOpen(false);
     }
   };
+
+  const hasSuggestions =
+    plantSuggestions.length > 0 || userSuggestions.length > 0;
 
   return (
     <div className="bg-[#2b2a2a] flex w-full h-24 px-6 md:px-10 md:pt-2 items-center justify-between ">
@@ -116,7 +111,7 @@ const Header = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => {
-            if (suggestions.length > 0 && debouncedQuery) {
+            if (hasSuggestions && debouncedQuery) {
               setIsPopoverOpen(true);
             }
           }}
@@ -139,19 +134,43 @@ const Header = () => {
             onMouseDown={(e) => e.preventDefault()}
             className="absolute top-full mt-2 z-50 w-full bg-transparent rounded-md shadow-lg p-2 max-h-[800px] overflow-y-hidden"
           >
-            {suggestions.map((plant: Plant) => (
-              <div
-                key={plant.id}
-                onClick={() => {
-                  router.push(
-                    `/profiles/${plant.user.username}/plants/${plant.slug}`
-                  );
-                  setIsPopoverOpen(false);
-                }}
-              >
-                <ResultsCard plant={plant} compact />
-              </div>
-            ))}
+            {userSuggestions.length > 0 && (
+              <>
+                <p className="bg-[#2b2a2a] text-xs text-gray-400 px-2 pb-1 mt-2">
+                  Users
+                </p>
+                {userSuggestions.map((user) => (
+                  <div key={user.id} onClick={() => setIsPopoverOpen(false)}>
+                    <ResultsCard user={user} compact />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {plantSuggestions.length > 0 && userSuggestions.length > 0 && (
+              <hr className="my-2 bg-[#2b2a2a] border-gray-600" />
+            )}
+
+            {plantSuggestions.length > 0 && (
+              <>
+                <p className="bg-[#2b2a2a] text-xs text-gray-400 px-2 pb-1">
+                  Plants
+                </p>
+                {plantSuggestions.map((plant) => (
+                  <div
+                    key={plant.id}
+                    onClick={() => {
+                      router.push(
+                        `/profiles/${plant.user.username}/plants/${plant.slug}`
+                      );
+                      setIsPopoverOpen(false);
+                    }}
+                  >
+                    <ResultsCard plant={plant} compact />
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         )}
       </form>

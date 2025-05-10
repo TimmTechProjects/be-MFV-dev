@@ -3,6 +3,7 @@ import {
   createPlant,
   getAllPlants,
   getPlantBySlug as fetchPlantBySlug,
+  querySearch,
 } from "../services/plantService";
 import { AuthenticatedRequest } from "../types/express";
 
@@ -14,6 +15,23 @@ export const getPlants = async (req: Request, res: Response) => {
   }
 
   res.status(200).json(plants);
+};
+
+export const searchPlants = async (req: Request, res: Response) => {
+  const query = req.query.q as string;
+
+  if (!query) {
+    res.status(400).json({ message: "Query required" });
+    return;
+  }
+
+  try {
+    const results = await querySearch(query);
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Error fetching data", error);
+  }
 };
 
 export const getPlantBySlug = async (req: Request, res: Response) => {

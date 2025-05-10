@@ -17,6 +17,7 @@ export default function PlantCarousel() {
   const carouselApiRef = useRef<any>(null);
   const [plants, setPlants] = useState<any[]>([]);
   const [isHovered, setIsHovered] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPlants = async () => {
@@ -27,6 +28,7 @@ export default function PlantCarousel() {
       } catch (error) {
         console.error("Failed to fetch plants:", error);
       }
+      setLoading(false);
     };
 
     fetchPlants();
@@ -43,6 +45,17 @@ export default function PlantCarousel() {
 
     return () => clearInterval(interval);
   }, [isHovered, plants.length]);
+
+  if (loading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#81a308] mx-auto mb-4"></div>
+          <p>Loading Newly Added Plants...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-[#121212] text-white py-12 px-4">

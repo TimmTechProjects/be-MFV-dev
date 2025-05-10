@@ -1,6 +1,6 @@
 import { PlantSchema } from "@/schemas/plantSchema";
 import { Plant } from "@/types/plants";
-import { RegisterUser, User, UserCredentials } from "@/types/users";
+import { RegisterUser, User, UserCredentials, UserResult } from "@/types/users";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -213,6 +213,27 @@ export async function getAllPlants(): Promise<Plant[]> {
   });
   if (!res.ok) throw new Error("Failed to fetch plants");
   return res.json();
+}
+
+export async function searchEverything(query: string): Promise<{
+  plants: Plant[];
+  users: UserResult[];
+}> {
+  try {
+    const res = await fetch(
+      `${devUrl}/api/search?q=${encodeURIComponent(query)}`
+    );
+
+    if (!res.ok) {
+      console.error("Search failed");
+      return { plants: [], users: [] };
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error searching plants:", err);
+    return { plants: [], users: [] };
+  }
 }
 
 export async function getUserCollections(username: string) {
