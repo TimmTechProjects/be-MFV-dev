@@ -8,7 +8,7 @@ export async function generateMetadata({
 }: {
   params: { username: string; collectionSlug: string };
 }): Promise<Metadata> {
-  const { username, collectionSlug } = await params;
+  const { username, collectionSlug } = params;
 
   return {
     title: `${collectionSlug.replace(/-/g, " ")} by ${username} | Floral Vault`,
@@ -27,7 +27,7 @@ interface UserCollectionPageProps {
 }
 
 const UserCollectionPage = async ({ params }: UserCollectionPageProps) => {
-  const { username, collectionSlug } = await params;
+  const { username, collectionSlug } = params;
 
   const collectionData = await getCollectionWithPlants(
     username,
