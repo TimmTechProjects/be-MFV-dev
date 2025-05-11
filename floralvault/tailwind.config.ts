@@ -1,9 +1,10 @@
 import type { Config } from "tailwindcss";
+import { withUt } from "uploadthing/tw";
 import typography from "@tailwindcss/typography";
 
 const config: Config = {
   content: [
-    "./app/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
   ],
@@ -29,4 +30,4 @@ const config: Config = {
   plugins: [typography],
 };
 
-export default config;
+export default withUt(config);

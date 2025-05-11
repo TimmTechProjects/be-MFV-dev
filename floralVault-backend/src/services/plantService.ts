@@ -19,6 +19,27 @@ export const getAllPlants = async () => {
   });
 };
 
+export const getAllPaginatedPlants = async (page = 1, limit = 20) => {
+  const skip = (page - 1) * limit;
+
+  const [plants, total] = await Promise.all([
+    prisma.plant.findMany({
+      where: { isPublic: true },
+      include: {
+        user: { select: { username: true } },
+        tags: true,
+        images: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.plant.count({ where: { isPublic: true } }),
+  ]);
+
+  return { plants, total };
+};
+
 export const querySearch = async (q: string) => {
   return await Promise.all([
     prisma.plant.findMany({

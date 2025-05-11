@@ -43,14 +43,16 @@ const NewPlantPage = () => {
 
   useEffect(() => {
     if (!user) {
-      router.replace(`/login?redirect=/profiles/${username}/plants/new`);
+      router.replace(
+        `/login?redirect=/profiles/${username}/collections/${collectionSlug}/new`
+      );
       return;
     }
 
     if (user.username !== username) {
       router.replace("/");
     }
-  }, [user, username, router]);
+  }, [user, username, collectionSlug, router]);
 
   if (!user || user.username !== username || loading) return null;
 

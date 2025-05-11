@@ -46,7 +46,7 @@ model Plant {
   slug          String
   origin        String?
   family        String?
-  type          String
+  type          String?
   views         Int        @default(0)
   isPublic      Boolean    @default(true)
   createdAt     DateTime   @default(now())

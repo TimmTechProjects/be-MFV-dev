@@ -25,11 +25,12 @@ import { toast } from "sonner";
 
 import dynamic from "next/dynamic";
 import { plantSchema, PlantSchema } from "@/schemas/plantSchema";
-import ImageUploadField from "./ImageUploadField";
+import ImageUploadField, { UploadedImage } from "./ImageUploadField";
 import { Tag } from "@/types/tags";
 import { getSuggestedTags, submitPlant } from "@/lib/utils";
 import { useUser } from "@/context/UserContext";
 import { Switch } from "../ui/switch";
+import { uploadFiles } from "@/lib/uploadthingClient";
 
 const PlantEditor = dynamic(() => import("@/components/editor/PlantEditor"), {
   ssr: false,
@@ -129,7 +130,46 @@ const PlantSubmissionForm = ({ collectionId }: PlantSubmissionFormProps) => {
   const onSubmit = async (values: PlantSchema) => {
     setIsLoading(true);
 
-    const result = await submitPlant(values, collectionId);
+    const filesToUpload = values.images
+      .filter((img): img is UploadedImage => !!img.file)
+      .map((img) => img.file as File);
+
+    if (filesToUpload.length > 10) {
+      toast.error("You can only upload up to 10 images.");
+      setIsLoading(false);
+      return;
+    }
+
+    console.log("Files to upload:", filesToUpload);
+    // Upload to UploadThing
+    const uploaded = await uploadFiles("imageUploader", {
+      files: filesToUpload,
+    });
+
+    if (!uploaded.length) {
+      toast.error("Image upload failed.");
+      setIsLoading(false);
+      return;
+    }
+
+    const uploadedImages: UploadedImage[] = uploaded.map((file, idx) => ({
+      url: file.ufsUrl,
+      previewUrl: file.ufsUrl, // Assign same URL if no local preview
+      isMain: idx === 0,
+    }));
+
+    // Combine with existing images that were not re-uploaded
+    const existingImages = values.images.filter(
+      (img) => !(img as UploadedImage).file
+    );
+
+    const finalImages = [...uploadedImages, ...existingImages];
+
+    // Pass to your API
+    const result = await submitPlant(
+      { ...values, images: finalImages },
+      collectionId
+    );
 
     if (result?.slug) {
       toast.success("Plant submitted successfully!");
@@ -157,7 +197,9 @@ const PlantSubmissionForm = ({ collectionId }: PlantSubmissionFormProps) => {
                 <FormControl>
                   <ImageUploadField
                     value={field.value || []}
-                    onChange={field.onChange}
+                    onChange={(images) =>
+                      form.setValue("images", images, { shouldDirty: true })
+                    }
                   />
                 </FormControl>
                 <FormMessage className="text-red-500" />
@@ -194,6 +236,25 @@ const PlantSubmissionForm = ({ collectionId }: PlantSubmissionFormProps) => {
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <div className="rounded-lg border-hidden bg-transparent shadow-sm p-4">
+                    <PlantEditor
+                      content={field.value}
+                      onChange={field.onChange}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage className="text-red-500" />
+              </FormItem>
+            )}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField
@@ -252,25 +313,6 @@ const PlantSubmissionForm = ({ collectionId }: PlantSubmissionFormProps) => {
               )}
             />
           </div>
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <div className="rounded-lg border-hidden bg-transparent shadow-sm p-4">
-                    <PlantEditor
-                      content={field.value}
-                      onChange={field.onChange}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage className="text-red-500" />
-              </FormItem>
-            )}
-          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField

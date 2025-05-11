@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
       "upload.wikimedia.org",
       "static.myfigurecollection.net",
       "i.pravatar.cc",
+      "yarchpsb6b.ufs.sh",
     ],
   },
 };
