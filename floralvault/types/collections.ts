@@ -8,4 +8,7 @@ export type Collection = {
   _count?: {
     plants: number;
   };
+  user: { username: string }; // ✅ Add this
+  coverImage?: string;
+  slug: string;
 };
