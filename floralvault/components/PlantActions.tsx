@@ -118,7 +118,11 @@ export default function SaveToAlbumButton({ plantId }: { plantId: string }) {
           )}
 
           {username && (
-            <Link href={`/profiles/${username}/collections/new`}>
+            <Link
+              href={`/profiles/${username}/collections/new?redirectTo=${encodeURIComponent(
+                window.location.pathname
+              )}`}
+            >
               <button className="mt-3 text-xs text-[#81a308] hover:underline cursor-pointer">
                 + Create New Album
               </button>
