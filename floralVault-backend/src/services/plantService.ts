@@ -193,6 +193,16 @@ export const getUserCollectionWithPlants = async (
         include: {
           tags: true,
           images: true,
+          user: {
+            select: {
+              username: true,
+            },
+          },
+          collection: {
+            select: {
+              slug: true,
+            },
+          },
         },
         orderBy: {
           createdAt: "desc",
