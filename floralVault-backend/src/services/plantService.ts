@@ -144,6 +144,9 @@ export const createPlant = async (data: any) => {
       collection: {
         connect: { id: data.collectionId },
       },
+      originalCollection: {
+        connect: { id: data.collectionId },
+      },
       images: {
         create:
           data.images?.map((img: any) => ({
@@ -166,6 +169,12 @@ export const createPlant = async (data: any) => {
         select: {
           username: true,
         },
+      },
+      collection: {
+        select: { slug: true },
+      },
+      originalCollection: {
+        select: { slug: true },
       },
     },
   });
@@ -199,6 +208,11 @@ export const getUserCollectionWithPlants = async (
             },
           },
           collection: {
+            select: {
+              slug: true,
+            },
+          },
+          originalCollection: {
             select: {
               slug: true,
             },

@@ -103,13 +103,15 @@ const ClientCollectionView = ({
           {plants.map((plant: Plant) => {
             const mainImage = plant.images?.[0]?.url ?? "/fallback-image.jpg";
             const author = plant.user?.username;
-            const originalSlug = plant.collection?.slug;
+            const originalSlug = plant.originalCollection?.slug;
 
-            const isValidRedirect = author && originalSlug;
+            console.log(originalSlug);
 
-            const plantUrl = isValidRedirect
-              ? `/profiles/${author}/collections/${originalSlug}/${plant.slug}`
-              : `/profiles/${username}/collections/${collectionSlug}/${plant.slug}`;
+            if (!author || !originalSlug) {
+              console.warn("Missing plant author or originalSlug:", plant);
+            }
+
+            const plantUrl = `/profiles/${author}/collections/${originalSlug}/${plant.slug}`;
 
             return (
               <div

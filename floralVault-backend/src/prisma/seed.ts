@@ -532,6 +532,7 @@ async function main() {
         ...rest,
         userId,
         collectionId: collectionsMap[userId],
+        originalCollectionId: collectionsMap[userId],
         tags: {
           connectOrCreate: tags.map((tagName) => ({
             where: { name: tagName },

@@ -36,25 +36,29 @@ model User {
 }
 
 model Plant {
-  id            String     @id @default(cuid())
-  commonName    String
-  botanicalName String
-  description   String
-  tags          Tag[]      @relation("PlantTags")
-  images        Image[]
-  likes         Int        @default(0)
-  slug          String
-  origin        String?
-  family        String?
-  type          String?
-  views         Int        @default(0)
-  isPublic      Boolean    @default(true)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  userId        String
-  user          User       @relation(fields: [userId], references: [id])
-  collection    Collection @relation(fields: [collectionId], references: [id])
-  collectionId  String
+  id                   String     @id @default(cuid())
+  commonName           String
+  botanicalName        String
+  description          String
+  likes                Int        @default(0)
+  slug                 String
+  origin               String?
+  family               String?
+  type                 String?
+  views                Int        @default(0)
+  isPublic             Boolean    @default(true)
+  userId               String
+  user                 User       @relation(fields: [userId], references: [id])
+  collection           Collection @relation(fields: [collectionId], references: [id])
+  collectionId         String
+  originalCollectionId String?
+  originalCollection   Collection? @relation("OriginalCollection", fields: [originalCollectionId], references: [id])
+
+  tags   Tag[]   @relation("PlantTags")
+  images Image[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([slug, userId], name: "slug_userId")
 }
@@ -84,9 +88,12 @@ model Collection {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  user             User    @relation(fields: [userId], references: [id])
-  userId           String
-  plants           Plant[]
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  plants                  Plant[]
+  originallyCreatedPlants Plant[] @relation("OriginalCollection")
+
   thumbnailImage   Image?  @relation(fields: [thumbnailImageId], references: [id])
   thumbnailImageId String?
 }
