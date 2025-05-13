@@ -1,8 +1,11 @@
-export interface Collection {
+export type Collection = {
   id: string;
   name: string;
-  slug: string;
   description?: string;
-  coverImage?: string;
-  user: { username: string };
-}
+  createdAt: string;
+  updatedAt: string;
+  thumbnailImage?: { url: string } | null;
+  _count?: {
+    plants: number;
+  };
+};

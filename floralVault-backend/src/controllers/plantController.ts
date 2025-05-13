@@ -45,6 +45,9 @@ export const searchPlants = async (req: Request, res: Response) => {
 };
 
 export const getPlantBySlug = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+
   const { slug, username } = req.params;
 
   const plant = await fetchPlantBySlug(slug, username);

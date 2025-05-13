@@ -95,6 +95,11 @@ const ClientCollectionView = ({
         <div className="space-y-8">
           {plants.map((plant: Plant) => {
             const mainImage = plant.images?.[0]?.url ?? "/fallback-image.jpg";
+            const author = plant.user?.username || username; // Use the original poster's username if available
+            const originalCollectionSlug =
+              plant.collection?.slug || collectionSlug; // Use the original collection slug if available
+
+            console.log(plant);
 
             return (
               <div
@@ -103,7 +108,7 @@ const ClientCollectionView = ({
               >
                 {/* Image */}
                 <Link
-                  href={`/profiles/${username}/collections/${collectionSlug}/${plant.slug}`}
+                  href={`/profiles/${author}/collections/${originalCollectionSlug}/${plant.slug}`}
                   className="w-full sm:w-48 h-48 flex-shrink-0 relative overflow-hidden rounded-lg shadow group hover:shadow-lg transition"
                 >
                   <Image
@@ -117,7 +122,7 @@ const ClientCollectionView = ({
                 {/* Info */}
                 <div className="flex-1 text-white">
                   <Link
-                    href={`/profiles/${username}/collections/${collectionSlug}/${plant.slug}`}
+                    href={`/profiles/${author}/collections/${originalCollectionSlug}/${plant.slug}`}
                   >
                     <h3 className="text-xl font-semibold hover:text-[#81a308] transition">
                       {plant.commonName}{" "}

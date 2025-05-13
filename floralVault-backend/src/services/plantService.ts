@@ -84,25 +84,20 @@ export const querySearch = async (q: string) => {
   ]);
 };
 
-export const getPlantBySlug = async (slug: string, username: string) => {
-  const user = await prisma.user.findUnique({
-    where: { username },
-    select: { id: true },
-  });
-
-  if (!user) return null;
-
-  return await prisma.plant.findUnique({
+export const getPlantBySlug = async (slug: string, _username: string) => {
+  return await prisma.plant.findFirst({
     where: {
-      slug_userId: {
-        slug,
-        userId: user.id,
-      },
+      slug,
     },
     include: {
       user: {
         select: {
           username: true,
+        },
+      },
+      collection: {
+        select: {
+          slug: true,
         },
       },
       tags: true,
@@ -180,8 +175,12 @@ export const createPlant = async (data: any) => {
 
 export const getUserCollectionWithPlants = async (
   username: string,
-  collectionSlug: string
+  collectionSlug: string,
+  page = 1,
+  limit = 10
 ) => {
+  const skip = (page - 1) * limit;
+
   return prisma.collection.findFirst({
     where: {
       slug: collectionSlug,
@@ -195,7 +194,20 @@ export const getUserCollectionWithPlants = async (
           tags: true,
           images: true,
         },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip,
+        take: limit,
       },
+    },
+  });
+};
+
+export const getCollectionPlantCount = async (collectionId: string) => {
+  return prisma.plant.count({
+    where: {
+      collectionId,
     },
   });
 };

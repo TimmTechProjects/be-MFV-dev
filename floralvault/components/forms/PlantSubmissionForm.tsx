@@ -130,54 +130,58 @@ const PlantSubmissionForm = ({ collectionId }: PlantSubmissionFormProps) => {
   const onSubmit = async (values: PlantSchema) => {
     setIsLoading(true);
 
-    const filesToUpload = values.images
-      .filter((img): img is UploadedImage => !!img.file)
-      .map((img) => img.file as File);
+    try {
+      const filesToUpload = values.images
+        .filter((img): img is UploadedImage => !!img.file)
+        .map((img) => img.file as File);
 
-    if (filesToUpload.length > 10) {
-      toast.error("You can only upload up to 10 images.");
-      setIsLoading(false);
-      return;
-    }
+      if (filesToUpload.length > 10) {
+        toast.error("You can only upload up to 10 images.");
+        return;
+      }
 
-    console.log("Files to upload:", filesToUpload);
-    // Upload to UploadThing
-    const uploaded = await uploadFiles("imageUploader", {
-      files: filesToUpload,
-    });
+      const uploaded = await uploadFiles("imageUploader", {
+        files: filesToUpload,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-    if (!uploaded.length) {
-      toast.error("Image upload failed.");
-      setIsLoading(false);
-      return;
-    }
+      if (!uploaded.length) {
+        toast.error("Image upload failed.");
+        return;
+      }
 
-    const uploadedImages: UploadedImage[] = uploaded.map((file, idx) => ({
-      url: file.ufsUrl,
-      previewUrl: file.ufsUrl, // Assign same URL if no local preview
-      isMain: idx === 0,
-    }));
+      const uploadedImages: UploadedImage[] = uploaded.map((file, idx) => ({
+        url: file.ufsUrl,
+        previewUrl: file.ufsUrl,
+        isMain: idx === 0,
+      }));
 
-    // Combine with existing images that were not re-uploaded
-    const existingImages = values.images.filter(
-      (img) => !(img as UploadedImage).file
-    );
-
-    const finalImages = [...uploadedImages, ...existingImages];
-
-    // Pass to your API
-    const result = await submitPlant(
-      { ...values, images: finalImages },
-      collectionId
-    );
-
-    if (result?.slug) {
-      toast.success("Plant submitted successfully!");
-      router.push(
-        `/profiles/${result.user.username}/collections/${result.collection?.slug}/${result.slug}`
+      const existingImages = values.images.filter(
+        (img) => !(img as UploadedImage).file
       );
-    } else {
-      toast.error("Something went wrong. Please try again.");
+
+      const finalImages = [...uploadedImages, ...existingImages];
+
+      const result = await submitPlant(
+        { ...values, images: finalImages },
+        collectionId
+      );
+
+      if (result?.slug) {
+        toast.success("Plant submitted successfully!");
+        router.push(
+          `/profiles/${result.user.username}/collections/${result.collection?.slug}/${result.slug}`
+        );
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      console.error("Plant submission error:", err);
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setIsLoading(false); // ✅ ensures button is clickable again
     }
   };
 

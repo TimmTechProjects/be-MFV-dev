@@ -1,7 +1,6 @@
-"use client";
+// utils/uploadthingClient.ts
+import { generateReactHelpers } from "@uploadthing/react";
 
-import { genUploader } from "uploadthing/client";
-import type { OurFileRouter } from "@/app/api/uploadthing/core";
-
-// Export the typed uploadFiles function
-export const { uploadFiles } = genUploader<OurFileRouter>();
+export const { useUploadThing, uploadFiles } = generateReactHelpers({
+  url: "http://localhost:5000/api/uploadthing",
+});

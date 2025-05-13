@@ -2,8 +2,11 @@ import { Request, Response } from "express";
 import {
   createNewCollection,
   getUserCollections,
+  addPlantToCollectionService,
+  getUsersCollectionsById,
 } from "../services/collectionService";
 import { getUserCollectionWithPlants } from "../services/plantService";
+import { AuthenticatedRequest } from "../types/express";
 
 export const createCollection = async (req: Request, res: Response) => {
   try {
@@ -70,5 +73,65 @@ export const getCollectionWithPlants = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching collection:", error);
     res.status(500).json({ message: "Server error while fetching collection" });
+  }
+};
+
+export const getCollectionsForUser = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const userId = req.user;
+
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const collections = await getUsersCollectionsById(userId);
+    res.status(200).json(collections);
+    return;
+  } catch (error) {
+    console.error("Error fetching user collections:", error);
+    res
+      .status(500)
+      .json({ message: "Server error while fetching collections" });
+    return;
+  }
+};
+
+export const addPlantToCollection = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const userId = req.user;
+  const { collectionId } = req.params;
+  const { plantId } = req.body;
+
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  if (!collectionId || !plantId) {
+    res
+      .status(400)
+      .json({ message: "Both collectionId and plantId are required." });
+    return;
+  }
+
+  try {
+    const result = await addPlantToCollectionService({
+      userId,
+      collectionId,
+      plantId,
+    });
+
+    res.status(200).json(result);
+    return;
+  } catch (error) {
+    console.error("Failed to add plant to collection:", error);
+    res.status(500).json({ message: "Server error" });
+    return;
   }
 };
