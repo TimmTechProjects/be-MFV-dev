@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { getPlantBySlug } from "@/lib/utils";
 import PlantImageGallery from "@/components/PlantImageGallery";
 import Link from "next/link";
+import PlantActions from "@/components/PlantActions";
 
 type PageProps = {
   params: Promise<{
@@ -13,8 +14,16 @@ type PageProps = {
 
 export default async function PlantDetailPage({ params }: PageProps) {
   const { username, slug } = await params;
+
   const plant = await getPlantBySlug(slug, username);
   if (!plant || !plant.slug) return notFound();
+
+  const canonicalUsername = plant.user?.username;
+  if (canonicalUsername && canonicalUsername !== username) {
+    redirect(
+      `/profiles/${canonicalUsername}/collections/${plant.collection?.slug}/${plant.slug}`
+    );
+  }
 
   return (
     <div className="pb-10 sm:pb-0">
@@ -48,12 +57,28 @@ export default async function PlantDetailPage({ params }: PageProps) {
 
         {/* INFO COLUMN */}
         <div className="order-4 lg:order-none text-sm text-gray-400 space-y-2 border-t lg:border-t-0 lg:border-l pt-6 lg:pt-0 lg:pl-4 border-[#444]">
-          <div>{username}</div>
+          {/* <div className="">{username}</div> */}
+
+          <div className="flex items-center gap-2 text-sm text-gray-300">
+            <span className="font-medium">Posted by:</span>
+            <Link
+              href={`/profiles/${username}`}
+              className="text-[#81a308] hover:underline"
+            >
+              {username}
+            </Link>
+          </div>
 
           <div className="flex flex-col gap-1">
-            <Badge className="text-sm bg-muted">🌍 {plant.origin}</Badge>
-            <Badge className="text-sm bg-muted">Family: {plant.family}</Badge>
-            <Badge className="text-sm bg-muted">Type: {plant.type}</Badge>
+            <Badge className="text-sm bg-muted">
+              🌍 {plant.origin || "unknown"}
+            </Badge>
+            <Badge className="text-sm bg-muted">
+              Family: {plant.family || "unknown"}
+            </Badge>
+            <Badge className="text-sm bg-muted">
+              Type: {plant.type || "unknown"}
+            </Badge>
             <Badge className="text-sm bg-muted">
               Added: {new Date(plant.createdAt).toLocaleDateString()}
             </Badge>
@@ -71,6 +96,8 @@ export default async function PlantDetailPage({ params }: PageProps) {
               </Link>
             ))}
           </div>
+
+          <PlantActions plantId={plant.id} />
         </div>
       </div>
     </div>

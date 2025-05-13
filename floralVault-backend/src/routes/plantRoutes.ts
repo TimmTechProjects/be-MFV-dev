@@ -1,7 +1,7 @@
 import { Router } from "express";
 import verifyToken from "../middleware/verifyToken";
 import {
-  getPlants,
+  getPaginatedPlants,
   searchPlants,
   getPlantBySlug,
   createPlantPost,
@@ -9,7 +9,7 @@ import {
 
 const router = Router();
 
-router.get("/", getPlants);
+router.get("/", getPaginatedPlants);
 
 router.get("/search", searchPlants);
 

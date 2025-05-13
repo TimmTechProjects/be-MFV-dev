@@ -246,13 +246,18 @@ export async function getUserCollections(username: string) {
 
 export async function getCollectionWithPlants(
   username: string,
-  collectionSlug: string
+  collectionSlug: string,
+  page = 1,
+  limit = 10
 ) {
   const res = await fetch(
-    `${devUrl}/api/collections/${username}/collections/${collectionSlug}`
+    `${devUrl}/api/collections/${username}/collections/${collectionSlug}?page=${page}&limit=${limit}`
   );
-  if (!res.ok)
-    throw new Error("Failed to fetch users plant data from collections");
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch user's plant data from collection");
+  }
+
   return res.json();
 }
 
@@ -272,5 +277,92 @@ export async function getCollectionBySlug(
   } catch (err) {
     console.error("Failed to fetch collection:", err);
     return null;
+  }
+}
+
+export async function getPaginatedPlants(
+  page = 1,
+  limit = 20
+): Promise<{
+  plants: Plant[];
+  total: number;
+}> {
+  try {
+    const res = await fetch(
+      `${devUrl}/api/plants?page=${page}&limit=${limit}`,
+      {
+        cache: "no-store",
+      }
+    );
+    if (!res.ok) {
+      console.error("Failed to fetch paginated plants");
+      return { plants: [], total: 0 };
+    }
+    return res.json();
+  } catch (err) {
+    console.error("Error fetching paginated plants:", err);
+    return { plants: [], total: 0 };
+  }
+}
+
+export async function getUserCollectionsWithAuth() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.error("User not authenticated");
+    return [];
+  }
+
+  try {
+    const res = await fetch(`${devUrl}/api/collections/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      console.error("Failed to fetch collections");
+      return [];
+    }
+
+    return res.json();
+  } catch (err) {
+    console.error("Error fetching collections:", err);
+    return [];
+  }
+}
+
+export async function savePlantToAlbum(
+  collectionId: string,
+  plantId: string
+): Promise<{ success: boolean; message: string }> {
+  const token = localStorage.getItem("token");
+  if (!token) return { success: false, message: "No token found" };
+
+  try {
+    const res = await fetch(
+      `${devUrl}/api/collections/${collectionId}/add-plant`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ plantId }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { success: false, message: data.message || "Failed to add plant" };
+    }
+
+    return { success: true, message: "Plant saved to album successfully." };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Unexpected error" };
   }
 }

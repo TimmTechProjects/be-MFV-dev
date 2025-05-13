@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
   createPlant,
+  getAllPaginatedPlants,
   getAllPlants,
   getPlantBySlug as fetchPlantBySlug,
   querySearch,
@@ -15,6 +16,15 @@ export const getPlants = async (req: Request, res: Response) => {
   }
 
   res.status(200).json(plants);
+};
+
+export const getPaginatedPlants = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 20;
+
+  const { plants, total } = await getAllPaginatedPlants(page, limit);
+
+  res.status(200).json({ plants, total });
 };
 
 export const searchPlants = async (req: Request, res: Response) => {
@@ -35,6 +45,9 @@ export const searchPlants = async (req: Request, res: Response) => {
 };
 
 export const getPlantBySlug = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+
   const { slug, username } = req.params;
 
   const plant = await fetchPlantBySlug(slug, username);

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createNewCollection } from "@/lib/utils";
 
 interface NewCollectionPageProps {
@@ -20,6 +20,9 @@ const NewCollectionPage = ({ params }: NewCollectionPageProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
 
   useEffect(() => {
     const unwrapParams = async () => {
@@ -41,7 +44,6 @@ const NewCollectionPage = ({ params }: NewCollectionPageProps) => {
 
   const handleCreateCollection = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!username) return;
 
     const response = await createNewCollection(username, { name, description });
@@ -51,7 +53,11 @@ const NewCollectionPage = ({ params }: NewCollectionPageProps) => {
       const slug = data.slug;
 
       if (slug) {
-        router.push(`/profiles/${username}/collections/${slug}`);
+        if (redirectTo) {
+          router.push(redirectTo);
+        } else {
+          router.push(`/profiles/${username}/collections/${slug}`);
+        }
       } else {
         router.push(`/profiles/${username}`);
       }

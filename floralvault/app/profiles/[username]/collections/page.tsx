@@ -25,6 +25,13 @@ interface Collection {
     images: {
       url: string;
     }[];
+    user?: {
+      username: string;
+    };
+    slug: string;
+    collection?: {
+      slug: string;
+    };
   }[];
 }
 
@@ -90,7 +97,6 @@ const CollectionsPage = ({ params }: CollectionsPageProps) => {
             <div className="w-56 h-72 sm:w-60 sm:h-80 flex group items-center justify-center">
               <Link
                 href={`/profiles/${username}/collections/new`}
-                // onClick={() => setShowModal(true)}
                 className="flex flex-col items-center justify-center gap-2 text-gray-300 group hover:text-[#81a308] transition duration-200 cursor-pointer"
               >
                 <div className="flex items-center justify-center w-16 h-16 border-2 border-gray-300 rounded-full group-hover:border-[#81a308] transition duration-200">
@@ -119,10 +125,18 @@ const CollectionsPage = ({ params }: CollectionsPageProps) => {
               collection.plants?.[0]?.images?.[0]?.url ??
               "/fallback-image.jpg";
 
+            const authorUsername = collection.plants?.[0]?.user?.username;
+            const originalCollectionSlug =
+              collection.plants?.[0]?.collection?.slug;
+
             return (
               <Link
                 key={collection.id}
-                href={`/profiles/${username}/collections/${collection.slug}`}
+                href={
+                  authorUsername && originalCollectionSlug
+                    ? `/profiles/${authorUsername}/collections/${originalCollectionSlug}/${collection.plants?.[0]?.slug}`
+                    : `/profiles/${username}/collections/${collection.slug}`
+                }
               >
                 <div className="relative group rounded-2xl overflow-hidden w-56 h-72 sm:w-60 sm:h-80 cursor-pointer shadow hover:shadow-lg transition-shadow duration-200">
                   <Image
@@ -151,7 +165,6 @@ const CollectionsPage = ({ params }: CollectionsPageProps) => {
             <div className="w-56 h-72 sm:w-60 sm:h-80 flex items-center justify-center">
               <Link
                 href={`/profiles/${username}/collections/new`}
-                // onClick={() => setShowModal(true)}
                 className="flex flex-col items-center justify-center gap-2 text-gray-300 group hover:text-[#81a308] transition duration-200 cursor-pointer"
               >
                 <div className="flex items-center justify-center w-16 h-16 border-2 border-gray-300 rounded-full transition duration-200">

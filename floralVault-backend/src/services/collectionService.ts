@@ -62,3 +62,50 @@ export const getCollectionWithPlants = async (collectionId: string) => {
     },
   });
 };
+
+export const getUsersCollectionsById = async (userId: string) => {
+  return await prisma.collection.findMany({
+    where: { userId },
+    include: {
+      thumbnailImage: true,
+      _count: {
+        select: { plants: true },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
+export const addPlantToCollectionService = async ({
+  userId,
+  collectionId,
+  plantId,
+}: {
+  userId: string;
+  collectionId: string;
+  plantId: string;
+}) => {
+  // Confirm the collection belongs to the user
+  const collection = await prisma.collection.findFirst({
+    where: {
+      id: collectionId,
+      userId,
+    },
+  });
+
+  if (!collection) {
+    throw new Error("Collection not found or access denied");
+  }
+
+  // Add the plant to the collection
+  return await prisma.collection.update({
+    where: { id: collectionId },
+    data: {
+      plants: {
+        connect: { id: plantId },
+      },
+    },
+  });
+};

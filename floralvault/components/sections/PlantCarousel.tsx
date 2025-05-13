@@ -7,8 +7,6 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { getAllPlants } from "@/lib/utils";
 import PlantCarouselCard from "../cards/PlantCarouselCard";
 
@@ -60,12 +58,6 @@ export default function PlantCarousel() {
   return (
     <div className="w-full bg-[#121212] text-white py-12 px-4">
       <div className="max-w-7xl mx-auto">
-        <Link href={"/newly-added"}>
-          <h2 className="text-3xl font-bold mb-8 text-white">
-            Newly Added Collections
-          </h2>
-        </Link>
-
         {plants.length === 0 ? (
           <div className="text-center py-10 text-gray-400">
             No collections found
@@ -112,12 +104,6 @@ export default function PlantCarousel() {
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
-        </div>
-
-        <div className="flex justify-center mt-8">
-          <Button className="bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-6 rounded-[20] uppercase text-sm tracking-wide">
-            See All Newest Listings
-          </Button>
         </div>
       </div>
     </div>

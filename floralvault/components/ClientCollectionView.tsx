@@ -9,14 +9,21 @@ import { useRouter } from "next/navigation";
 import { Plant } from "@/types/plants";
 import { Plus } from "lucide-react";
 
-interface ClientCollectionViewProps {
+interface CollectionsPageProps {
   username: string;
   collectionSlug: string;
   collectionData: {
     name: string;
     description?: string;
     thumbnailImage?: { url: string } | null;
-    plants: Plant[];
+    plants: (Plant & {
+      user?: {
+        username: string;
+      };
+      collection?: {
+        slug: string;
+      };
+    })[];
   };
 }
 
@@ -24,7 +31,7 @@ const ClientCollectionView = ({
   username,
   collectionSlug,
   collectionData,
-}: ClientCollectionViewProps) => {
+}: CollectionsPageProps) => {
   const { user } = useUser();
   const router = useRouter();
 
@@ -95,15 +102,24 @@ const ClientCollectionView = ({
         <div className="space-y-8">
           {plants.map((plant: Plant) => {
             const mainImage = plant.images?.[0]?.url ?? "/fallback-image.jpg";
+            const author = plant.user?.username;
+            const originalSlug = plant.originalCollection?.slug;
+
+            console.log(originalSlug);
+
+            if (!author || !originalSlug) {
+              console.warn("Missing plant author or originalSlug:", plant);
+            }
+
+            const plantUrl = `/profiles/${author}/collections/${originalSlug}/${plant.slug}`;
 
             return (
               <div
                 key={plant.id}
                 className="flex flex-col sm:flex-row gap-6 border-b border-dashed border-[#dab9df] pb-6"
               >
-                {/* Image */}
                 <Link
-                  href={`/profiles/${username}/collections/${collectionSlug}/${plant.slug}`}
+                  href={plantUrl}
                   className="w-full sm:w-48 h-48 flex-shrink-0 relative overflow-hidden rounded-lg shadow group hover:shadow-lg transition"
                 >
                   <Image
@@ -114,11 +130,8 @@ const ClientCollectionView = ({
                   />
                 </Link>
 
-                {/* Info */}
                 <div className="flex-1 text-white">
-                  <Link
-                    href={`/profiles/${username}/collections/${collectionSlug}/${plant.slug}`}
-                  >
+                  <Link href={plantUrl}>
                     <h3 className="text-xl font-semibold hover:text-[#81a308] transition">
                       {plant.commonName}{" "}
                       <span className="text-sm text-gray-400 italic">
@@ -153,7 +166,6 @@ const ClientCollectionView = ({
             );
           })}
 
-          {/* Add New Plant Button */}
           {isOwner && (
             <div className="flex w-full items-center justify-center">
               <div className="w-full sm:w-48 h-48 flex-shrink-0 relative overflow-hidden rounded-lg group transition flex items-center justify-center cursor-pointer">

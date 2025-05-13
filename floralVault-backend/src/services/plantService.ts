@@ -19,6 +19,27 @@ export const getAllPlants = async () => {
   });
 };
 
+export const getAllPaginatedPlants = async (page = 1, limit = 20) => {
+  const skip = (page - 1) * limit;
+
+  const [plants, total] = await Promise.all([
+    prisma.plant.findMany({
+      where: { isPublic: true },
+      include: {
+        user: { select: { username: true } },
+        tags: true,
+        images: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.plant.count({ where: { isPublic: true } }),
+  ]);
+
+  return { plants, total };
+};
+
 export const querySearch = async (q: string) => {
   return await Promise.all([
     prisma.plant.findMany({
@@ -63,25 +84,20 @@ export const querySearch = async (q: string) => {
   ]);
 };
 
-export const getPlantBySlug = async (slug: string, username: string) => {
-  const user = await prisma.user.findUnique({
-    where: { username },
-    select: { id: true },
-  });
-
-  if (!user) return null;
-
-  return await prisma.plant.findUnique({
+export const getPlantBySlug = async (slug: string, _username: string) => {
+  return await prisma.plant.findFirst({
     where: {
-      slug_userId: {
-        slug,
-        userId: user.id,
-      },
+      slug,
     },
     include: {
       user: {
         select: {
           username: true,
+        },
+      },
+      collection: {
+        select: {
+          slug: true,
         },
       },
       tags: true,
@@ -128,6 +144,9 @@ export const createPlant = async (data: any) => {
       collection: {
         connect: { id: data.collectionId },
       },
+      originalCollection: {
+        connect: { id: data.collectionId },
+      },
       images: {
         create:
           data.images?.map((img: any) => ({
@@ -151,6 +170,12 @@ export const createPlant = async (data: any) => {
           username: true,
         },
       },
+      collection: {
+        select: { slug: true },
+      },
+      originalCollection: {
+        select: { slug: true },
+      },
     },
   });
 
@@ -159,8 +184,12 @@ export const createPlant = async (data: any) => {
 
 export const getUserCollectionWithPlants = async (
   username: string,
-  collectionSlug: string
+  collectionSlug: string,
+  page = 1,
+  limit = 10
 ) => {
+  const skip = (page - 1) * limit;
+
   return prisma.collection.findFirst({
     where: {
       slug: collectionSlug,
@@ -173,8 +202,36 @@ export const getUserCollectionWithPlants = async (
         include: {
           tags: true,
           images: true,
+          user: {
+            select: {
+              username: true,
+            },
+          },
+          collection: {
+            select: {
+              slug: true,
+            },
+          },
+          originalCollection: {
+            select: {
+              slug: true,
+            },
+          },
         },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip,
+        take: limit,
       },
+    },
+  });
+};
+
+export const getCollectionPlantCount = async (collectionId: string) => {
+  return prisma.plant.count({
+    where: {
+      collectionId,
     },
   });
 };

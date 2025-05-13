@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { User } from "@/types/users";
 import { getUserByUsername } from "@/lib/utils";
+import Link from "next/link";
 
 const ProfilePage = () => {
   const { user, logout } = useUser();
@@ -67,7 +68,7 @@ const ProfilePage = () => {
           <h1>
             <p>@{profileUser?.username}</p>
           </h1>
-          {profileUser?.joinedAt && (
+          {/* {profileUser?.joinedAt && (
             <p className="text-sm text-gray-300">
               {new Date(profileUser.joinedAt).toLocaleDateString("en-US", {
                 year: "numeric",
@@ -75,7 +76,7 @@ const ProfilePage = () => {
               })}{" "}
               {profileUser.plan}
             </p>
-          )}
+          )} */}
         </div>
 
         <div className="space-y-2">
@@ -83,6 +84,16 @@ const ProfilePage = () => {
           <p className="text-sm text-gray-300">
             {profileUser?.bio || "No bio available yet."}
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold">Collections</h2>
+          <Link
+            href={`/profiles/${profileUser.username}/collections`}
+            className="text-sm text-[#81a308] hover:underline"
+          >
+            View All Collections →
+          </Link>
         </div>
 
         <div className="space-y-2">
