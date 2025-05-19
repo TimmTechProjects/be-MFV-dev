@@ -1,6 +1,8 @@
 // utils/uploadthingClient.ts
 import { generateReactHelpers } from "@uploadthing/react";
 
+const baseUrl = process.env.NEXT_PUBLIC_FLORAL_VAULT_API_URL;
+
 export const { useUploadThing, uploadFiles } = generateReactHelpers({
-  url: "http://localhost:5000/api/uploadthing",
+  url: `${baseUrl}/api/uploadthing`,
 });
