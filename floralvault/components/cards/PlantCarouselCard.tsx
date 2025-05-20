@@ -42,7 +42,7 @@ const PlantCarouselCard = ({ plant }: PlantCarouselCardProps) => {
       </Link>
 
       {/* Tags BELOW the card (outside the Link) */}
-      {plant.tags?.length > 0 && (
+      {plant?.tags?.length > 0 && (
         <div className="absolute bottom-3 left-6 z-30 flex gap-1 flex-wrap">
           {plant.tags.slice(0, 3).map((tag, i) => (
             <Link

@@ -22,7 +22,7 @@ export default function PlantCarousel() {
       try {
         const data = await getAllPlants();
 
-        setPlants(data);
+        setPlants(data.plants);
       } catch (error) {
         console.error("Failed to fetch plants:", error);
       }
@@ -54,6 +54,8 @@ export default function PlantCarousel() {
       </div>
     );
   }
+
+  console.log("Plants: ", plants);
 
   return (
     <div className="w-full bg-[#121212] text-white py-12 px-4">

@@ -242,7 +242,10 @@ export async function getPlantBySlug(
   }
 }
 
-export async function getAllPlants(): Promise<Plant[]> {
+export async function getAllPlants(): Promise<{
+  plants: Plant[];
+  total: number;
+}> {
   const res = await fetch(`${baseUrl}/api/plants`, {
     cache: "no-store",
   });
