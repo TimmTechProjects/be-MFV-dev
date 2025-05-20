@@ -105,7 +105,7 @@ const ClientCollectionView = ({
             const author = plant.user?.username;
             const originalSlug = plant.originalCollection?.slug;
 
-            console.log(originalSlug);
+            // console.log(originalSlug);
 
             if (!author || !originalSlug) {
               console.warn("Missing plant author or originalSlug:", plant);

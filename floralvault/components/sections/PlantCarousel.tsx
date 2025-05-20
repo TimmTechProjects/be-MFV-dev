@@ -55,8 +55,6 @@ export default function PlantCarousel() {
     );
   }
 
-  console.log("Plants: ", plants);
-
   return (
     <div className="w-full bg-[#121212] text-white py-12 px-4">
       <div className="max-w-7xl mx-auto">

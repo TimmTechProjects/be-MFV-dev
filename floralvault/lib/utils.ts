@@ -212,8 +212,6 @@ export async function updatePlant(
       body: JSON.stringify(values),
     });
 
-    console.log(response);
-
     if (!response.ok) {
       const err = await response.json();
       console.error("Update failed:", err.message || "Unknown error");

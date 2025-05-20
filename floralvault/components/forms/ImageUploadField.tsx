@@ -46,7 +46,7 @@ const ImageUploadField = ({ value, onChange }: ImageUploadFieldProps) => {
         return;
       }
 
-      console.log("Form values.images", value);
+      // console.log("Form values.images", value);
 
       const newImages: UploadedImage[] = acceptedFiles.map((file) => ({
         file,
