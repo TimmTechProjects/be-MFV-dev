@@ -89,7 +89,7 @@ const Header = () => {
     <div className="bg-[#2b2a2a] flex w-full h-24 px-6 md:px-10 md:pt-2 items-center justify-between ">
       {/* Logo */}
       <h1
-        className="hidden sm:flex text-3xl md:text-4xl text-white font-bold tracking-tight cursor-pointer"
+        className="text-3xl md:text-4xl text-white font-bold tracking-tight cursor-pointer"
         onClick={() => (window.location.href = "/")}
       >
         <span className="text-[#ecfaec]">My</span>
@@ -103,7 +103,7 @@ const Header = () => {
 
       <form
         onSubmit={handleSearch}
-        className="relative w-3/4 sm:w-1/2 lg:w-1/3 xl:w-1/2"
+        className="relative w-3/4 sm:w-1/2 lg:w-1/3 hidden sm:block"
       >
         <Input
           type="text"
@@ -285,6 +285,21 @@ const Header = () => {
                 Floral Vault
               </SheetTitle>
             </SheetHeader>
+
+            {/* Mobile Searchbar */}
+            <form
+              onSubmit={handleSearch}
+              className="flex sm:hidden w-full mb-4 items-center justify-center"
+            >
+              <Input
+                type="text"
+                placeholder="Search plants, users, tags, or albums..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pr-10 rounded-2xl bg-white text-black border-0 w-11/12 max-w-xs"
+              />
+              <button type="submit" className="hidden" aria-label="Search" />
+            </form>
 
             <div className="flex flex-col text-white gap-5 pl-10">
               {navLinks.map((link) => {
