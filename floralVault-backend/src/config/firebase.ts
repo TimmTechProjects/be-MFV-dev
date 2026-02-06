@@ -1,19 +1,45 @@
-// Verify Google ID tokens using Google's tokeninfo endpoint
-// This approach doesn't require service account credentials
+// Verify Firebase ID tokens
+// Firebase ID tokens are JWTs that can be verified using Google's public keys
 
-interface GoogleTokenInfo {
+import jwt from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
+
+const FIREBASE_PROJECT_ID = "potential-641e8";
+
+// JWKS client to fetch Google's public keys for Firebase token verification
+const client = jwksClient({
+  jwksUri: "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
+  cache: true,
+  cacheMaxAge: 86400000, // 24 hours
+});
+
+function getKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
+  client.getSigningKey(header.kid, (err, key) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+    const signingKey = key?.getPublicKey();
+    callback(null, signingKey);
+  });
+}
+
+interface FirebaseTokenPayload {
   iss: string;
-  azp: string;
   aud: string;
+  auth_time: number;
+  user_id: string;
   sub: string;
-  email: string;
-  email_verified: string;
+  iat: number;
+  exp: number;
+  email?: string;
+  email_verified?: boolean;
   name?: string;
   picture?: string;
-  given_name?: string;
-  family_name?: string;
-  iat: string;
-  exp: string;
+  firebase: {
+    identities: Record<string, string[]>;
+    sign_in_provider: string;
+  };
 }
 
 export const verifyGoogleToken = async (idToken: string): Promise<{
@@ -22,35 +48,31 @@ export const verifyGoogleToken = async (idToken: string): Promise<{
   name?: string;
   picture?: string;
 }> => {
-  try {
-    // Use Google's tokeninfo endpoint to verify the token
-    const response = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      idToken,
+      getKey,
+      {
+        algorithms: ["RS256"],
+        issuer: `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
+        audience: FIREBASE_PROJECT_ID,
+      },
+      (err, decoded) => {
+        if (err) {
+          console.error("Token verification error:", err);
+          reject(new Error("Invalid Google token"));
+          return;
+        }
+
+        const payload = decoded as FirebaseTokenPayload;
+        
+        resolve({
+          uid: payload.sub || payload.user_id,
+          email: payload.email || "",
+          name: payload.name,
+          picture: payload.picture,
+        });
+      }
     );
-
-    if (!response.ok) {
-      throw new Error("Token verification failed");
-    }
-
-    const tokenInfo: GoogleTokenInfo = await response.json();
-
-    // Verify the token is for our Firebase project
-    const validAudiences = [
-      "241521864207-somethingsomething.apps.googleusercontent.com", // Web client ID
-      "potential-641e8", // Firebase project ID
-    ];
-
-    // The aud should contain our Firebase project's web client ID
-    // For Firebase Auth, the aud is typically the Firebase project's web client ID
-
-    return {
-      uid: tokenInfo.sub,
-      email: tokenInfo.email,
-      name: tokenInfo.name,
-      picture: tokenInfo.picture,
-    };
-  } catch (error) {
-    console.error("Error verifying Google token:", error);
-    throw new Error("Invalid Google token");
-  }
+  });
 };
