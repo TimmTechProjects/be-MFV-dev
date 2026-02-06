@@ -98,6 +98,7 @@ export const getPlantBySlug = async (slug: string, _username: string) => {
       collection: {
         select: {
           slug: true,
+          name: true,
         },
       },
       tags: true,
