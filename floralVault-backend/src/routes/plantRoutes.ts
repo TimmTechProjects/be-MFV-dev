@@ -5,6 +5,7 @@ import {
   searchPlants,
   getPlantBySlug,
   createPlantPost,
+  deletePlantPost,
 } from "../controllers/plantController";
 
 const router = Router();
@@ -16,5 +17,7 @@ router.get("/search", searchPlants);
 router.get("/:username/:slug", getPlantBySlug);
 
 router.post("/new", verifyToken, createPlantPost);
+
+router.delete("/:plantId", verifyToken, deletePlantPost);
 
 export default router;

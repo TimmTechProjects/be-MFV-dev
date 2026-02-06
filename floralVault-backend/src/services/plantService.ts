@@ -258,3 +258,36 @@ export const getCollectionPlantCount = async (collectionId: string) => {
     },
   });
 };
+
+export const deletePlant = async (plantId: string, userId: string) => {
+  // Verify ownership before deleting
+  const plant = await prisma.plant.findFirst({
+    where: {
+      id: plantId,
+      userId,
+    },
+    include: {
+      images: true,
+    },
+  });
+
+  if (!plant) {
+    throw new Error("Plant not found or you don't have permission to delete it.");
+  }
+
+  // Delete associated images first
+  await prisma.plantImage.deleteMany({
+    where: {
+      plantId,
+    },
+  });
+
+  // Delete the plant
+  await prisma.plant.delete({
+    where: {
+      id: plantId,
+    },
+  });
+
+  return { success: true, deletedPlantId: plantId };
+};

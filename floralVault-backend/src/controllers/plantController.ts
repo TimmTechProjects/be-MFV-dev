@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
   createPlant,
+  deletePlant,
   getAllPaginatedPlants,
   getAllPlants,
   getPlantBySlug as fetchPlantBySlug,
@@ -109,5 +110,35 @@ export const createPlantPost = async (
   } catch (error) {
     console.error("Error creating plant post:", error);
     res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const deletePlantPost = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const { plantId } = req.params;
+    const userId = req.user;
+
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    if (!plantId) {
+      res.status(400).json({ message: "Plant ID is required." });
+      return;
+    }
+
+    const result = await deletePlant(plantId, userId);
+    res.status(200).json(result);
+  } catch (error: any) {
+    console.error("Error deleting plant:", error);
+    if (error.message.includes("not found") || error.message.includes("permission")) {
+      res.status(403).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Something went wrong" });
+    }
   }
 };
