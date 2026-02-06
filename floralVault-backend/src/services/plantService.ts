@@ -113,6 +113,18 @@ export const createPlant = async (data: any) => {
     throw new Error("Collection ID is required.");
   }
 
+  // 0. Verify the collection belongs to the authenticated user
+  const collection = await prisma.collection.findFirst({
+    where: {
+      id: data.collectionId,
+      userId,
+    },
+  });
+
+  if (!collection) {
+    throw new Error("Collection not found or you don't have permission to add plants to it.");
+  }
+
   // 1. Check if this user already added this plant
   const existingPlant = await prisma.plant.findFirst({
     where: {

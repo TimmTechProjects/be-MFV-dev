@@ -14,7 +14,7 @@ router.get("/me", verifyToken, getCollectionsForUser);
 
 router.get("/:username", getCollections);
 
-router.post("/:username/collections", createCollection);
+router.post("/:username/collections", verifyToken, createCollection);
 
 router.get("/:username/collections/:collectionSlug", getCollectionWithPlants);
 

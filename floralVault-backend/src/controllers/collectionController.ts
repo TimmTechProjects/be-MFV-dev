@@ -8,10 +8,16 @@ import {
 import { getUserCollectionWithPlants } from "../services/plantService";
 import { AuthenticatedRequest } from "../types/express";
 
-export const createCollection = async (req: Request, res: Response) => {
+export const createCollection = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { username } = req.params;
     const { name, description } = req.body;
+    const userId = req.user;
+
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
 
     if (!username || !name) {
       res
@@ -20,14 +26,19 @@ export const createCollection = async (req: Request, res: Response) => {
       return;
     }
 
+    // Verify the authenticated user matches the requested username
     const newCollection = await createNewCollection(username, {
       name,
       description,
-    });
+    }, userId);
 
     res.status(201).json(newCollection);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating collection:", error);
+    if (error.message === "Unauthorized: User mismatch") {
+      res.status(403).json({ message: "You can only create collections for your own account" });
+      return;
+    }
     res.status(500).json({ message: "Server error while creating collection" });
   }
 };

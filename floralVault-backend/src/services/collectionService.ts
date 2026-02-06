@@ -2,7 +2,8 @@ import prisma from "../prisma/client";
 
 export const createNewCollection = async (
   username: string,
-  data: { name: string; description?: string }
+  data: { name: string; description?: string },
+  authenticatedUserId?: string
 ) => {
   const user = await prisma.user.findUnique({
     where: { username },
@@ -12,11 +13,27 @@ export const createNewCollection = async (
     throw new Error("User not found");
   }
 
+  // If authenticatedUserId is provided, verify it matches the target user
+  if (authenticatedUserId && user.id !== authenticatedUserId) {
+    throw new Error("Unauthorized: User mismatch");
+  }
+
+  // Generate a unique slug by appending a timestamp if needed
+  const baseSlug = data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  let slug = baseSlug;
+  let counter = 1;
+  
+  // Check for existing slugs and make unique if necessary
+  while (await prisma.collection.findUnique({ where: { slug } })) {
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
   return prisma.collection.create({
     data: {
       name: data.name,
       description: data.description ?? "",
-      slug: data.name.toLowerCase().replace(/\s+/g, "-"),
+      slug,
       userId: user.id,
     },
   });
