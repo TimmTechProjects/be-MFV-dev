@@ -4,6 +4,7 @@ import {
   getUserCollections,
   addPlantToCollectionService,
   getUsersCollectionsById,
+  setCollectionThumbnailService,
 } from "../services/collectionService";
 import { getUserCollectionWithPlants } from "../services/plantService";
 import { AuthenticatedRequest } from "../types/express";
@@ -142,6 +143,50 @@ export const addPlantToCollection = async (
     return;
   } catch (error) {
     console.error("Failed to add plant to collection:", error);
+    res.status(500).json({ message: "Server error" });
+    return;
+  }
+};
+
+export const setCollectionThumbnail = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const userId = req.user;
+  const { collectionId } = req.params;
+  const { imageId } = req.body;
+
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  if (!collectionId || !imageId) {
+    res
+      .status(400)
+      .json({ message: "Both collectionId and imageId are required." });
+    return;
+  }
+
+  try {
+    const result = await setCollectionThumbnailService({
+      userId,
+      collectionId,
+      imageId,
+    });
+
+    res.status(200).json(result);
+    return;
+  } catch (error: any) {
+    console.error("Failed to set collection thumbnail:", error);
+    if (error.message === "Collection not found or access denied") {
+      res.status(403).json({ message: error.message });
+      return;
+    }
+    if (error.message === "Image not found") {
+      res.status(404).json({ message: error.message });
+      return;
+    }
     res.status(500).json({ message: "Server error" });
     return;
   }

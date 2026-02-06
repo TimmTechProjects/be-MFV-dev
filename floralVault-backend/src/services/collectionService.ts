@@ -117,12 +117,72 @@ export const addPlantToCollectionService = async ({
   }
 
   // Add the plant to the collection
-  return await prisma.collection.update({
+  const updatedCollection = await prisma.collection.update({
     where: { id: collectionId },
     data: {
       plants: {
         connect: { id: plantId },
       },
     },
+  });
+
+  // Auto-set thumbnail if collection doesn't have one
+  if (!collection.thumbnailImageId) {
+    const plantWithImage = await prisma.plant.findUnique({
+      where: { id: plantId },
+      include: {
+        images: {
+          where: { isMain: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (plantWithImage?.images?.[0]?.id) {
+      await prisma.collection.update({
+        where: { id: collectionId },
+        data: { thumbnailImageId: plantWithImage.images[0].id },
+      });
+    }
+  }
+
+  return updatedCollection;
+};
+
+export const setCollectionThumbnailService = async ({
+  userId,
+  collectionId,
+  imageId,
+}: {
+  userId: string;
+  collectionId: string;
+  imageId: string;
+}) => {
+  // Confirm the collection belongs to the user
+  const collection = await prisma.collection.findFirst({
+    where: {
+      id: collectionId,
+      userId,
+    },
+  });
+
+  if (!collection) {
+    throw new Error("Collection not found or access denied");
+  }
+
+  // Verify the image exists
+  const image = await prisma.image.findUnique({
+    where: { id: imageId },
+  });
+
+  if (!image) {
+    throw new Error("Image not found");
+  }
+
+  // Update the collection thumbnail
+  return await prisma.collection.update({
+    where: { id: collectionId },
+    data: { thumbnailImageId: imageId },
+    include: { thumbnailImage: true },
   });
 };

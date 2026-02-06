@@ -191,6 +191,17 @@ export const createPlant = async (data: any) => {
     },
   });
 
+  // 4. Auto-set collection thumbnail if it doesn't have one
+  if (!collection.thumbnailImageId && newPlant.images?.length > 0) {
+    const mainImage = newPlant.images.find((img) => img.isMain) || newPlant.images[0];
+    if (mainImage) {
+      await prisma.collection.update({
+        where: { id: data.collectionId },
+        data: { thumbnailImageId: mainImage.id },
+      });
+    }
+  }
+
   return newPlant;
 };
 

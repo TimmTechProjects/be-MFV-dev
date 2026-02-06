@@ -5,6 +5,7 @@ import {
   getCollectionsForUser,
   getCollectionWithPlants,
   addPlantToCollection,
+  setCollectionThumbnail,
 } from "../controllers/collectionController";
 import verifyToken from "../middleware/verifyToken";
 
@@ -19,5 +20,7 @@ router.post("/:username/collections", verifyToken, createCollection);
 router.get("/:username/collections/:collectionSlug", getCollectionWithPlants);
 
 router.post("/:collectionId/add-plant", verifyToken, addPlantToCollection);
+
+router.patch("/:collectionId/set-thumbnail", verifyToken, setCollectionThumbnail);
 
 export default router;
