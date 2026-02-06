@@ -16,7 +16,29 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://flora-vault.vercel.app"],
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "https://fe-mfv.vercel.app",
+      "https://flora-vault.vercel.app",
+    ];
+    
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // Allow all Vercel preview deployments for fe-mfv
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.match(/^https:\/\/fe-mfv-.*\.vercel\.app$/) ||
+      origin.match(/^https:\/\/fe-.*-jztimms-projects\.vercel\.app$/)
+    ) {
+      return callback(null, true);
+    }
+    
+    callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
 };
 
