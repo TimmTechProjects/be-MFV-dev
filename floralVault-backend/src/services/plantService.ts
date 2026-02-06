@@ -276,7 +276,7 @@ export const deletePlant = async (plantId: string, userId: string) => {
   }
 
   // Delete associated images first
-  await prisma.plantImage.deleteMany({
+  await prisma.image.deleteMany({
     where: {
       plantId,
     },

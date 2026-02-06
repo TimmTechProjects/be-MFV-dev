@@ -1,0 +1,100 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.registerUser = exports.loginUser = void 0;
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const authService_1 = require("../services/authService");
+const generateToken = async (userId) => {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error("JWT_SECRET missing from env");
+    }
+    const signedJWT = await (0, authService_1.signJWT)(userId, secret);
+    return signedJWT;
+};
+// POST /api/auth/login
+const loginUser = async (req, res, next) => {
+    const { username, password } = req.body;
+    try {
+        const user = await (0, authService_1.checkForExistingUsername)(username);
+        if (!user) {
+            res.status(404).json({ message: "User not found" });
+        }
+        else {
+            const isMatch = await bcrypt_1.default.compare(password, user.password);
+            if (!isMatch) {
+                res.status(401).json({ message: "Invalid credentials" });
+            }
+            const token = await generateToken(user.id);
+            res.status(200).json({
+                token,
+                user: {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    username: user.username,
+                    email: user.email,
+                    bio: user.bio,
+                    avatarUrl: user.avatarUrl,
+                    essence: user.essence,
+                    joinedAt: user.joinedAt,
+                    plan: user.plan,
+                },
+            });
+        }
+    }
+    catch (error) {
+        console.error("Error logging in user: ", error);
+        res.status(500).json({ message: "Failed to login user" });
+    }
+};
+exports.loginUser = loginUser;
+// POST create a new user
+const registerUser = async (req, res, next) => {
+    const { username, firstName, lastName, email, password, bio, avatarUrl } = req.body;
+    const dataToCreate = {
+        username,
+        firstName,
+        lastName,
+        email,
+        password,
+        bio,
+        avatarUrl,
+    };
+    const errors = [];
+    const existingUserEmail = await (0, authService_1.checkForExistingEmail)(email);
+    const existingUserUsername = await (0, authService_1.checkForExistingUsername)(username);
+    if (existingUserEmail) {
+        errors.push({ message: "Email is already registered", field: "email" });
+    }
+    if (existingUserUsername) {
+        errors.push({ message: "Username is already taken", field: "username" });
+    }
+    if (errors.length > 0) {
+        res.status(409).json({ errors });
+    }
+    try {
+        const newUser = await (0, authService_1.createNewUser)(dataToCreate);
+        const token = await generateToken(newUser.id);
+        res.status(201).json({
+            token,
+            user: {
+                id: newUser.id,
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                username: newUser.username,
+                email: newUser.email,
+                bio: newUser.bio,
+                avatarUrl: newUser.avatarUrl,
+                essence: newUser.essence,
+            },
+        });
+    }
+    catch (error) {
+        console.error("Error creating user:", error);
+        res.status(500).json({ message: "Failed to create user" });
+    }
+};
+exports.registerUser = registerUser;
