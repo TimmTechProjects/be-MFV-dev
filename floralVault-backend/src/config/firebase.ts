@@ -4,7 +4,7 @@
 import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 
-const FIREBASE_PROJECT_ID = "potential-641e8";
+const FIREBASE_PROJECT_ID = "my-floralvault";
 
 // JWKS client to fetch Google's public keys for Firebase token verification
 const client = jwksClient({
