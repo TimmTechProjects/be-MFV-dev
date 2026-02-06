@@ -53,6 +53,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 
 app.use("/api/auth", authRoutes);
+app.use("/api/v1/auth", authRoutes); // Also mount at v1 for frontend compatibility
 
 app.use("/api/tags", tagRoutes);
 

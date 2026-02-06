@@ -4,8 +4,10 @@ import {
   checkForExistingEmail,
   checkForExistingUsername,
   createNewUser,
+  findOrCreateGoogleUser,
   signJWT,
 } from "../services/authService";
+import { verifyGoogleToken } from "../config/firebase";
 
 const generateToken = async (userId: string) => {
   const secret = process.env.JWT_SECRET;
@@ -119,5 +121,54 @@ export const registerUser = async (
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ message: "Failed to create user" });
+  }
+};
+
+// POST /api/v1/auth/google-login
+export const googleLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    res.status(400).json({ message: "ID token is required" });
+    return;
+  }
+
+  try {
+    // Verify the Google ID token
+    const decodedToken = await verifyGoogleToken(idToken);
+    
+    // Find or create user
+    const user = await findOrCreateGoogleUser({
+      email: decodedToken.email!,
+      name: decodedToken.name,
+      picture: decodedToken.picture,
+      uid: decodedToken.uid,
+    });
+
+    // Generate JWT token
+    const token = await generateToken(user.id);
+
+    res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+        bio: user.bio,
+        avatarUrl: user.avatarUrl,
+        essence: user.essence,
+        joinedAt: user.joinedAt,
+        plan: user.plan,
+      },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(401).json({ message: "Google authentication failed" });
   }
 };
