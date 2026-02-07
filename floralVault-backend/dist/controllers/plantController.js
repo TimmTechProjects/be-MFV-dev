@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createPlantPost = exports.getPlantBySlug = exports.searchPlants = exports.getPaginatedPlants = exports.getPlants = void 0;
+exports.deletePlantPost = exports.createPlantPost = exports.getPlantBySlug = exports.searchPlants = exports.getPaginatedPlants = exports.getPlants = void 0;
 const plantService_1 = require("../services/plantService");
 const getPlants = async (req, res) => {
     const plants = await (0, plantService_1.getAllPlants)();
@@ -45,7 +45,6 @@ const getPlantBySlug = async (req, res) => {
 exports.getPlantBySlug = getPlantBySlug;
 const createPlantPost = async (req, res) => {
     try {
-        console.log("REQ BODY:", req.body);
         const { commonName, botanicalName, description, origin, family, tags, images, type, isPublic = true, collectionId, } = req.body;
         const userId = req.user;
         if (!userId) {
@@ -56,10 +55,27 @@ const createPlantPost = async (req, res) => {
             res.status(400).json({ message: "Collection ID is required." });
             return;
         }
+        // FIX: Prevent double-encoding of HTML entities in descriptions
+        // When descriptions contain HTML (from rich text editors), ensure they're stored
+        // as-is without extra encoding that causes issues during retrieval
+        let processedDescription = description || "";
+        if (typeof processedDescription === "string" && processedDescription.length > 0) {
+            // If description is already HTML-entity-encoded, decode it once before storage
+            // This prevents double-encoding when sending via JSON
+            if (processedDescription.includes("&lt;") || processedDescription.includes("&gt;") || processedDescription.includes("&quot;")) {
+                try {
+                    processedDescription = decodeHTMLEntities(processedDescription);
+                }
+                catch (e) {
+                    // If decoding fails, use original - this maintains backwards compatibility
+                    console.warn("Could not decode HTML entities in description:", e);
+                }
+            }
+        }
         const newPlant = await (0, plantService_1.createPlant)({
             commonName,
             botanicalName,
-            description,
+            description: processedDescription,
             origin,
             family,
             type,
@@ -77,3 +93,50 @@ const createPlantPost = async (req, res) => {
     }
 };
 exports.createPlantPost = createPlantPost;
+// Helper function to decode HTML entities at the backend level
+// This is a workaround for the JSON body parsing issue that was blocking image uploads
+// Reference: PR #6 - HTML entities in plant descriptions were being double-encoded
+function decodeHTMLEntities(text) {
+    const entities = {
+        "&amp;": "&",
+        "&lt;": "<",
+        "&gt;": ">",
+        "&quot;": '"',
+        "&#39;": "'",
+        "&apos;": "'",
+        "&#x27;": "'",
+        "&#x2F;": "/",
+        "&slash;": "/",
+    };
+    let decoded = text;
+    for (const [entity, char] of Object.entries(entities)) {
+        decoded = decoded.replace(new RegExp(entity, "g"), char);
+    }
+    return decoded;
+}
+const deletePlantPost = async (req, res) => {
+    try {
+        const { plantId } = req.params;
+        const userId = req.user;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+        if (!plantId) {
+            res.status(400).json({ message: "Plant ID is required." });
+            return;
+        }
+        const result = await (0, plantService_1.deletePlant)(plantId, userId);
+        res.status(200).json(result);
+    }
+    catch (error) {
+        console.error("Error deleting plant:", error);
+        if (error.message.includes("not found") || error.message.includes("permission")) {
+            res.status(403).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: "Something went wrong" });
+        }
+    }
+};
+exports.deletePlantPost = deletePlantPost;

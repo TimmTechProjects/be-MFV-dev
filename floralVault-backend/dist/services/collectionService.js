@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addPlantToCollectionService = exports.getUsersCollectionsById = exports.getCollectionWithPlants = exports.getUserCollections = exports.createNewCollection = void 0;
+exports.setCollectionThumbnailService = exports.addPlantToCollectionService = exports.getUsersCollectionsById = exports.getCollectionWithPlants = exports.getUserCollections = exports.createNewCollection = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const createNewCollection = async (username, data, authenticatedUserId) => {
     const user = await client_1.default.user.findUnique({
@@ -102,7 +102,7 @@ const addPlantToCollectionService = async ({ userId, collectionId, plantId, }) =
         throw new Error("Collection not found or access denied");
     }
     // Add the plant to the collection
-    return await client_1.default.collection.update({
+    const updatedCollection = await client_1.default.collection.update({
         where: { id: collectionId },
         data: {
             plants: {
@@ -110,5 +110,50 @@ const addPlantToCollectionService = async ({ userId, collectionId, plantId, }) =
             },
         },
     });
+    // Auto-set thumbnail if collection doesn't have one
+    if (!collection.thumbnailImageId) {
+        const plantWithImage = await client_1.default.plant.findUnique({
+            where: { id: plantId },
+            include: {
+                images: {
+                    where: { isMain: true },
+                    take: 1,
+                },
+            },
+        });
+        if (plantWithImage?.images?.[0]?.id) {
+            await client_1.default.collection.update({
+                where: { id: collectionId },
+                data: { thumbnailImageId: plantWithImage.images[0].id },
+            });
+        }
+    }
+    return updatedCollection;
 };
 exports.addPlantToCollectionService = addPlantToCollectionService;
+const setCollectionThumbnailService = async ({ userId, collectionId, imageId, }) => {
+    // Confirm the collection belongs to the user
+    const collection = await client_1.default.collection.findFirst({
+        where: {
+            id: collectionId,
+            userId,
+        },
+    });
+    if (!collection) {
+        throw new Error("Collection not found or access denied");
+    }
+    // Verify the image exists
+    const image = await client_1.default.image.findUnique({
+        where: { id: imageId },
+    });
+    if (!image) {
+        throw new Error("Image not found");
+    }
+    // Update the collection thumbnail
+    return await client_1.default.collection.update({
+        where: { id: collectionId },
+        data: { thumbnailImageId: imageId },
+        include: { thumbnailImage: true },
+    });
+};
+exports.setCollectionThumbnailService = setCollectionThumbnailService;

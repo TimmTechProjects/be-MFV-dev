@@ -65,8 +65,6 @@ export const createPlantPost = async (
   res: Response
 ) => {
   try {
-    console.log("REQ BODY:", req.body);
-
     const {
       commonName,
       botanicalName,
@@ -92,10 +90,27 @@ export const createPlantPost = async (
       return;
     }
 
+    // FIX: Prevent double-encoding of HTML entities in descriptions
+    // When descriptions contain HTML (from rich text editors), ensure they're stored
+    // as-is without extra encoding that causes issues during retrieval
+    let processedDescription = description || "";
+    if (typeof processedDescription === "string" && processedDescription.length > 0) {
+      // If description is already HTML-entity-encoded, decode it once before storage
+      // This prevents double-encoding when sending via JSON
+      if (processedDescription.includes("&lt;") || processedDescription.includes("&gt;") || processedDescription.includes("&quot;")) {
+        try {
+          processedDescription = decodeHTMLEntities(processedDescription);
+        } catch (e) {
+          // If decoding fails, use original - this maintains backwards compatibility
+          console.warn("Could not decode HTML entities in description:", e);
+        }
+      }
+    }
+
     const newPlant = await createPlant({
       commonName,
       botanicalName,
-      description,
+      description: processedDescription,
       origin,
       family,
       type,
@@ -112,6 +127,30 @@ export const createPlantPost = async (
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+// Helper function to decode HTML entities at the backend level
+// This is a workaround for the JSON body parsing issue that was blocking image uploads
+// Reference: PR #6 - HTML entities in plant descriptions were being double-encoded
+function decodeHTMLEntities(text: string): string {
+  const entities: { [key: string]: string } = {
+    "&amp;": "&",
+    "&lt;": "<",
+    "&gt;": ">",
+    "&quot;": '"',
+    "&#39;": "'",
+    "&apos;": "'",
+    "&#x27;": "'",
+    "&#x2F;": "/",
+    "&slash;": "/",
+  };
+
+  let decoded = text;
+  for (const [entity, char] of Object.entries(entities)) {
+    decoded = decoded.replace(new RegExp(entity, "g"), char);
+  }
+
+  return decoded;
+}
 
 export const deletePlantPost = async (
   req: AuthenticatedRequest,

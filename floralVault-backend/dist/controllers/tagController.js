@@ -28,8 +28,9 @@ const getSuggestedTags = async (req, res) => {
     }
     try {
         const matchingTags = await (0, tagServices_1.getAllSuggestionTags)(query);
+        // Return empty array instead of 404 for no matches (better UX)
         if (matchingTags.length === 0) {
-            res.status(404).json({ message: "No matching tags" });
+            res.status(200).json([]);
             return;
         }
         res.status(200).json(matchingTags);

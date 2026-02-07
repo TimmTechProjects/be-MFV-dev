@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addPlantToCollection = exports.getCollectionsForUser = exports.getCollectionWithPlants = exports.getCollections = exports.createCollection = void 0;
+exports.setCollectionThumbnail = exports.addPlantToCollection = exports.getCollectionsForUser = exports.getCollectionWithPlants = exports.getCollections = exports.createCollection = void 0;
 const collectionService_1 = require("../services/collectionService");
 const plantService_1 = require("../services/plantService");
 const createCollection = async (req, res) => {
@@ -121,3 +121,41 @@ const addPlantToCollection = async (req, res) => {
     }
 };
 exports.addPlantToCollection = addPlantToCollection;
+const setCollectionThumbnail = async (req, res) => {
+    const userId = req.user;
+    const { collectionId } = req.params;
+    const { imageId } = req.body;
+    if (!userId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+    if (!collectionId || !imageId) {
+        res
+            .status(400)
+            .json({ message: "Both collectionId and imageId are required." });
+        return;
+    }
+    try {
+        const result = await (0, collectionService_1.setCollectionThumbnailService)({
+            userId,
+            collectionId,
+            imageId,
+        });
+        res.status(200).json(result);
+        return;
+    }
+    catch (error) {
+        console.error("Failed to set collection thumbnail:", error);
+        if (error.message === "Collection not found or access denied") {
+            res.status(403).json({ message: error.message });
+            return;
+        }
+        if (error.message === "Image not found") {
+            res.status(404).json({ message: error.message });
+            return;
+        }
+        res.status(500).json({ message: "Server error" });
+        return;
+    }
+};
+exports.setCollectionThumbnail = setCollectionThumbnail;

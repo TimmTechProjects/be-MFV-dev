@@ -3,9 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerUser = exports.loginUser = void 0;
+exports.googleLogin = exports.registerUser = exports.loginUser = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const authService_1 = require("../services/authService");
+const firebase_1 = require("../config/firebase");
 const generateToken = async (userId) => {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
@@ -98,3 +99,44 @@ const registerUser = async (req, res, next) => {
     }
 };
 exports.registerUser = registerUser;
+// POST /api/v1/auth/google-login
+const googleLogin = async (req, res, next) => {
+    const { idToken } = req.body;
+    if (!idToken) {
+        res.status(400).json({ message: "ID token is required" });
+        return;
+    }
+    try {
+        // Verify the Google ID token
+        const decodedToken = await (0, firebase_1.verifyGoogleToken)(idToken);
+        // Find or create user
+        const user = await (0, authService_1.findOrCreateGoogleUser)({
+            email: decodedToken.email,
+            name: decodedToken.name,
+            picture: decodedToken.picture,
+            uid: decodedToken.uid,
+        });
+        // Generate JWT token
+        const token = await generateToken(user.id);
+        res.status(200).json({
+            token,
+            user: {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                username: user.username,
+                email: user.email,
+                bio: user.bio,
+                avatarUrl: user.avatarUrl,
+                essence: user.essence,
+                joinedAt: user.joinedAt,
+                plan: user.plan,
+            },
+        });
+    }
+    catch (error) {
+        console.error("Google login error:", error);
+        res.status(401).json({ message: "Google authentication failed" });
+    }
+};
+exports.googleLogin = googleLogin;

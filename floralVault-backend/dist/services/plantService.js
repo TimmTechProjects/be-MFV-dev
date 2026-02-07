@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCollectionPlantCount = exports.getUserCollectionWithPlants = exports.createPlant = exports.getPlantBySlug = exports.querySearch = exports.getAllPaginatedPlants = exports.getAllPlants = void 0;
+exports.deletePlant = exports.getCollectionPlantCount = exports.getUserCollectionWithPlants = exports.createPlant = exports.getPlantBySlug = exports.querySearch = exports.getAllPaginatedPlants = exports.getAllPlants = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const slugify_1 = __importDefault(require("slugify"));
 const getAllPlants = async () => {
@@ -100,6 +100,7 @@ const getPlantBySlug = async (slug, _username) => {
             collection: {
                 select: {
                     slug: true,
+                    name: true,
                 },
             },
             tags: true,
@@ -183,6 +184,16 @@ const createPlant = async (data) => {
             },
         },
     });
+    // 4. Auto-set collection thumbnail if it doesn't have one
+    if (!collection.thumbnailImageId && newPlant.images?.length > 0) {
+        const mainImage = newPlant.images.find((img) => img.isMain) || newPlant.images[0];
+        if (mainImage) {
+            await client_1.default.collection.update({
+                where: { id: data.collectionId },
+                data: { thumbnailImageId: mainImage.id },
+            });
+        }
+    }
     return newPlant;
 };
 exports.createPlant = createPlant;
@@ -234,3 +245,32 @@ const getCollectionPlantCount = async (collectionId) => {
     });
 };
 exports.getCollectionPlantCount = getCollectionPlantCount;
+const deletePlant = async (plantId, userId) => {
+    // Verify ownership before deleting
+    const plant = await client_1.default.plant.findFirst({
+        where: {
+            id: plantId,
+            userId,
+        },
+        include: {
+            images: true,
+        },
+    });
+    if (!plant) {
+        throw new Error("Plant not found or you don't have permission to delete it.");
+    }
+    // Delete associated images first
+    await client_1.default.image.deleteMany({
+        where: {
+            plantId,
+        },
+    });
+    // Delete the plant
+    await client_1.default.plant.delete({
+        where: {
+            id: plantId,
+        },
+    });
+    return { success: true, deletedPlantId: plantId };
+};
+exports.deletePlant = deletePlant;

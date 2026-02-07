@@ -17,17 +17,38 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 const corsOptions = {
-    origin: ["http://localhost:3000", "https://flora-vault.vercel.app"],
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            "http://localhost:3000",
+            "https://fe-mfv.vercel.app",
+            "https://flora-vault.vercel.app",
+        ];
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) {
+            return callback(null, true);
+        }
+        // Allow all Vercel preview deployments for fe-mfv
+        if (allowedOrigins.includes(origin) ||
+            origin.match(/^https:\/\/fe-mfv-.*\.vercel\.app$/) ||
+            origin.match(/^https:\/\/fe-.*-jztimms-projects\.vercel\.app$/)) {
+            return callback(null, true);
+        }
+        callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
 };
 app.use((0, cors_1.default)(corsOptions));
-app.use(express_1.default.json());
+// Increase JSON body size limit to handle descriptions with rich HTML content
+// Default 100kb can truncate or reject large plant descriptions
+app.use(express_1.default.json({ limit: '10mb' }));
+app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
 app.get("/", (req, res) => {
     res.send("Welcome to the Floral Vault API 🌿");
 });
 //
 app.use("/api/users", userRoutes_1.default);
 app.use("/api/auth", authRoutes_1.default);
+app.use("/api/v1/auth", authRoutes_1.default); // Also mount at v1 for frontend compatibility
 app.use("/api/tags", tagRoutes_1.default);
 app.use("/api/plants", plantRoutes_1.default);
 app.use("/api/collections", collectionRoutes_1.default);
