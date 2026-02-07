@@ -26,7 +26,7 @@ const auth = async (req: import("express").Request) => {
 
 export const ourFileRouter = {
   imageUploader: uploadThing({
-    image: { maxFileSize: "24MB", maxFileCount: 10 },
+    image: { maxFileSize: "32MB", maxFileCount: 10 },
   })
     .middleware(async ({ req }) => {
       const user = await auth(req);
