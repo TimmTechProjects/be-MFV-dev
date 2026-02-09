@@ -1,3 +1,5 @@
+import { Plant } from "./plants";
+
 export type Collection = {
   id: string;
   name: string;
@@ -5,6 +7,7 @@ export type Collection = {
   createdAt: string;
   updatedAt: string;
   thumbnailImage?: { url: string } | null;
+  plants?: Plant[];
   _count?: {
     plants: number;
   };

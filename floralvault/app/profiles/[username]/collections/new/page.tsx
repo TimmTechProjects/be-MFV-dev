@@ -159,7 +159,7 @@ const NewCollectionPage = ({ params }: NewCollectionPageProps) => {
           </div>
         </div>
 
-        {/* LIVE PREVIEW IMAGE */}
+        {/* LIVE PREVIEW IMAGE - hidden from UI, kept for future use
         {previewUrl ? (
           <div className="relative w-full max-w-md mx-auto mt-6 rounded-2xl overflow-hidden shadow-lg border border-gray-700 bg-[#1a1a1a] group">
             <div className="relative h-64 w-full flex items-center justify-center">
@@ -169,10 +169,8 @@ const NewCollectionPage = ({ params }: NewCollectionPageProps) => {
                 className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
 
-              {/* Gradient overlay */}
               <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/70 to-transparent"></div>
 
-              {/* ✕ Close Button */}
               <button
                 type="button"
                 onClick={() => {
@@ -192,7 +190,6 @@ const NewCollectionPage = ({ params }: NewCollectionPageProps) => {
               </button>
             </div>
 
-            {/* Caption */}
             <div className="px-4 py-2 bg-[#1f1f1f] text-center border-t border-gray-700">
               <p className="text-sm text-gray-300 font-medium">
                 Thumbnail Preview
@@ -204,10 +201,11 @@ const NewCollectionPage = ({ params }: NewCollectionPageProps) => {
             No thumbnail uploaded yet.
           </div>
         )}
+        */}
 
         {/* Placeholder for plants */}
         <div className="text-center text-gray-400 py-10 border-b border-dashed border-[#dab9df]">
-          Once created, you can start adding plants to your collection.
+          Once created, you can start adding plants to your album.
         </div>
 
         {/* Submit */}
@@ -217,7 +215,7 @@ const NewCollectionPage = ({ params }: NewCollectionPageProps) => {
             disabled={!name.trim() || !username}
             className="bg-[#81a308] text-white py-2 px-6 rounded-md hover:bg-[#6e8f06] transition cursor-pointer disabled:opacity-50"
           >
-            Create Collection
+            Create Album
           </button>
         </div>
       </form>
