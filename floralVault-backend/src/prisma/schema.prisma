@@ -38,6 +38,8 @@ model User {
   stripeCustomerId      String?               @unique
   stripeCustomer        StripeCustomer?
   subscriptions         Subscription[]
+  preferences           UserPreference?
+  careReminders         CareReminder[]
 }
 
 model Plant {
@@ -61,6 +63,7 @@ model Plant {
 
   tags   Tag[]   @relation("PlantTags")
   images Image[]
+  careReminders CareReminder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -143,4 +146,40 @@ model StripeEvent {
   
   @@index([stripeEventId])
   @@index([processed])
+}
+
+model UserPreference {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme             String    @default("dark")
+  language          String    @default("en")
+  emailNotifications Boolean  @default(true)
+  pushNotifications  Boolean  @default(false)
+  careReminders     Boolean   @default(true)
+  reminderTime      String    @default("09:00")
+  timezone          String    @default("America/New_York")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model CareReminder {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plantId           String
+  plant             Plant     @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  type              String
+  frequency         Int
+  frequencyUnit     String    @default("days")
+  lastCompleted     DateTime?
+  nextDue           DateTime
+  enabled           Boolean   @default(true)
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([plantId])
+  @@index([nextDue])
 }

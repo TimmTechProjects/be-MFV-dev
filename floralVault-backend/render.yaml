@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: my-floral-vault-api
+    env: node
+    plan: free
+    rootDir: floralVault-backend
+    buildCommand: npm install && npm run prisma:generate && prisma db push --schema=src/prisma/schema.prisma --accept-data-loss --skip-generate && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: floralvault-db
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: UPLOADTHING_SECRET
+        sync: false
+      - key: UPLOADTHING_APP_ID
+        sync: false
