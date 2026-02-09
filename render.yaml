@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: my-floral-vault-api
+    name: floral-vault-api
     env: node
     plan: free
     rootDir: floralVault-backend
