@@ -473,3 +473,24 @@ export async function updateCollectionThumbnail(
     return { success: false, message: "Unexpected error" };
   }
 }
+
+export function formatRelativeTime(dateString: string) {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+
+  if (diffHr < 12) {
+    if (diffHr >= 1) return `${diffHr}h`;
+    if (diffMin >= 1) return `${diffMin}m`;
+    return "Just now";
+  }
+  if (diffDay < 7) {
+    return `${diffDay}d`;
+  }
+  // Fallback to date string (e.g. Jun 30)
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
