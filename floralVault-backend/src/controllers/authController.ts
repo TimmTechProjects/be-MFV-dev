@@ -27,10 +27,17 @@ export const loginUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
+  const loginIdentifier = username || email;
 
   try {
-    const user = await checkForExistingUsername(username);
+    // Try to find user by username or email
+    let user;
+    if (username) {
+      user = await checkForExistingUsername(username);
+    } else if (email) {
+      user = await checkForExistingEmail(email);
+    }
 
     if (!user) {
       res.status(404).json({ message: "User not found" });
@@ -38,24 +45,25 @@ export const loginUser = async (
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         res.status(401).json({ message: "Invalid credentials" });
-      }
-      const token = await generateToken(user.id);
+      } else {
+        const token = await generateToken(user.id);
 
-      res.status(200).json({
-        token,
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          username: user.username,
-          email: user.email,
-          bio: user.bio,
-          avatarUrl: user.avatarUrl,
-          essence: user.essence,
-          joinedAt: user.joinedAt,
-          plan: user.plan,
-        },
-      });
+        res.status(200).json({
+          token,
+          user: {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            username: user.username,
+            email: user.email,
+            bio: user.bio,
+            avatarUrl: user.avatarUrl,
+            essence: user.essence,
+            joinedAt: user.joinedAt,
+            plan: user.plan,
+          },
+        });
+      }
     }
   } catch (error) {
     console.error("Error logging in user: ", error);
