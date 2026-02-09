@@ -8,6 +8,7 @@ import {
   handleWebhookEvent,
   getStripePublishableKey,
 } from '../services/stripeService';
+import getStripe from '../services/stripeService';
 import Stripe from 'stripe';
 
 /**
@@ -142,11 +143,7 @@ export const webhook = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-      apiVersion: '2026-01-28.clover' as any,
-    });
-
-    const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    const event = getStripe().webhooks.constructEvent(req.body, sig, webhookSecret);
 
     // Handle the event
     await handleWebhookEvent(event);
