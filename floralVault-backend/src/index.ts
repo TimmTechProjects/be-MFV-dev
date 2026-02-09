@@ -9,6 +9,8 @@ import plantRoutes from "./routes/plantRoutes";
 import collectionRoutes from "./routes/collectionRoutes";
 import searchRoutes from "./routes/searchRoutes";
 import subscriptionRoutes from "./routes/subscriptionRoutes";
+import preferencesRoutes from "./routes/preferencesRoutes";
+import careReminderRoutes from "./routes/careReminderRoutes";
 import { uploadthingHandler } from "./routes/uploadthing.routes";
 import { webhook } from "./controllers/subscriptionController";
 
@@ -60,6 +62,15 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Floral Vault API 🌿");
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    service: "floralvault-api",
+    version: "1.0.0",
+  });
+});
+
 //
 app.use("/api/users", userRoutes);
 
@@ -75,6 +86,10 @@ app.use("/api/collections", collectionRoutes);
 app.use("/api/search", searchRoutes);
 
 app.use("/api/subscriptions", subscriptionRoutes);
+
+app.use("/api/preferences", preferencesRoutes);
+
+app.use("/api/care-reminders", careReminderRoutes);
 
 app.use("/api/uploadthing", uploadthingHandler);
 
