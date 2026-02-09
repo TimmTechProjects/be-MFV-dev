@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePlantPost = exports.createPlantPost = exports.getPlantBySlug = exports.searchPlants = exports.getPaginatedPlants = exports.getPlants = void 0;
+exports.getDiscoverFilters = exports.discoverPlants = exports.deletePlantPost = exports.createPlantPost = exports.getPlantBySlug = exports.searchPlants = exports.getPaginatedPlants = exports.getPlants = void 0;
 const plantService_1 = require("../services/plantService");
 const getPlants = async (req, res) => {
     const plants = await (0, plantService_1.getAllPlants)();
@@ -140,3 +140,40 @@ const deletePlantPost = async (req, res) => {
     }
 };
 exports.deletePlantPost = deletePlantPost;
+/**
+ * GET /api/plants/discover/search
+ * Advanced search with filtering for plant discovery
+ */
+const discoverPlants = async (req, res) => {
+    try {
+        const { q, type, light, water, difficulty, page = 1, limit = 20, } = req.query;
+        const filters = {
+            type: type,
+            light: light,
+            water: water,
+            difficulty: difficulty,
+        };
+        const result = await (0, plantService_1.searchAndFilterPlants)(q, filters, parseInt(page) || 1, parseInt(limit) || 20);
+        res.status(200).json(result);
+    }
+    catch (error) {
+        console.error("Error discovering plants:", error);
+        res.status(500).json({ message: "Failed to search plants" });
+    }
+};
+exports.discoverPlants = discoverPlants;
+/**
+ * GET /api/plants/discover/filters
+ * Get available filter options
+ */
+const getDiscoverFilters = async (req, res) => {
+    try {
+        const filters = await (0, plantService_1.getFilterOptions)();
+        res.status(200).json(filters);
+    }
+    catch (error) {
+        console.error("Error getting filter options:", error);
+        res.status(500).json({ message: "Failed to get filter options" });
+    }
+};
+exports.getDiscoverFilters = getDiscoverFilters;

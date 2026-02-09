@@ -6,6 +6,8 @@ import {
   getAllPlants,
   getPlantBySlug as fetchPlantBySlug,
   querySearch,
+  searchAndFilterPlants,
+  getFilterOptions,
 } from "../services/plantService";
 import { AuthenticatedRequest } from "../types/express";
 
@@ -179,5 +181,56 @@ export const deletePlantPost = async (
     } else {
       res.status(500).json({ message: "Something went wrong" });
     }
+  }
+};
+
+/**
+ * GET /api/plants/discover/search
+ * Advanced search with filtering for plant discovery
+ */
+export const discoverPlants = async (req: Request, res: Response) => {
+  try {
+    const {
+      q,
+      type,
+      light,
+      water,
+      difficulty,
+      page = 1,
+      limit = 20,
+    } = req.query;
+
+    const filters = {
+      type: type as string | undefined,
+      light: light as string | undefined,
+      water: water as string | undefined,
+      difficulty: difficulty as string | undefined,
+    };
+
+    const result = await searchAndFilterPlants(
+      q as string | undefined,
+      filters,
+      parseInt(page as string) || 1,
+      parseInt(limit as string) || 20
+    );
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error discovering plants:", error);
+    res.status(500).json({ message: "Failed to search plants" });
+  }
+};
+
+/**
+ * GET /api/plants/discover/filters
+ * Get available filter options
+ */
+export const getDiscoverFilters = async (req: Request, res: Response) => {
+  try {
+    const filters = await getFilterOptions();
+    res.status(200).json(filters);
+  } catch (error) {
+    console.error("Error getting filter options:", error);
+    res.status(500).json({ message: "Failed to get filter options" });
   }
 };

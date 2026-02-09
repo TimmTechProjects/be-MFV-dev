@@ -292,3 +292,143 @@ export const deletePlant = async (plantId: string, userId: string) => {
 
   return { success: true, deletedPlantId: plantId };
 };
+
+/**
+ * Enhanced search with filters for plant discovery
+ */
+export const searchAndFilterPlants = async (
+  searchQuery?: string,
+  filters?: {
+    type?: string;
+    light?: string;
+    water?: string;
+    difficulty?: string;
+  },
+  page = 1,
+  limit = 20
+) => {
+  const skip = (page - 1) * limit;
+
+  const whereConditions: any = {
+    isPublic: true,
+  };
+
+  // Text search across common name, botanical name, and description
+  if (searchQuery && searchQuery.trim()) {
+    whereConditions.OR = [
+      { commonName: { contains: searchQuery, mode: "insensitive" } },
+      { botanicalName: { contains: searchQuery, mode: "insensitive" } },
+      { description: { contains: searchQuery, mode: "insensitive" } },
+      {
+        tags: {
+          some: { name: { contains: searchQuery, mode: "insensitive" } },
+        },
+      },
+    ];
+  }
+
+  // Type filter (common name contains or tag match)
+  if (filters?.type && filters.type.trim()) {
+    if (!whereConditions.OR) whereConditions.OR = [];
+    whereConditions.OR.push(
+      { type: { contains: filters.type, mode: "insensitive" } },
+      { tags: { some: { name: { contains: filters.type, mode: "insensitive" } } } }
+    );
+  }
+
+  // Light requirements filter (via tags or description)
+  if (filters?.light && filters.light.trim()) {
+    if (!whereConditions.AND) whereConditions.AND = [];
+    whereConditions.AND.push({
+      OR: [
+        { description: { contains: filters.light, mode: "insensitive" } },
+        { tags: { some: { name: { contains: filters.light, mode: "insensitive" } } } },
+      ],
+    });
+  }
+
+  // Water requirements filter (via tags or description)
+  if (filters?.water && filters.water.trim()) {
+    if (!whereConditions.AND) whereConditions.AND = [];
+    whereConditions.AND.push({
+      OR: [
+        { description: { contains: filters.water, mode: "insensitive" } },
+        { tags: { some: { name: { contains: filters.water, mode: "insensitive" } } } },
+      ],
+    });
+  }
+
+  // Difficulty filter (via tags or description)
+  if (filters?.difficulty && filters.difficulty.trim()) {
+    if (!whereConditions.AND) whereConditions.AND = [];
+    whereConditions.AND.push({
+      OR: [
+        { description: { contains: filters.difficulty, mode: "insensitive" } },
+        { tags: { some: { name: { contains: filters.difficulty, mode: "insensitive" } } } },
+      ],
+    });
+  }
+
+  const [plants, total] = await Promise.all([
+    prisma.plant.findMany({
+      where: whereConditions,
+      include: {
+        user: { select: { username: true, id: true, avatarUrl: true } },
+        tags: true,
+        images: true,
+      },
+      orderBy: { likes: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.plant.count({ where: whereConditions }),
+  ]);
+
+  return {
+    plants,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+};
+
+/**
+ * Get all available filter options for plant discovery
+ */
+export const getFilterOptions = async () => {
+  const plants = await prisma.plant.findMany({
+    where: { isPublic: true },
+    select: { type: true, tags: true, description: true },
+  });
+
+  // Extract unique types
+  const types = new Set<string>();
+  plants.forEach(p => {
+    if (p.type) types.add(p.type);
+  });
+
+  // Extract unique tags that might indicate light, water, or difficulty
+  const tags = new Set<string>();
+  const lightTags = new Set<string>();
+  const waterTags = new Set<string>();
+  const difficultyTags = new Set<string>();
+
+  plants.forEach(p => {
+    p.tags.forEach(tag => {
+      tags.add(tag.name);
+      
+      if (/light|bright|shade|partial|full/i.test(tag.name)) lightTags.add(tag.name);
+      if (/water|moist|dry|humid|drought/i.test(tag.name)) waterTags.add(tag.name);
+      if (/easy|beginner|intermediate|difficult|advanced/i.test(tag.name)) difficultyTags.add(tag.name);
+    });
+  });
+
+  return {
+    types: Array.from(types).filter(t => t).sort(),
+    tags: Array.from(tags).sort(),
+    light: Array.from(lightTags).sort(),
+    water: Array.from(waterTags).sort(),
+    difficulty: Array.from(difficultyTags).sort(),
+  };
+};

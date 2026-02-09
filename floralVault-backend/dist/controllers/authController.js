@@ -17,9 +17,17 @@ const generateToken = async (userId) => {
 };
 // POST /api/auth/login
 const loginUser = async (req, res, next) => {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
+    const loginIdentifier = username || email;
     try {
-        const user = await (0, authService_1.checkForExistingUsername)(username);
+        // Try to find user by username or email
+        let user;
+        if (username) {
+            user = await (0, authService_1.checkForExistingUsername)(username);
+        }
+        else if (email) {
+            user = await (0, authService_1.checkForExistingEmail)(email);
+        }
         if (!user) {
             res.status(404).json({ message: "User not found" });
         }
@@ -28,22 +36,24 @@ const loginUser = async (req, res, next) => {
             if (!isMatch) {
                 res.status(401).json({ message: "Invalid credentials" });
             }
-            const token = await generateToken(user.id);
-            res.status(200).json({
-                token,
-                user: {
-                    id: user.id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    username: user.username,
-                    email: user.email,
-                    bio: user.bio,
-                    avatarUrl: user.avatarUrl,
-                    essence: user.essence,
-                    joinedAt: user.joinedAt,
-                    plan: user.plan,
-                },
-            });
+            else {
+                const token = await generateToken(user.id);
+                res.status(200).json({
+                    token,
+                    user: {
+                        id: user.id,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        username: user.username,
+                        email: user.email,
+                        bio: user.bio,
+                        avatarUrl: user.avatarUrl,
+                        essence: user.essence,
+                        joinedAt: user.joinedAt,
+                        plan: user.plan,
+                    },
+                });
+            }
         }
     }
     catch (error) {
