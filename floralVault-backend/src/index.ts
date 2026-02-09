@@ -8,7 +8,9 @@ import tagRoutes from "./routes/tagRoutes";
 import plantRoutes from "./routes/plantRoutes";
 import collectionRoutes from "./routes/collectionRoutes";
 import searchRoutes from "./routes/searchRoutes";
+import subscriptionRoutes from "./routes/subscriptionRoutes";
 import { uploadthingHandler } from "./routes/uploadthing.routes";
+import { webhook } from "./controllers/subscriptionController";
 
 dotenv.config();
 
@@ -43,6 +45,12 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// Stripe webhook MUST be before JSON parsing - requires raw body
+app.post("/api/subscriptions/webhook", express.raw({ type: 'application/json' }), (req, res, next) => {
+  webhook(req, res).catch(next);
+});
+
 // Increase JSON body size limit to handle descriptions with rich HTML content
 // Default 100kb can truncate or reject large plant descriptions
 app.use(express.json({ limit: '10mb' }));
@@ -65,6 +73,8 @@ app.use("/api/plants", plantRoutes);
 app.use("/api/collections", collectionRoutes);
 
 app.use("/api/search", searchRoutes);
+
+app.use("/api/subscriptions", subscriptionRoutes);
 
 app.use("/api/uploadthing", uploadthingHandler);
 

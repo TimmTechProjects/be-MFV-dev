@@ -20,19 +20,24 @@ enum Plan {
 }
 
 model User {
-  id          String       @id @default(uuid())
-  username    String       @unique
-  email       String       @unique
-  password    String
-  firstName   String
-  lastName    String
-  avatarUrl   String?
-  bio         String?
-  essence     Int          @default(0)
-  joinedAt    DateTime     @default(now())
-  plan        Plan         @default(free)
-  plants      Plant[]
-  collections Collection[]
+  id                    String                @id @default(uuid())
+  username              String                @unique
+  email                 String                @unique
+  password              String
+  firstName             String
+  lastName              String
+  avatarUrl             String?
+  bio                   String?
+  essence               Int                   @default(0)
+  joinedAt              DateTime              @default(now())
+  plan                  Plan                  @default(free)
+  plants                Plant[]
+  collections           Collection[]
+  
+  // Stripe integration
+  stripeCustomerId      String?               @unique
+  stripeCustomer        StripeCustomer?
+  subscriptions         Subscription[]
 }
 
 model Plant {
@@ -96,4 +101,46 @@ model Collection {
 
   thumbnailImage   Image?  @relation(fields: [thumbnailImageId], references: [id])
   thumbnailImageId String?
+}
+
+// Stripe models
+model StripeCustomer {
+  id                String    @id @default(cuid())
+  stripeCustomerId  String    @unique
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Subscription {
+  id                        String    @id @default(cuid())
+  stripeSubscriptionId      String    @unique
+  userId                    String
+  user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                      Plan
+  status                    String    // active, past_due, canceled, unpaid, etc.
+  currentPeriodStart        DateTime
+  currentPeriodEnd          DateTime
+  canceledAt                DateTime?
+  cancelAtPeriodEnd         Boolean   @default(false)
+  trialEnd                  DateTime?
+  priceId                   String
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+}
+
+model StripeEvent {
+  id                String    @id @default(cuid())
+  stripeEventId     String    @unique
+  type              String
+  data              String    // JSON stringified event data
+  processed         Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  
+  @@index([stripeEventId])
+  @@index([processed])
 }
