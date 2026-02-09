@@ -2,9 +2,20 @@ import Stripe from 'stripe';
 import prisma from '../prisma/client';
 import { Plan } from '@prisma/client';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-01-28.clover' as any,
-});
+let _stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error('STRIPE_SECRET_KEY is not configured. Set it in your environment variables.');
+    }
+    _stripe = new Stripe(key, {
+      apiVersion: '2026-01-28.clover' as any,
+    });
+  }
+  return _stripe;
+}
 
 export const getStripePublishableKey = () => {
   return process.env.STRIPE_PUBLISHABLE_KEY;
@@ -32,7 +43,7 @@ export const getOrCreateStripeCustomer = async (userId: string, email: string, n
     }
 
     // Create new Stripe customer
-    const stripeCustomer = await stripe.customers.create({
+    const stripeCustomer = await getStripe().customers.create({
       email,
       name,
       metadata: {
@@ -75,7 +86,7 @@ export const createCheckoutSession = async (
       throw new Error(`No price ID configured for plan: ${plan}`);
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
       billing_address_collection: 'required',
@@ -140,7 +151,7 @@ export const cancelSubscription = async (userId: string) => {
     }
 
     // Cancel in Stripe
-    const canceled = await stripe.subscriptions.update(
+    const canceled = await getStripe().subscriptions.update(
       subscription.stripeSubscriptionId,
       { cancel_at_period_end: true }
     );
@@ -185,7 +196,7 @@ export const upgradeSubscription = async (
     }
 
     // Update subscription in Stripe
-    const updated = await stripe.subscriptions.update(
+    const updated = await getStripe().subscriptions.update(
       subscription.stripeSubscriptionId,
       {
         items: [
@@ -376,4 +387,4 @@ const handlePaymentFailed = async (invoice: Stripe.Invoice) => {
   }
 };
 
-export default stripe;
+export default getStripe;
