@@ -1,0 +1,67 @@
+name: Trigger Devin on Issue Label
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  trigger-devin:
+    if: github.event.label.name == 'devin'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Devin Session
+        id: trigger
+        run: |
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_BODY=$(cat <<'ISSUE_EOF'
+          ${{ github.event.issue.body }}
+          ISSUE_EOF
+          )
+          ISSUE_URL="${{ github.event.issue.html_url }}"
+          REPO="${{ github.repository }}"
+
+          PROMPT="You are Devin, working on a GitHub issue from ${REPO}.
+
+          RULES (follow strictly):
+          1. Respond to this issue IMMEDIATELY by posting a comment on the issue with your plan before starting work.
+          2. Create a new branch in the repo ${REPO} for your changes. Never push directly to main.
+          3. Always reply to the issue with clear, high-level updates. Include a visual breakdown of what you changed and attach screenshots or images when possible.
+          4. Be clear and concise. Do NOT guess what needs to be done — follow the issue description exactly.
+          5. When finished, open a PR against main and post a comment on the issue linking the PR.
+
+          ISSUE DETAILS:
+          Title: ${ISSUE_TITLE}
+          Issue URL: ${ISSUE_URL}
+
+          Description:
+          ${ISSUE_BODY}
+
+          Read the full issue at the URL above for any additional context, then implement exactly what is requested and open a PR."
+
+          RESPONSE=$(curl -s -X POST "https://api.devin.ai/v1/sessions" \
+            -H "Authorization: Bearer ${{ secrets.DEVIN_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg prompt "$PROMPT" '{prompt: $prompt}')")
+
+          SESSION_URL=$(echo "$RESPONSE" | jq -r '.url // empty')
+          SESSION_ID=$(echo "$RESPONSE" | jq -r '.session_id // empty')
+
+          if [ -z "$SESSION_URL" ]; then
+            echo "Failed to create Devin session. Response: $RESPONSE"
+            exit 1
+          fi
+
+          echo "session_url=$SESSION_URL" >> "$GITHUB_OUTPUT"
+          echo "session_id=$SESSION_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sessionUrl = '${{ steps.trigger.outputs.session_url }}';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Devin session started for this issue.\n\n[View Devin session](${sessionUrl})`
+            });
