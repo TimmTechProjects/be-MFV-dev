@@ -25,6 +25,8 @@ const corsOptions = {
       "http://localhost:3000",
       "https://fe-mfv.vercel.app",
       "https://flora-vault.vercel.app",
+      "https://myfloralvault.com",
+      "https://www.myfloralvault.com",
     ];
     
     // Allow requests with no origin (like mobile apps or curl)
