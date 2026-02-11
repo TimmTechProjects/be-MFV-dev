@@ -279,9 +279,8 @@ export const setCollectionThumbnailService = async ({
 }: {
   userId: string;
   collectionId: string;
-  imageId: string;
+  imageId: string | null;
 }) => {
-  // Confirm the collection belongs to the user
   const collection = await prisma.collection.findFirst({
     where: {
       id: collectionId,
@@ -293,7 +292,14 @@ export const setCollectionThumbnailService = async ({
     throw new Error("Collection not found or access denied");
   }
 
-  // Verify the image exists
+  if (imageId === null) {
+    return await prisma.collection.update({
+      where: { id: collectionId },
+      data: { thumbnailImageId: null },
+      include: { thumbnailImage: true },
+    });
+  }
+
   const image = await prisma.image.findUnique({
     where: { id: imageId },
   });
@@ -302,7 +308,6 @@ export const setCollectionThumbnailService = async ({
     throw new Error("Image not found");
   }
 
-  // Update the collection thumbnail
   return await prisma.collection.update({
     where: { id: collectionId },
     data: { thumbnailImageId: imageId },

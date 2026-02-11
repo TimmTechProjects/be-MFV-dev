@@ -208,10 +208,10 @@ export const setCollectionThumbnail = async (
     return;
   }
 
-  if (!collectionId || !imageId) {
+  if (!collectionId) {
     res
       .status(400)
-      .json({ message: "Both collectionId and imageId are required." });
+      .json({ message: "collectionId is required." });
     return;
   }
 
@@ -219,7 +219,7 @@ export const setCollectionThumbnail = async (
     const result = await setCollectionThumbnailService({
       userId,
       collectionId,
-      imageId,
+      imageId: imageId ?? null,
     });
 
     res.status(200).json(result);
