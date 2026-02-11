@@ -78,6 +78,8 @@ export const createPlantPost = async (
       tags,
       images,
       type,
+      primaryType,
+      traitIds,
       secondaryTraits,
       isPublic = true,
       isGarden = false,
@@ -120,6 +122,8 @@ export const createPlantPost = async (
       origin,
       family,
       type,
+      primaryType,
+      traitIds,
       secondaryTraits,
       isPublic,
       isGarden,
@@ -199,6 +203,8 @@ export const discoverPlants = async (req: Request, res: Response) => {
     const {
       q,
       type,
+      primaryType,
+      trait,
       light,
       water,
       difficulty,
@@ -206,8 +212,16 @@ export const discoverPlants = async (req: Request, res: Response) => {
       limit = 20,
     } = req.query;
 
+    const traitSlugs = trait
+      ? Array.isArray(trait)
+        ? (trait as string[])
+        : [trait as string]
+      : undefined;
+
     const filters = {
       type: type as string | undefined,
+      primaryType: primaryType as string | undefined,
+      traitSlugs,
       light: light as string | undefined,
       water: water as string | undefined,
       difficulty: difficulty as string | undefined,

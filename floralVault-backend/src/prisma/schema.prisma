@@ -19,6 +19,24 @@ enum Plan {
   premium
 }
 
+enum PlantPrimaryType {
+  TREE
+  SHRUB
+  HERBACEOUS
+  VINE_CLIMBER
+  FERN
+  SUCCULENT
+  GRASS
+  FUNGUS
+  AQUATIC
+}
+
+enum TraitCategory {
+  BLOOMING_LIFECYCLE
+  ENVIRONMENT_GROWTH
+  USE_ORIGIN
+}
+
 model User {
   id                    String                @id @default(uuid())
   username              String                @unique
@@ -54,7 +72,9 @@ model Plant {
   origin               String?
   family               String?
   type                 String?
+  primaryType          PlantPrimaryType?
   secondaryTraits      String[]   @default([])
+  plantTraits          PlantTrait[]
   views                Int        @default(0)
   isPublic             Boolean    @default(true)
   isGarden             Boolean    @default(false)
@@ -74,6 +94,7 @@ model Plant {
   updatedAt DateTime @updatedAt
 
   @@unique([slug, userId], name: "slug_userId")
+  @@index([primaryType])
 }
 
 model Image {
@@ -89,6 +110,27 @@ model Tag {
   id     String  @id @default(cuid())
   name   String  @unique
   plants Plant[] @relation("PlantTags")
+}
+
+model Trait {
+  id        String        @id @default(cuid())
+  name      String        @unique
+  slug      String        @unique
+  category  TraitCategory
+  plants    PlantTrait[]
+
+  @@index([slug])
+  @@index([category])
+}
+
+model PlantTrait {
+  plantId   String
+  traitId   String
+  plant     Plant   @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  trait     Trait   @relation(fields: [traitId], references: [id], onDelete: Cascade)
+
+  @@id([plantId, traitId])
+  @@index([traitId])
 }
 
 model Collection {

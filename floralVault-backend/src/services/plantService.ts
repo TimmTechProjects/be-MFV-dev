@@ -12,6 +12,7 @@ export const getAllPlants = async () => {
       },
       tags: true,
       images: true,
+      plantTraits: { include: { trait: true } },
     },
     orderBy: {
       createdAt: "desc",
@@ -29,6 +30,7 @@ export const getAllPaginatedPlants = async (page = 1, limit = 20) => {
         user: { select: { username: true } },
         tags: true,
         images: true,
+        plantTraits: { include: { trait: true } },
       },
       orderBy: { createdAt: "desc" },
       skip,
@@ -59,6 +61,7 @@ export const querySearch = async (q: string) => {
         tags: true,
         user: { select: { username: true } },
         images: true,
+        plantTraits: { include: { trait: true } },
       },
       take: 5,
       orderBy: { createdAt: "desc" },
@@ -103,11 +106,12 @@ export const getPlantBySlug = async (slug: string, _username: string) => {
       },
       tags: true,
       images: true,
+      plantTraits: { include: { trait: true } },
     },
   });
 };
 
-export const createPlant = async (data: any) => {
+export const createPlant= async (data: any) => {
   const userId = data.user.connect.id;
 
   if (!data.collectionId) {
@@ -149,6 +153,7 @@ export const createPlant = async (data: any) => {
       botanicalName: data.botanicalName,
       description: data.description,
       type: data.type,
+      primaryType: data.primaryType || null,
       secondaryTraits: data.secondaryTraits ?? [],
       isPublic: data.isPublic,
       isGarden: data.isGarden ?? false,
@@ -176,10 +181,17 @@ export const createPlant = async (data: any) => {
             create: { name: tag },
           })) || [],
       },
+      plantTraits: {
+        create:
+          data.traitIds?.map((traitId: string) => ({
+            trait: { connect: { id: traitId } },
+          })) || [],
+      },
     },
     include: {
       tags: true,
       images: true,
+      plantTraits: { include: { trait: true } },
       user: {
         select: {
           username: true,
@@ -228,6 +240,7 @@ export const getUserCollectionWithPlants = async (
         include: {
           tags: true,
           images: true,
+          plantTraits: { include: { trait: true } },
           user: {
             select: {
               username: true,
@@ -271,6 +284,7 @@ export const getPlantsByUsername = async (
       user: { select: { username: true } },
       tags: true,
       images: true,
+      plantTraits: { include: { trait: true } },
       collection: { select: { slug: true, name: true } },
     },
     orderBy: { createdAt: "desc" },
@@ -349,6 +363,8 @@ export const searchAndFilterPlants = async (
   searchQuery?: string,
   filters?: {
     type?: string;
+    primaryType?: string;
+    traitSlugs?: string[];
     light?: string;
     water?: string;
     difficulty?: string;
@@ -374,6 +390,21 @@ export const searchAndFilterPlants = async (
         },
       },
     ];
+  }
+
+  // Primary type filter (exact enum match)
+  if (filters?.primaryType && filters.primaryType.trim()) {
+    whereConditions.primaryType = filters.primaryType;
+  }
+
+  // Trait slug filter (AND logic - plant must have ALL specified traits)
+  if (filters?.traitSlugs && filters.traitSlugs.length > 0) {
+    if (!whereConditions.AND) whereConditions.AND = [];
+    for (const slug of filters.traitSlugs) {
+      whereConditions.AND.push({
+        plantTraits: { some: { trait: { slug } } },
+      });
+    }
   }
 
   // Type filter (common name contains or tag match)
@@ -425,6 +456,7 @@ export const searchAndFilterPlants = async (
         user: { select: { username: true, id: true, avatarUrl: true } },
         tags: true,
         images: true,
+        plantTraits: { include: { trait: true } },
       },
       orderBy: { likes: "desc" },
       skip,
