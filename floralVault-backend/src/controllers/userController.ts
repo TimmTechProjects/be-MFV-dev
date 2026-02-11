@@ -5,6 +5,8 @@ import {
   getCurrentUserById,
   getUserWithUsername,
   updateUserById,
+  checkUsernameExists,
+  changeUsername,
 } from "../services/userService";
 
 // GET all users
@@ -46,6 +48,69 @@ export const getUserByUsername = async (
     console.error("Error fetching user by username:", error);
     res.status(500).json({ message: "Failed to fetch user" });
     return;
+  }
+};
+
+export const checkUsername = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { username } = req.params;
+
+  if (!username || username.length < 3 || username.length > 30) {
+    res.status(400).json({ available: false, message: "Invalid username format" });
+    return;
+  }
+
+  if (!/^[a-zA-Z][a-zA-Z0-9_-]+$/.test(username)) {
+    res.status(400).json({ available: false, message: "Invalid username format" });
+    return;
+  }
+
+  try {
+    const exists = await checkUsernameExists(username);
+    res.status(200).json({
+      available: !exists,
+      message: exists ? "Username is already taken" : "Username is available",
+    });
+  } catch (error) {
+    console.error("Error checking username:", error);
+    res.status(500).json({ available: false, message: "Internal Server Error" });
+  }
+};
+
+export const changeUsernameHandler = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { id } = req.user;
+  const { username } = req.body;
+
+  if (!username) {
+    res.status(400).json({ message: "Username is required" });
+    return;
+  }
+
+  if (username.length < 3 || username.length > 30) {
+    res.status(400).json({ message: "Username must be 3-30 characters" });
+    return;
+  }
+
+  if (!/^[a-zA-Z][a-zA-Z0-9_-]+$/.test(username)) {
+    res.status(400).json({ message: "Invalid username format" });
+    return;
+  }
+
+  try {
+    const result = await changeUsername(id, username);
+    if ("error" in result) {
+      res.status(400).json({ message: result.error });
+      return;
+    }
+    res.status(200).json({ user: result.user });
+  } catch (error) {
+    console.error("Error changing username:", error);
+    res.status(500).json({ message: "Failed to change username" });
   }
 };
 
