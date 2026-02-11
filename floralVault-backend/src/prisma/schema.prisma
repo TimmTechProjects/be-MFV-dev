@@ -54,6 +54,7 @@ model Plant {
   origin               String?
   family               String?
   type                 String?
+  secondaryTraits      String[]   @default([])
   views                Int        @default(0)
   isPublic             Boolean    @default(true)
   isGarden             Boolean    @default(false)

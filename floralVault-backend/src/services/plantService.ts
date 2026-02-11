@@ -149,6 +149,7 @@ export const createPlant = async (data: any) => {
       botanicalName: data.botanicalName,
       description: data.description,
       type: data.type,
+      secondaryTraits: data.secondaryTraits ?? [],
       isPublic: data.isPublic,
       isGarden: data.isGarden ?? false,
       origin: data.origin,
