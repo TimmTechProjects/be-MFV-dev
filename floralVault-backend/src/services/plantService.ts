@@ -150,6 +150,7 @@ export const createPlant = async (data: any) => {
       description: data.description,
       type: data.type,
       isPublic: data.isPublic,
+      isGarden: data.isGarden ?? false,
       origin: data.origin,
       family: data.family,
       slug,
@@ -249,6 +250,29 @@ export const getUserCollectionWithPlants = async (
         take: limit,
       },
     },
+  });
+};
+
+export const getPlantsByUsername = async (
+  username: string,
+  isGarden?: boolean
+) => {
+  const where: any = {
+    user: { is: { username } },
+  };
+  if (isGarden !== undefined) {
+    where.isGarden = isGarden;
+  }
+
+  return prisma.plant.findMany({
+    where,
+    include: {
+      user: { select: { username: true } },
+      tags: true,
+      images: true,
+      collection: { select: { slug: true, name: true } },
+    },
+    orderBy: { createdAt: "desc" },
   });
 };
 

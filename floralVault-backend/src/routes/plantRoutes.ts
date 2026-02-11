@@ -8,6 +8,7 @@ import {
   deletePlantPost,
   discoverPlants,
   getDiscoverFilters,
+  getUserPlants,
 } from "../controllers/plantController";
 
 const router = Router();
@@ -18,6 +19,7 @@ router.get("/discover/filters", getDiscoverFilters);
 
 // Standard endpoints
 router.get("/", getPaginatedPlants);
+router.get("/user/:username", getUserPlants);
 router.get("/search", searchPlants);
 router.post("/new", verifyToken, createPlantPost);
 router.delete("/:plantId", verifyToken, deletePlantPost);

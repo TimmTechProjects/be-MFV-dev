@@ -56,6 +56,7 @@ model Plant {
   type                 String?
   views                Int        @default(0)
   isPublic             Boolean    @default(true)
+  isGarden             Boolean    @default(false)
   userId               String
   user                 User       @relation(fields: [userId], references: [id])
   collection           Collection @relation(fields: [collectionId], references: [id])
