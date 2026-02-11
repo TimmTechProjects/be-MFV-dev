@@ -61,6 +61,7 @@ export const loginUser = async (
             essence: user.essence,
             joinedAt: user.joinedAt,
             plan: user.plan,
+            usernameLastChangedAt: user.usernameLastChangedAt,
           },
         });
       }
@@ -124,6 +125,7 @@ export const registerUser = async (
         bio: newUser.bio,
         avatarUrl: newUser.avatarUrl,
         essence: newUser.essence,
+        usernameLastChangedAt: newUser.usernameLastChangedAt,
       },
     });
   } catch (error) {
@@ -173,6 +175,7 @@ export const googleLogin = async (
         essence: user.essence,
         joinedAt: user.joinedAt,
         plan: user.plan,
+        usernameLastChangedAt: user.usernameLastChangedAt,
       },
     });
   } catch (error) {

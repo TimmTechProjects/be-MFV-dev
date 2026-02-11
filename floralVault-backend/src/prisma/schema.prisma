@@ -41,6 +41,7 @@ model User {
   preferences           UserPreference?
   careReminders         CareReminder[]
   likes                 PlantLike[]
+  usernameLastChangedAt DateTime?
 }
 
 model Plant {

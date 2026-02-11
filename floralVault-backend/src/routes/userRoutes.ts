@@ -6,12 +6,16 @@ import {
   getUserByUsername,
   getCurrentUser,
   updateUser,
+  checkUsername,
 } from "../controllers/userController";
 
 const router = express.Router();
 
 // GET /api/users
 router.get("/", getAllUsers);
+
+// GET /api/users/check-username/:username
+router.get("/check-username/:username", checkUsername);
 
 // GET /api/users/:username
 router.get("/:username", getUserByUsername);
