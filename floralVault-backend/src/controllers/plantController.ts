@@ -9,6 +9,7 @@ import {
   querySearch,
   searchAndFilterPlants,
   getFilterOptions,
+  togglePlantGarden,
 } from "../services/plantService";
 import { AuthenticatedRequest } from "../types/express";
 
@@ -243,6 +244,36 @@ export const getUserPlants = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching user plants:", error);
     res.status(500).json({ message: "Failed to fetch user plants" });
+  }
+};
+
+export const toggleGarden = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const { plantId } = req.params;
+    const userId = req.user;
+
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    if (!plantId) {
+      res.status(400).json({ message: "Plant ID is required." });
+      return;
+    }
+
+    const result = await togglePlantGarden(plantId, userId);
+    res.status(200).json(result);
+  } catch (error: any) {
+    console.error("Error toggling garden status:", error);
+    if (error.message.includes("not found") || error.message.includes("permission")) {
+      res.status(403).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Something went wrong" });
+    }
   }
 };
 
