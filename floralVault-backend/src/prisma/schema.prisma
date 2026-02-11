@@ -40,6 +40,7 @@ model User {
   subscriptions         Subscription[]
   preferences           UserPreference?
   careReminders         CareReminder[]
+  likes                 PlantLike[]
 }
 
 model Plant {
@@ -64,6 +65,7 @@ model Plant {
   tags   Tag[]   @relation("PlantTags")
   images Image[]
   careReminders CareReminder[]
+  plantLikes    PlantLike[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -161,6 +163,19 @@ model UserPreference {
   timezone          String    @default("America/New_York")
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+}
+
+model PlantLike {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plantId   String
+  plant     Plant    @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, plantId])
+  @@index([userId])
+  @@index([plantId])
 }
 
 model CareReminder {
