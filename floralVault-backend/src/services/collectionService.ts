@@ -153,23 +153,33 @@ export const addPlantToCollectionService = async ({
 };
 
 const getOrCreateUncategorizedCollection = async (userId: string) => {
+  const slug = `uncategorized-${userId}`;
+
   const existing = await prisma.collection.findFirst({
     where: {
       userId,
-      slug: "uncategorized",
+      slug,
     },
   });
 
   if (existing) return existing;
 
-  return prisma.collection.create({
-    data: {
-      name: "Uncategorized",
-      slug: "uncategorized",
-      description: "Plants that have been removed from all other albums",
-      userId,
-    },
-  });
+  try {
+    return await prisma.collection.create({
+      data: {
+        name: "Uncategorized",
+        slug,
+        description: "Plants that have been removed from all other albums",
+        userId,
+      },
+    });
+  } catch {
+    const found = await prisma.collection.findFirst({
+      where: { userId, slug },
+    });
+    if (found) return found;
+    throw new Error("Failed to create uncategorized collection");
+  }
 };
 
 export const removePlantFromCollectionService = async ({
