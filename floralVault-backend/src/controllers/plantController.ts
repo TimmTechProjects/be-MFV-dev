@@ -5,6 +5,7 @@ import {
   getAllPaginatedPlants,
   getAllPlants,
   getPlantBySlug as fetchPlantBySlug,
+  getPlantsByUsername,
   querySearch,
   searchAndFilterPlants,
   getFilterOptions,
@@ -77,6 +78,7 @@ export const createPlantPost = async (
       images,
       type,
       isPublic = true,
+      isGarden = false,
       collectionId,
     } = req.body;
 
@@ -117,6 +119,7 @@ export const createPlantPost = async (
       family,
       type,
       isPublic,
+      isGarden,
       user: { connect: { id: userId } },
       tags,
       images,
@@ -225,6 +228,24 @@ export const discoverPlants = async (req: Request, res: Response) => {
  * GET /api/plants/discover/filters
  * Get available filter options
  */
+export const getUserPlants = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+    const isGarden = req.query.isGarden === "true" ? true : req.query.isGarden === "false" ? false : undefined;
+
+    if (!username) {
+      res.status(400).json({ message: "Username is required" });
+      return;
+    }
+
+    const plants = await getPlantsByUsername(username, isGarden);
+    res.status(200).json(plants);
+  } catch (error) {
+    console.error("Error fetching user plants:", error);
+    res.status(500).json({ message: "Failed to fetch user plants" });
+  }
+};
+
 export const getDiscoverFilters = async (req: Request, res: Response) => {
   try {
     const filters = await getFilterOptions();
