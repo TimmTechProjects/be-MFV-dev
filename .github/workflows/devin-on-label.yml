@@ -6,11 +6,32 @@ on:
 
 jobs:
   trigger-devin:
-    if: github.event.label.name == 'devin'
     runs-on: ubuntu-latest
     steps:
+      - name: Check for devin label
+        id: check
+        run: |
+          echo "Event action: ${{ github.event.action }}"
+          echo "Label name: ${{ github.event.label.name }}"
+          echo "All issue labels: $(echo '${{ toJSON(github.event.issue.labels) }}' | jq -r '.[].name')"
+
+          LABEL_NAME="${{ github.event.label.name }}"
+          HAS_DEVIN="false"
+
+          if [ "$LABEL_NAME" = "devin" ]; then
+            echo "Matched via event label name"
+            HAS_DEVIN="true"
+          elif echo '${{ toJSON(github.event.issue.labels) }}' | jq -e '.[] | select(.name == "devin")' > /dev/null 2>&1; then
+            echo "Matched via issue labels array"
+            HAS_DEVIN="true"
+          fi
+
+          echo "has_devin=$HAS_DEVIN" >> "$GITHUB_OUTPUT"
+          echo "Result: has_devin=$HAS_DEVIN"
+
       - name: Trigger Devin via iris-dashboard webhook
         id: trigger
+        if: steps.check.outputs.has_devin == 'true'
         run: |
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "https://iris-dashboard-iota.vercel.app/api/webhooks/github" \
             -H "Content-Type: application/json" \
