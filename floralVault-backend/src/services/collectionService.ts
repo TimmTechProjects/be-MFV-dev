@@ -46,6 +46,9 @@ export const getUserCollections = async (username: string) => {
       collections: {
         include: {
           thumbnailImage: true,
+          _count: {
+            select: { plants: true },
+          },
           plants: {
             orderBy: { createdAt: "desc" },
             take: 1,
