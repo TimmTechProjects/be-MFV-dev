@@ -152,6 +152,36 @@ export const addPlantToCollectionService = async ({
   return updatedCollection;
 };
 
+const getOrCreateUncategorizedCollection = async (userId: string) => {
+  const slug = `uncategorized-${userId}`;
+
+  const existing = await prisma.collection.findFirst({
+    where: {
+      userId,
+      slug,
+    },
+  });
+
+  if (existing) return existing;
+
+  try {
+    return await prisma.collection.create({
+      data: {
+        name: "Uncategorized",
+        slug,
+        description: "Plants that have been removed from all other albums",
+        userId,
+      },
+    });
+  } catch {
+    const found = await prisma.collection.findFirst({
+      where: { userId, slug },
+    });
+    if (found) return found;
+    throw new Error("Failed to create uncategorized collection");
+  }
+};
+
 export const removePlantFromCollectionService = async ({
   userId,
   collectionId,
@@ -184,10 +214,51 @@ export const removePlantFromCollectionService = async ({
     throw new Error("Plant is not in this collection");
   }
 
+  const isOwner = plant.userId === userId;
+
+  if (isOwner) {
+    const ownerCollectionsWithPlant = await prisma.collection.findMany({
+      where: {
+        userId,
+        plants: { some: { id: plantId } },
+      },
+    });
+
+    if (ownerCollectionsWithPlant.length <= 1) {
+      const uncategorized = await getOrCreateUncategorizedCollection(userId);
+
+      if (uncategorized.id === collectionId) {
+        throw new Error("LAST_ALBUM");
+      }
+
+      await prisma.plant.update({
+        where: { id: plantId },
+        data: { collectionId: uncategorized.id },
+      });
+
+      return { collection, movedToUncategorized: true };
+    }
+  }
+
   const targetCollectionId = plant.originalCollectionId || collectionId;
 
   if (targetCollectionId === collectionId) {
-    return collection;
+    const otherCollection = await prisma.collection.findFirst({
+      where: {
+        userId,
+        plants: { some: { id: plantId } },
+        id: { not: collectionId },
+      },
+    });
+
+    if (otherCollection) {
+      await prisma.plant.update({
+        where: { id: plantId },
+        data: { collectionId: otherCollection.id },
+      });
+    }
+
+    return { collection, movedToUncategorized: false };
   }
 
   await prisma.plant.update({
@@ -195,7 +266,7 @@ export const removePlantFromCollectionService = async ({
     data: { collectionId: targetCollectionId },
   });
 
-  return collection;
+  return { collection, movedToUncategorized: false };
 };
 
 export const setCollectionThumbnailService = async ({

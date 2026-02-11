@@ -176,9 +176,19 @@ export const removePlantFromCollection = async (
       plantId,
     });
 
-    res.status(200).json(result);
+    res.status(200).json({
+      ...result.collection,
+      movedToUncategorized: result.movedToUncategorized,
+    });
     return;
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === "LAST_ALBUM") {
+      res.status(409).json({
+        message:
+          "This plant must belong to at least one album. It has been kept in this album.",
+      });
+      return;
+    }
     console.error("Failed to remove plant from collection:", error);
     res.status(500).json({ message: "Server error" });
     return;
