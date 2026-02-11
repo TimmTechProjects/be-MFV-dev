@@ -276,6 +276,30 @@ export const getPlantsByUsername = async (
   });
 };
 
+export const togglePlantGarden = async (plantId: string, userId: string) => {
+  const plant = await prisma.plant.findFirst({
+    where: {
+      id: plantId,
+      userId,
+    },
+  });
+
+  if (!plant) {
+    throw new Error("Plant not found or you don't have permission to modify it.");
+  }
+
+  const updated = await prisma.plant.update({
+    where: { id: plantId },
+    data: { isGarden: !plant.isGarden },
+    select: {
+      id: true,
+      isGarden: true,
+    },
+  });
+
+  return updated;
+};
+
 export const getCollectionPlantCount = async (collectionId: string) => {
   return prisma.plant.count({
     where: {

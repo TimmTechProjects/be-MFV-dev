@@ -9,6 +9,7 @@ import {
   discoverPlants,
   getDiscoverFilters,
   getUserPlants,
+  toggleGarden,
 } from "../controllers/plantController";
 
 const router = Router();
@@ -22,6 +23,7 @@ router.get("/", getPaginatedPlants);
 router.get("/user/:username", getUserPlants);
 router.get("/search", searchPlants);
 router.post("/new", verifyToken, createPlantPost);
+router.patch("/:plantId/garden", verifyToken, toggleGarden);
 router.delete("/:plantId", verifyToken, deletePlantPost);
 
 // Dynamic routes (must be last)
