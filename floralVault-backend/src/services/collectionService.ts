@@ -85,6 +85,9 @@ export const getUsersCollectionsById = async (userId: string) => {
     where: { userId },
     include: {
       thumbnailImage: true,
+      plants: {
+        select: { id: true },
+      },
       _count: {
         select: { plants: true },
       },
@@ -169,16 +172,30 @@ export const removePlantFromCollectionService = async ({
     throw new Error("Collection not found or access denied");
   }
 
-  const updatedCollection = await prisma.collection.update({
-    where: { id: collectionId },
-    data: {
-      plants: {
-        disconnect: { id: plantId },
-      },
-    },
+  const plant = await prisma.plant.findUnique({
+    where: { id: plantId },
   });
 
-  return updatedCollection;
+  if (!plant) {
+    throw new Error("Plant not found");
+  }
+
+  if (plant.collectionId !== collectionId) {
+    throw new Error("Plant is not in this collection");
+  }
+
+  const targetCollectionId = plant.originalCollectionId || collectionId;
+
+  if (targetCollectionId === collectionId) {
+    return collection;
+  }
+
+  await prisma.plant.update({
+    where: { id: plantId },
+    data: { collectionId: targetCollectionId },
+  });
+
+  return collection;
 };
 
 export const setCollectionThumbnailService = async ({
