@@ -11,6 +11,7 @@ import searchRoutes from "./routes/searchRoutes";
 import subscriptionRoutes from "./routes/subscriptionRoutes";
 import preferencesRoutes from "./routes/preferencesRoutes";
 import careReminderRoutes from "./routes/careReminderRoutes";
+import likeRoutes from "./routes/likeRoutes";
 import { uploadthingHandler } from "./routes/uploadthing.routes";
 import { webhook } from "./controllers/subscriptionController";
 
@@ -92,6 +93,8 @@ app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/preferences", preferencesRoutes);
 
 app.use("/api/care-reminders", careReminderRoutes);
+
+app.use("/api/likes", likeRoutes);
 
 app.use("/api/uploadthing", uploadthingHandler);
 
