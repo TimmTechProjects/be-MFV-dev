@@ -3,6 +3,7 @@ import {
   createNewCollection,
   getUserCollections,
   addPlantToCollectionService,
+  removePlantFromCollectionService,
   getUsersCollectionsById,
   setCollectionThumbnailService,
 } from "../services/collectionService";
@@ -143,6 +144,42 @@ export const addPlantToCollection = async (
     return;
   } catch (error) {
     console.error("Failed to add plant to collection:", error);
+    res.status(500).json({ message: "Server error" });
+    return;
+  }
+};
+
+export const removePlantFromCollection = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const userId = req.user;
+  const { collectionId } = req.params;
+  const { plantId } = req.body;
+
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  if (!collectionId || !plantId) {
+    res
+      .status(400)
+      .json({ message: "Both collectionId and plantId are required." });
+    return;
+  }
+
+  try {
+    const result = await removePlantFromCollectionService({
+      userId,
+      collectionId,
+      plantId,
+    });
+
+    res.status(200).json(result);
+    return;
+  } catch (error) {
+    console.error("Failed to remove plant from collection:", error);
     res.status(500).json({ message: "Server error" });
     return;
   }

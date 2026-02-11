@@ -149,6 +149,38 @@ export const addPlantToCollectionService = async ({
   return updatedCollection;
 };
 
+export const removePlantFromCollectionService = async ({
+  userId,
+  collectionId,
+  plantId,
+}: {
+  userId: string;
+  collectionId: string;
+  plantId: string;
+}) => {
+  const collection = await prisma.collection.findFirst({
+    where: {
+      id: collectionId,
+      userId,
+    },
+  });
+
+  if (!collection) {
+    throw new Error("Collection not found or access denied");
+  }
+
+  const updatedCollection = await prisma.collection.update({
+    where: { id: collectionId },
+    data: {
+      plants: {
+        disconnect: { id: plantId },
+      },
+    },
+  });
+
+  return updatedCollection;
+};
+
 export const setCollectionThumbnailService = async ({
   userId,
   collectionId,
