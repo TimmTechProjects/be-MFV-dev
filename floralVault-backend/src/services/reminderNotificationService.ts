@@ -1,7 +1,20 @@
 import { Resend } from "resend";
 import prisma from "../prisma/client";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resendClient) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error(
+        "RESEND_API_KEY is not set. Cannot send reminder emails."
+      );
+    }
+    resendClient = new Resend(apiKey);
+  }
+  return resendClient;
+}
 
 const APP_URL = process.env.APP_URL || "https://myfloralvault.com";
 const FROM_EMAIL =
@@ -38,7 +51,7 @@ export async function sendReminderEmail(reminder: ReminderWithRelations) {
     </div>
   `;
 
-  await resend.emails.send({
+  await getResendClient().emails.send({
     from: FROM_EMAIL,
     to: user.email,
     subject: `Plant Care Reminder: ${reminder.type} your ${plant.commonName}`,
