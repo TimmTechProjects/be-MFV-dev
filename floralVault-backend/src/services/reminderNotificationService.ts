@@ -16,7 +16,7 @@ function getResendClient(): Resend {
 }
 
 const FROM_EMAIL =
-  process.env.REMINDER_FROM_EMAIL || "My Floral Vault <reminders@myfloral-vault.com>";
+  process.env.REMINDER_FROM_EMAIL || "My Floral Vault <noreply@myfloralvault.com>";
 const APP_URL = process.env.APP_URL || "https://myfloralvault.com";
 
 interface ReminderEmailParams {
