@@ -6,6 +6,7 @@ import {
   removePlantFromCollectionService,
   getUsersCollectionsById,
   setCollectionThumbnailService,
+  getPublicCollections as getPublicCollectionsService,
 } from "../services/collectionService";
 import { getUserCollectionWithPlants } from "../services/plantService";
 import { AuthenticatedRequest } from "../types/express";
@@ -192,6 +193,17 @@ export const removePlantFromCollection = async (
     console.error("Failed to remove plant from collection:", error);
     res.status(500).json({ message: "Server error" });
     return;
+  }
+};
+
+export const getPublicCollections = async (req: Request, res: Response) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 8, 50);
+    const collections = await getPublicCollectionsService(limit);
+    res.status(200).json(collections);
+  } catch (error) {
+    console.error("Error fetching public collections:", error);
+    res.status(500).json({ message: "Server error while fetching public collections" });
   }
 };
 
