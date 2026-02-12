@@ -11,6 +11,7 @@ import {
   getFilterOptions,
   togglePlantGarden,
   getRelatedPlants as fetchRelatedPlants,
+  getTrendingPlants as getTrendingPlantsService,
 } from "../services/plantService";
 import { AuthenticatedRequest } from "../types/express";
 
@@ -323,5 +324,37 @@ export const getRelatedPlants = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching related plants:", error);
     res.status(500).json({ message: "Failed to fetch related plants" });
+  }
+};
+
+/**
+ * GET /api/plants/trending?limit=8
+ * Get trending plants based on recent engagement (likes, views)
+ */
+export const getTrendingPlants = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 8;
+
+    // Validate limit
+    if (limit < 1 || limit > 50) {
+      res.status(400).json({ 
+        error: "Invalid limit parameter. Must be between 1 and 50." 
+      });
+      return;
+    }
+
+    const trendingPlants = await getTrendingPlantsService(limit);
+    
+    res.status(200).json({
+      success: true,
+      count: trendingPlants.length,
+      data: trendingPlants
+    });
+  } catch (error) {
+    console.error("Error fetching trending plants:", error);
+    res.status(500).json({ 
+      error: "Failed to fetch trending plants",
+      message: error instanceof Error ? error.message : "Unknown error"
+    });
   }
 };

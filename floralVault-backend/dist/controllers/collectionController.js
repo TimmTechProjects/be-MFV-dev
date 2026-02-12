@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCollectionThumbnail = exports.removePlantFromCollection = exports.addPlantToCollection = exports.getCollectionsForUser = exports.getCollectionWithPlants = exports.getCollections = exports.createCollection = void 0;
+exports.setCollectionThumbnail = exports.getPublicCollections = exports.removePlantFromCollection = exports.addPlantToCollection = exports.getCollectionsForUser = exports.getCollectionWithPlants = exports.getCollections = exports.createCollection = void 0;
 const collectionService_1 = require("../services/collectionService");
 const plantService_1 = require("../services/plantService");
 const createCollection = async (req, res) => {
@@ -160,6 +160,18 @@ const removePlantFromCollection = async (req, res) => {
     }
 };
 exports.removePlantFromCollection = removePlantFromCollection;
+const getPublicCollections = async (req, res) => {
+    try {
+        const limit = Math.min(Number(req.query.limit) || 8, 50);
+        const collections = await (0, collectionService_1.getPublicCollections)(limit);
+        res.status(200).json(collections);
+    }
+    catch (error) {
+        console.error("Error fetching public collections:", error);
+        res.status(500).json({ message: "Server error while fetching public collections" });
+    }
+};
+exports.getPublicCollections = getPublicCollections;
 const setCollectionThumbnail = async (req, res) => {
     const userId = req.user;
     const { collectionId } = req.params;

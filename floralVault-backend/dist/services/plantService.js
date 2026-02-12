@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRelatedPlants = exports.getFilterOptions = exports.searchAndFilterPlants = exports.deletePlant = exports.getCollectionPlantCount = exports.togglePlantGarden = exports.getPlantsByUsername = exports.getUserCollectionWithPlants = exports.createPlant = exports.getPlantBySlug = exports.querySearch = exports.getAllPaginatedPlants = exports.getAllPlants = void 0;
+exports.getTrendingPlants = exports.getRelatedPlants = exports.getFilterOptions = exports.searchAndFilterPlants = exports.deletePlant = exports.getCollectionPlantCount = exports.togglePlantGarden = exports.getPlantsByUsername = exports.getUserCollectionWithPlants = exports.createPlant = exports.getPlantBySlug = exports.querySearch = exports.getAllPaginatedPlants = exports.getAllPlants = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const slugify_1 = __importDefault(require("slugify"));
 const getAllPlants = async () => {
@@ -533,3 +533,52 @@ const getRelatedPlants = async (plantId, limit = 6) => {
     return scoredPlants.slice(0, limit).map(item => item.plant);
 };
 exports.getRelatedPlants = getRelatedPlants;
+const getTrendingPlants = async (limit = 8) => {
+    // Calculate trending score based on recent engagement
+    // Higher weight for recent activity (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // Get plants with their like counts from the past week
+    const plants = await client_1.default.plant.findMany({
+        where: {
+            isPublic: true
+        },
+        include: {
+            user: {
+                select: {
+                    username: true,
+                    avatarUrl: true,
+                },
+            },
+            tags: true,
+            images: true,
+            plantTraits: { include: { trait: true } },
+            plantLikes: {
+                where: {
+                    createdAt: { gte: sevenDaysAgo }
+                }
+            }
+        },
+        orderBy: [
+            { likes: 'desc' },
+            { views: 'desc' },
+            { createdAt: 'desc' }
+        ],
+        take: limit * 2 // Get more to calculate trending score
+    });
+    // Calculate trending score: recent likes * 3 + total likes + views/10
+    const scoredPlants = plants.map(plant => {
+        const recentLikes = plant.plantLikes.length;
+        const trendingScore = (recentLikes * 3) + plant.likes + (plant.views / 10);
+        return {
+            ...plant,
+            trendingScore,
+            // Remove the plantLikes array from the response
+            plantLikes: undefined
+        };
+    });
+    // Sort by trending score and return top N
+    scoredPlants.sort((a, b) => b.trendingScore - a.trendingScore);
+    return scoredPlants.slice(0, limit);
+};
+exports.getTrendingPlants = getTrendingPlants;

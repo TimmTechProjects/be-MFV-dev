@@ -11,6 +11,7 @@ import {
   getUserPlants,
   toggleGarden,
   getRelatedPlants,
+  getTrendingPlants,
 } from "../controllers/plantController";
 
 const router = Router();
@@ -18,6 +19,9 @@ const router = Router();
 // Discovery endpoints (must be before dynamic routes)
 router.get("/discover/search", discoverPlants);
 router.get("/discover/filters", getDiscoverFilters);
+
+// Trending plants endpoint (must be before dynamic routes)
+router.get("/trending", getTrendingPlants);
 
 // Related plants endpoint (must be before dynamic routes)
 router.get("/related/:plantId", getRelatedPlants);

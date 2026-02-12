@@ -17,6 +17,9 @@ const preferencesRoutes_1 = __importDefault(require("./routes/preferencesRoutes"
 const careReminderRoutes_1 = __importDefault(require("./routes/careReminderRoutes"));
 const likeRoutes_1 = __importDefault(require("./routes/likeRoutes"));
 const traitRoutes_1 = __importDefault(require("./routes/traitRoutes"));
+const marketplaceRoutes_1 = __importDefault(require("./routes/marketplaceRoutes"));
+const forumRoutes_1 = __importDefault(require("./routes/forumRoutes"));
+const statsRoutes_1 = __importDefault(require("./routes/statsRoutes"));
 const uploadthing_routes_1 = require("./routes/uploadthing.routes");
 const subscriptionController_1 = require("./controllers/subscriptionController");
 dotenv_1.default.config();
@@ -78,6 +81,9 @@ app.use("/api/preferences", preferencesRoutes_1.default);
 app.use("/api/care-reminders", careReminderRoutes_1.default);
 app.use("/api/likes", likeRoutes_1.default);
 app.use("/api/traits", traitRoutes_1.default);
+app.use("/api/marketplace", marketplaceRoutes_1.default);
+app.use("/api/forum", forumRoutes_1.default);
+app.use("/api/stats", statsRoutes_1.default);
 app.use("/api/uploadthing", uploadthing_routes_1.uploadthingHandler);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

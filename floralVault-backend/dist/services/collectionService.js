@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCollectionThumbnailService = exports.removePlantFromCollectionService = exports.addPlantToCollectionService = exports.getUsersCollectionsById = exports.getCollectionWithPlants = exports.getUserCollections = exports.createNewCollection = void 0;
+exports.setCollectionThumbnailService = exports.getPublicCollections = exports.removePlantFromCollectionService = exports.addPlantToCollectionService = exports.getUsersCollectionsById = exports.getCollectionWithPlants = exports.getUserCollections = exports.createNewCollection = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const createNewCollection = async (username, data, authenticatedUserId) => {
     const user = await client_1.default.user.findUnique({
@@ -229,6 +229,33 @@ const removePlantFromCollectionService = async ({ userId, collectionId, plantId,
     return { collection, movedToUncategorized: false };
 };
 exports.removePlantFromCollectionService = removePlantFromCollectionService;
+const getPublicCollections = async (limit = 8) => {
+    return client_1.default.collection.findMany({
+        where: { isPublic: true },
+        include: {
+            user: {
+                select: { username: true },
+            },
+            thumbnailImage: true,
+            plants: {
+                take: 1,
+                orderBy: { createdAt: "desc" },
+                include: {
+                    images: {
+                        where: { isMain: true },
+                        take: 1,
+                    },
+                },
+            },
+            _count: {
+                select: { plants: true },
+            },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+    });
+};
+exports.getPublicCollections = getPublicCollections;
 const setCollectionThumbnailService = async ({ userId, collectionId, imageId, }) => {
     const collection = await client_1.default.collection.findFirst({
         where: {
