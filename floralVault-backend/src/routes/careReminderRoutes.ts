@@ -6,6 +6,7 @@ import {
   deleteReminder,
   completeReminder,
   getDueReminders,
+  snoozeReminder,
 } from '../controllers/careReminderController';
 import verifyToken from '../middleware/verifyToken';
 
@@ -29,6 +30,10 @@ router.put('/:id', verifyToken, (req, res, next) => {
 
 router.post('/:id/complete', verifyToken, (req, res, next) => {
   completeReminder(req, res).catch(next);
+});
+
+router.post('/:id/snooze', verifyToken, (req, res, next) => {
+  snoozeReminder(req, res).catch(next);
 });
 
 router.delete('/:id', verifyToken, (req, res, next) => {

@@ -96,6 +96,7 @@ model Plant {
   images Image[]
   careReminders CareReminder[]
   plantLikes    PlantLike[]
+  medicinalProperty MedicinalProperty?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -251,6 +252,71 @@ model CareReminder {
   @@index([nextDue])
 }
 
+model PushSubscription {
+  id         String   @id @default(cuid())
+  userId     String
+  endpoint   String
+  keys       Json
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@unique([userId, endpoint])
+}
+
+model NotificationPreference {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  pushEnabled  Boolean  @default(false)
+  emailEnabled Boolean  @default(true)
+  quietStart   String?
+  quietEnd     String?
+  enabledTypes String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Apothecary & Medicinal Models
+model MedicinalProperty {
+  id                String   @id @default(cuid())
+  plantId           String   @unique
+  plant             Plant    @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  properties        String[] // anti-inflammatory, etc.
+  traditionalUses   String[] @db.Text
+  modernUses        String[] @db.Text
+  activeCompounds   String[]
+  preparations      String[] // tea, tincture, etc.
+  dosage            String?  @db.Text
+  safetyWarnings    String[] @db.Text
+  contraindications String[]
+  drugInteractions  String[]
+  references        String[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([plantId])
+}
+
+model HerbalRecipe {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @db.Text
+  authorId     String
+  plantIds     String[]
+  ingredients  String[]
+  instructions String   @db.Text
+  prepTime     Int?
+  difficulty   String?
+  purpose      String[]
+  safetyNotes  String?  @db.Text
+  images       String[]
+  createdAt    DateTime @default(now())
+  
+  @@index([authorId])
+}
+
 // Forum Models
 model ForumCategory {
   id          String        @id @default(cuid())
@@ -323,4 +389,70 @@ model Like {
   @@unique([userId, replyId])
   @@index([userId])
   @@index([replyId])
+}
+
+// Support Ticket System
+model SupportTicket {
+  id          String          @id @default(cuid())
+  subject     String
+  description String          @db.Text
+  priority    String          @default("medium")
+  status      String          @default("open")
+  category    String
+  userId      String
+  assignedTo  String?
+  messages    TicketMessage[]
+  attachments String[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  resolvedAt  DateTime?
+  
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
+model TicketMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  message   String        @db.Text
+  isStaff   Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  
+  @@index([ticketId])
+  @@index([userId])
+}
+
+model UserSuggestion {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  category    String
+  status      String   @default("pending")
+  userId      String
+  votes       Int      @default(0)
+  adminNotes  String?  @db.Text
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([status])
+}
+
+model BugReport {
+  id               String   @id @default(cuid())
+  title            String
+  description      String   @db.Text
+  stepsToReproduce String?  @db.Text
+  status           String   @default("new")
+  severity         String   @default("medium")
+  userId           String
+  screenshots      String[]
+  browserInfo      String?
+  createdAt        DateTime @default(now())
+  
+  @@index([userId])
+  @@index([status])
+  @@index([severity])
 }

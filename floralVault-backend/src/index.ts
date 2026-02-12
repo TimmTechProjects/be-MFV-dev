@@ -16,6 +16,9 @@ import traitRoutes from "./routes/traitRoutes";
 import marketplaceRoutes from "./routes/marketplaceRoutes";
 import forumRoutes from "./routes/forumRoutes";
 import statsRoutes from "./routes/statsRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
+import apothecaryRoutes from "./routes/apothecaryRoutes";
+import supportRoutes from "./routes/supportRoutes";
 import { uploadthingHandler } from "./routes/uploadthing.routes";
 import { webhook } from "./controllers/subscriptionController";
 
@@ -108,6 +111,12 @@ app.use("/api/forum", forumRoutes); // Legacy endpoint
 app.use("/api/forums", forumRoutes); // New forum system
 
 app.use("/api/stats", statsRoutes);
+
+app.use("/api/notifications", notificationRoutes);
+
+app.use("/api/apothecary", apothecaryRoutes);
+
+app.use("/api/support", supportRoutes);
 
 app.use("/api/uploadthing", uploadthingHandler);
 
