@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.webhook = exports.upgrade = exports.cancel = exports.getStatus = exports.createCheckout = exports.getConfig = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const stripeService_1 = require("../services/stripeService");
-const stripe_1 = __importDefault(require("stripe"));
+const stripeService_2 = __importDefault(require("../services/stripeService"));
 /**
  * GET /api/subscriptions/config
  * Get Stripe publishable key for frontend
@@ -124,10 +124,7 @@ const webhook = async (req, res) => {
         return;
     }
     try {
-        const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || '', {
-            apiVersion: '2026-01-28.clover',
-        });
-        const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+        const event = (0, stripeService_2.default)().webhooks.constructEvent(req.body, sig, webhookSecret);
         // Handle the event
         await (0, stripeService_1.handleWebhookEvent)(event);
         res.json({ received: true });

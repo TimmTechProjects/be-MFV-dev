@@ -13,6 +13,10 @@ const plantRoutes_1 = __importDefault(require("./routes/plantRoutes"));
 const collectionRoutes_1 = __importDefault(require("./routes/collectionRoutes"));
 const searchRoutes_1 = __importDefault(require("./routes/searchRoutes"));
 const subscriptionRoutes_1 = __importDefault(require("./routes/subscriptionRoutes"));
+const preferencesRoutes_1 = __importDefault(require("./routes/preferencesRoutes"));
+const careReminderRoutes_1 = __importDefault(require("./routes/careReminderRoutes"));
+const likeRoutes_1 = __importDefault(require("./routes/likeRoutes"));
+const traitRoutes_1 = __importDefault(require("./routes/traitRoutes"));
 const uploadthing_routes_1 = require("./routes/uploadthing.routes");
 const subscriptionController_1 = require("./controllers/subscriptionController");
 dotenv_1.default.config();
@@ -24,6 +28,8 @@ const corsOptions = {
             "http://localhost:3000",
             "https://fe-mfv.vercel.app",
             "https://flora-vault.vercel.app",
+            "https://myfloralvault.com",
+            "https://www.myfloralvault.com",
         ];
         // Allow requests with no origin (like mobile apps or curl)
         if (!origin) {
@@ -51,6 +57,14 @@ app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
 app.get("/", (req, res) => {
     res.send("Welcome to the Floral Vault API 🌿");
 });
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        service: "floralvault-api",
+        version: "1.0.0",
+    });
+});
 //
 app.use("/api/users", userRoutes_1.default);
 app.use("/api/auth", authRoutes_1.default);
@@ -60,6 +74,10 @@ app.use("/api/plants", plantRoutes_1.default);
 app.use("/api/collections", collectionRoutes_1.default);
 app.use("/api/search", searchRoutes_1.default);
 app.use("/api/subscriptions", subscriptionRoutes_1.default);
+app.use("/api/preferences", preferencesRoutes_1.default);
+app.use("/api/care-reminders", careReminderRoutes_1.default);
+app.use("/api/likes", likeRoutes_1.default);
+app.use("/api/traits", traitRoutes_1.default);
 app.use("/api/uploadthing", uploadthing_routes_1.uploadthingHandler);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

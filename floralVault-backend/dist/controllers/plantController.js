@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDiscoverFilters = exports.discoverPlants = exports.deletePlantPost = exports.createPlantPost = exports.getPlantBySlug = exports.searchPlants = exports.getPaginatedPlants = exports.getPlants = void 0;
+exports.getRelatedPlants = exports.getDiscoverFilters = exports.toggleGarden = exports.getUserPlants = exports.discoverPlants = exports.deletePlantPost = exports.createPlantPost = exports.getPlantBySlug = exports.searchPlants = exports.getPaginatedPlants = exports.getPlants = void 0;
 const plantService_1 = require("../services/plantService");
 const getPlants = async (req, res) => {
     const plants = await (0, plantService_1.getAllPlants)();
@@ -45,7 +45,7 @@ const getPlantBySlug = async (req, res) => {
 exports.getPlantBySlug = getPlantBySlug;
 const createPlantPost = async (req, res) => {
     try {
-        const { commonName, botanicalName, description, origin, family, tags, images, type, isPublic = true, collectionId, } = req.body;
+        const { commonName, botanicalName, description, origin, family, tags, images, type, primaryType, traitIds, secondaryTraits, isPublic = true, isGarden = false, collectionId, } = req.body;
         const userId = req.user;
         if (!userId) {
             res.status(401).json({ message: "Unauthorized" });
@@ -79,7 +79,11 @@ const createPlantPost = async (req, res) => {
             origin,
             family,
             type,
+            primaryType,
+            traitIds,
+            secondaryTraits,
             isPublic,
+            isGarden,
             user: { connect: { id: userId } },
             tags,
             images,
@@ -146,9 +150,16 @@ exports.deletePlantPost = deletePlantPost;
  */
 const discoverPlants = async (req, res) => {
     try {
-        const { q, type, light, water, difficulty, page = 1, limit = 20, } = req.query;
+        const { q, type, primaryType, trait, light, water, difficulty, page = 1, limit = 20, } = req.query;
+        const traitSlugs = trait
+            ? Array.isArray(trait)
+                ? trait
+                : [trait]
+            : undefined;
         const filters = {
             type: type,
+            primaryType: primaryType,
+            traitSlugs,
             light: light,
             water: water,
             difficulty: difficulty,
@@ -166,6 +177,49 @@ exports.discoverPlants = discoverPlants;
  * GET /api/plants/discover/filters
  * Get available filter options
  */
+const getUserPlants = async (req, res) => {
+    try {
+        const { username } = req.params;
+        const isGarden = req.query.isGarden === "true" ? true : req.query.isGarden === "false" ? false : undefined;
+        if (!username) {
+            res.status(400).json({ message: "Username is required" });
+            return;
+        }
+        const plants = await (0, plantService_1.getPlantsByUsername)(username, isGarden);
+        res.status(200).json(plants);
+    }
+    catch (error) {
+        console.error("Error fetching user plants:", error);
+        res.status(500).json({ message: "Failed to fetch user plants" });
+    }
+};
+exports.getUserPlants = getUserPlants;
+const toggleGarden = async (req, res) => {
+    try {
+        const { plantId } = req.params;
+        const userId = req.user;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+        if (!plantId) {
+            res.status(400).json({ message: "Plant ID is required." });
+            return;
+        }
+        const result = await (0, plantService_1.togglePlantGarden)(plantId, userId);
+        res.status(200).json(result);
+    }
+    catch (error) {
+        console.error("Error toggling garden status:", error);
+        if (error.message.includes("not found") || error.message.includes("permission")) {
+            res.status(403).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: "Something went wrong" });
+        }
+    }
+};
+exports.toggleGarden = toggleGarden;
 const getDiscoverFilters = async (req, res) => {
     try {
         const filters = await (0, plantService_1.getFilterOptions)();
@@ -177,3 +231,24 @@ const getDiscoverFilters = async (req, res) => {
     }
 };
 exports.getDiscoverFilters = getDiscoverFilters;
+/**
+ * GET /api/plants/related/:plantId
+ * Get related plants based on similar tags, same family, or same user
+ */
+const getRelatedPlants = async (req, res) => {
+    try {
+        const { plantId } = req.params;
+        const limit = parseInt(req.query.limit) || 6;
+        if (!plantId) {
+            res.status(400).json({ message: "Plant ID is required" });
+            return;
+        }
+        const relatedPlants = await (0, plantService_1.getRelatedPlants)(plantId, limit);
+        res.status(200).json(relatedPlants);
+    }
+    catch (error) {
+        console.error("Error fetching related plants:", error);
+        res.status(500).json({ message: "Failed to fetch related plants" });
+    }
+};
+exports.getRelatedPlants = getRelatedPlants;

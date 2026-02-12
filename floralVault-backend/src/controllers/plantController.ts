@@ -10,6 +10,7 @@ import {
   searchAndFilterPlants,
   getFilterOptions,
   togglePlantGarden,
+  getRelatedPlants as fetchRelatedPlants,
 } from "../services/plantService";
 import { AuthenticatedRequest } from "../types/express";
 
@@ -300,5 +301,27 @@ export const getDiscoverFilters = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error getting filter options:", error);
     res.status(500).json({ message: "Failed to get filter options" });
+  }
+};
+
+/**
+ * GET /api/plants/related/:plantId
+ * Get related plants based on similar tags, same family, or same user
+ */
+export const getRelatedPlants = async (req: Request, res: Response) => {
+  try {
+    const { plantId } = req.params;
+    const limit = parseInt(req.query.limit as string) || 6;
+
+    if (!plantId) {
+      res.status(400).json({ message: "Plant ID is required" });
+      return;
+    }
+
+    const relatedPlants = await fetchRelatedPlants(plantId, limit);
+    res.status(200).json(relatedPlants);
+  } catch (error) {
+    console.error("Error fetching related plants:", error);
+    res.status(500).json({ message: "Failed to fetch related plants" });
   }
 };

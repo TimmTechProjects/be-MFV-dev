@@ -513,3 +513,81 @@ export const getFilterOptions = async () => {
     difficulty: Array.from(difficultyTags).sort(),
   };
 };
+
+/**
+ * Get related plants based on similar tags, same family, or same user
+ * Implements smart scoring to return the most relevant plants
+ */
+export const getRelatedPlants = async (plantId: string, limit = 6) => {
+  // First, get the target plant to extract its properties
+  const targetPlant = await prisma.plant.findUnique({
+    where: { id: plantId },
+    include: {
+      tags: true,
+      user: true,
+    },
+  });
+
+  if (!targetPlant) {
+    return [];
+  }
+
+  const tagIds = targetPlant.tags.map(tag => tag.id);
+
+  // Find related plants using a combination of criteria
+  const relatedPlants = await prisma.plant.findMany({
+    where: {
+      AND: [
+        { id: { not: plantId } }, // Exclude the current plant
+        { isPublic: true }, // Only show public plants
+        {
+          OR: [
+            // Same family
+            targetPlant.family ? { family: targetPlant.family } : {},
+            // Similar tags (at least one common tag)
+            tagIds.length > 0 ? { tags: { some: { id: { in: tagIds } } } } : {},
+            // Same user
+            { userId: targetPlant.userId },
+          ].filter(condition => Object.keys(condition).length > 0), // Filter out empty conditions
+        },
+      ],
+    },
+    include: {
+      user: { select: { username: true, id: true, avatarUrl: true } },
+      tags: true,
+      images: true,
+      plantTraits: { include: { trait: true } },
+    },
+    take: limit * 3, // Fetch more than needed for scoring
+  });
+
+  // Score and sort the related plants
+  const scoredPlants = relatedPlants.map(plant => {
+    let score = 0;
+
+    // Score for same family (high relevance)
+    if (targetPlant.family && plant.family === targetPlant.family) {
+      score += 10;
+    }
+
+    // Score for common tags
+    const commonTags = plant.tags.filter(tag => tagIds.includes(tag.id)).length;
+    score += commonTags * 3;
+
+    // Score for same user (medium relevance)
+    if (plant.userId === targetPlant.userId) {
+      score += 5;
+    }
+
+    // Boost score based on plant popularity (likes and views)
+    score += Math.log10(plant.likes + 1);
+    score += Math.log10(plant.views + 1) * 0.5;
+
+    return { plant, score };
+  });
+
+  // Sort by score descending and return top N
+  scoredPlants.sort((a, b) => b.score - a.score);
+
+  return scoredPlants.slice(0, limit).map(item => item.plant);
+};

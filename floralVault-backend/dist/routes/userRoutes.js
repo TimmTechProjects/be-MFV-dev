@@ -9,6 +9,8 @@ const userController_1 = require("../controllers/userController");
 const router = express_1.default.Router();
 // GET /api/users
 router.get("/", userController_1.getAllUsers);
+// GET /api/users/check-username/:username
+router.get("/check-username/:username", userController_1.checkUsername);
 // GET /api/users/:username
 router.get("/:username", userController_1.getUserByUsername);
 // GET /api/users/me

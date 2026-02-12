@@ -12,5 +12,6 @@ router.get("/:username", collectionController_1.getCollections);
 router.post("/:username/collections", verifyToken_1.default, collectionController_1.createCollection);
 router.get("/:username/collections/:collectionSlug", collectionController_1.getCollectionWithPlants);
 router.post("/:collectionId/add-plant", verifyToken_1.default, collectionController_1.addPlantToCollection);
+router.post("/:collectionId/remove-plant", verifyToken_1.default, collectionController_1.removePlantFromCollection);
 router.patch("/:collectionId/set-thumbnail", verifyToken_1.default, collectionController_1.setCollectionThumbnail);
 exports.default = router;
