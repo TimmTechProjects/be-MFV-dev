@@ -1,31 +1,64 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getListings = void 0;
+exports.getUserMarketplaceListings = exports.getMarketplaceListings = void 0;
 const marketplaceService_1 = require("../services/marketplaceService");
-const getListings = async (req, res) => {
+/**
+ * Get all marketplace listings
+ * Query params: sort (newest/oldest/price), status (active/draft/sold), limit
+ */
+const getMarketplaceListings = async (req, res) => {
     try {
         const sort = req.query.sort || "newest";
-        const limit = parseInt(req.query.limit) || 6;
-        // Validate limit
-        if (limit < 1 || limit > 50) {
-            res.status(400).json({
-                error: "Invalid limit parameter. Must be between 1 and 50."
-            });
-            return;
-        }
-        const listings = await (0, marketplaceService_1.getMarketplaceListings)(sort, limit);
+        const status = req.query.status;
+        const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+        const listings = (0, marketplaceService_1.getAllListings)({ sort, status, limit });
         res.status(200).json({
             success: true,
             count: listings.length,
-            data: listings
+            listings,
         });
     }
     catch (error) {
         console.error("Error fetching marketplace listings:", error);
         res.status(500).json({
-            error: "Failed to fetch marketplace listings",
-            message: error instanceof Error ? error.message : "Unknown error"
+            success: false,
+            message: "Failed to fetch marketplace listings",
         });
     }
 };
-exports.getListings = getListings;
+exports.getMarketplaceListings = getMarketplaceListings;
+/**
+ * Get marketplace listings for a specific user
+ * Route: GET /api/marketplace/users/:username/listings
+ * Query params: sort (newest/oldest/price), status (active/draft/sold), limit
+ */
+const getUserMarketplaceListings = async (req, res) => {
+    try {
+        const { username } = req.params;
+        if (!username) {
+            res.status(400).json({
+                success: false,
+                message: "Username is required",
+            });
+            return;
+        }
+        const sort = req.query.sort || "newest";
+        const status = req.query.status;
+        const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+        const listings = (0, marketplaceService_1.getListingsByUsername)(username, { sort, status, limit });
+        res.status(200).json({
+            success: true,
+            username,
+            count: listings.length,
+            listings,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching user marketplace listings:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch user marketplace listings",
+        });
+    }
+};
+exports.getUserMarketplaceListings = getUserMarketplaceListings;

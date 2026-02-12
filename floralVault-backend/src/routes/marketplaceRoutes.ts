@@ -1,9 +1,16 @@
 import { Router } from "express";
-import { getListings } from "../controllers/marketplaceController";
+import {
+  getMarketplaceListings,
+  getUserMarketplaceListings,
+} from "../controllers/marketplaceController";
 
 const router = Router();
 
-// GET /api/marketplace/listings?sort=newest&limit=6
-router.get("/listings", getListings);
+// General marketplace listings endpoint
+router.get("/listings", getMarketplaceListings);
+
+// User-specific marketplace listings endpoint
+// Must come before any dynamic routes
+router.get("/users/:username/listings", getUserMarketplaceListings);
 
 export default router;
