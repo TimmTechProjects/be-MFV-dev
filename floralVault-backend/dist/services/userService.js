@@ -28,6 +28,7 @@ const getUserWithUsername = async (username) => {
             email: true,
             bio: true,
             avatarUrl: true,
+            bannerUrl: true,
             joinedAt: true,
             plan: true,
         },

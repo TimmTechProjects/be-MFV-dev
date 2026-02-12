@@ -22,6 +22,9 @@ router.put('/:id', verifyToken_1.default, (req, res, next) => {
 router.post('/:id/complete', verifyToken_1.default, (req, res, next) => {
     (0, careReminderController_1.completeReminder)(req, res).catch(next);
 });
+router.post('/:id/snooze', verifyToken_1.default, (req, res, next) => {
+    (0, careReminderController_1.snoozeReminder)(req, res).catch(next);
+});
 router.delete('/:id', verifyToken_1.default, (req, res, next) => {
     (0, careReminderController_1.deleteReminder)(req, res).catch(next);
 });

@@ -9,6 +9,10 @@ const slugify_1 = __importDefault(require("slugify"));
 const prisma = new client_1.PrismaClient();
 async function main() {
     console.log("🧹 Clearing old data...");
+    await prisma.like.deleteMany();
+    await prisma.forumReply.deleteMany();
+    await prisma.forumThread.deleteMany();
+    await prisma.forumCategory.deleteMany();
     await prisma.tag.deleteMany();
     await prisma.image.deleteMany();
     await prisma.plant.deleteMany();
@@ -538,6 +542,58 @@ async function main() {
         });
     }
     console.log("✅ Mock users seeded successfully.");
+    // Seed forum categories
+    console.log("💬 Seeding forum categories...");
+    const categories = [
+        {
+            name: "General Discussion",
+            slug: "general-discussion",
+            description: "Talk about anything plant-related",
+            icon: "💬",
+            order: 1,
+        },
+        {
+            name: "Plant Care & Help",
+            slug: "plant-care-help",
+            description: "Get help with your plants and share care tips",
+            icon: "🌱",
+            order: 2,
+        },
+        {
+            name: "Plant Identification",
+            slug: "plant-identification",
+            description: "Help identify plants and learn their names",
+            icon: "🔍",
+            order: 3,
+        },
+        {
+            name: "Show & Tell",
+            slug: "show-tell",
+            description: "Show off your beautiful plants and collections",
+            icon: "✨",
+            order: 4,
+        },
+        {
+            name: "Marketplace Discussion",
+            slug: "marketplace-discussion",
+            description: "Discuss plant trades, sales, and marketplace",
+            icon: "🌿",
+            order: 5,
+        },
+        {
+            name: "Site Feedback",
+            slug: "site-feedback",
+            description: "Suggestions and feedback for FloralVault",
+            icon: "💡",
+            order: 6,
+        },
+    ];
+    for (const category of categories) {
+        await prisma.forumCategory.create({
+            data: category,
+        });
+    }
+    console.log("✅ Forum categories seeded successfully.");
 }
 main()
     .catch((e) => {

@@ -20,6 +20,9 @@ const traitRoutes_1 = __importDefault(require("./routes/traitRoutes"));
 const marketplaceRoutes_1 = __importDefault(require("./routes/marketplaceRoutes"));
 const forumRoutes_1 = __importDefault(require("./routes/forumRoutes"));
 const statsRoutes_1 = __importDefault(require("./routes/statsRoutes"));
+const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
+const apothecaryRoutes_1 = __importDefault(require("./routes/apothecaryRoutes"));
+const supportRoutes_1 = __importDefault(require("./routes/supportRoutes"));
 const uploadthing_routes_1 = require("./routes/uploadthing.routes");
 const subscriptionController_1 = require("./controllers/subscriptionController");
 dotenv_1.default.config();
@@ -82,8 +85,12 @@ app.use("/api/care-reminders", careReminderRoutes_1.default);
 app.use("/api/likes", likeRoutes_1.default);
 app.use("/api/traits", traitRoutes_1.default);
 app.use("/api/marketplace", marketplaceRoutes_1.default);
-app.use("/api/forum", forumRoutes_1.default);
+app.use("/api/forum", forumRoutes_1.default); // Legacy endpoint
+app.use("/api/forums", forumRoutes_1.default); // New forum system
 app.use("/api/stats", statsRoutes_1.default);
+app.use("/api/notifications", notificationRoutes_1.default);
+app.use("/api/apothecary", apothecaryRoutes_1.default);
+app.use("/api/support", supportRoutes_1.default);
 app.use("/api/uploadthing", uploadthing_routes_1.uploadthingHandler);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

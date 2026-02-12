@@ -12,4 +12,6 @@ router.post("/login", authController_1.loginUser);
 router.post("/register", authController_1.registerUser);
 router.post("/google-login", authController_1.googleLogin);
 router.put("/change-username", verifyToken_1.default, userController_1.changeUsernameHandler);
+router.put("/update-profile", verifyToken_1.default, userController_1.updateUser);
+router.get("/get-profile", userController_1.getProfileByUsername);
 exports.default = router;
