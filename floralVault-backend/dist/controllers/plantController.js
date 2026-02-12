@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRelatedPlants = exports.getDiscoverFilters = exports.toggleGarden = exports.getUserPlants = exports.discoverPlants = exports.deletePlantPost = exports.createPlantPost = exports.getPlantBySlug = exports.searchPlants = exports.getPaginatedPlants = exports.getPlants = void 0;
+exports.getTrendingPlants = exports.getRelatedPlants = exports.getDiscoverFilters = exports.toggleGarden = exports.getUserPlants = exports.discoverPlants = exports.deletePlantPost = exports.createPlantPost = exports.getPlantBySlug = exports.searchPlants = exports.getPaginatedPlants = exports.getPlants = void 0;
 const plantService_1 = require("../services/plantService");
 const getPlants = async (req, res) => {
     const plants = await (0, plantService_1.getAllPlants)();
@@ -252,3 +252,33 @@ const getRelatedPlants = async (req, res) => {
     }
 };
 exports.getRelatedPlants = getRelatedPlants;
+/**
+ * GET /api/plants/trending?limit=8
+ * Get trending plants based on recent engagement (likes, views)
+ */
+const getTrendingPlants = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 8;
+        // Validate limit
+        if (limit < 1 || limit > 50) {
+            res.status(400).json({
+                error: "Invalid limit parameter. Must be between 1 and 50."
+            });
+            return;
+        }
+        const trendingPlants = await (0, plantService_1.getTrendingPlants)(limit);
+        res.status(200).json({
+            success: true,
+            count: trendingPlants.length,
+            data: trendingPlants
+        });
+    }
+    catch (error) {
+        console.error("Error fetching trending plants:", error);
+        res.status(500).json({
+            error: "Failed to fetch trending plants",
+            message: error instanceof Error ? error.message : "Unknown error"
+        });
+    }
+};
+exports.getTrendingPlants = getTrendingPlants;

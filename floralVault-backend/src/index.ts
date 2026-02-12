@@ -14,6 +14,8 @@ import careReminderRoutes from "./routes/careReminderRoutes";
 import likeRoutes from "./routes/likeRoutes";
 import traitRoutes from "./routes/traitRoutes";
 import marketplaceRoutes from "./routes/marketplaceRoutes";
+import forumRoutes from "./routes/forumRoutes";
+import statsRoutes from "./routes/statsRoutes";
 import { uploadthingHandler } from "./routes/uploadthing.routes";
 import { webhook } from "./controllers/subscriptionController";
 
@@ -101,6 +103,10 @@ app.use("/api/likes", likeRoutes);
 app.use("/api/traits", traitRoutes);
 
 app.use("/api/marketplace", marketplaceRoutes);
+
+app.use("/api/forum", forumRoutes);
+
+app.use("/api/stats", statsRoutes);
 
 app.use("/api/uploadthing", uploadthingHandler);
 

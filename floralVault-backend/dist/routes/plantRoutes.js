@@ -10,6 +10,8 @@ const router = (0, express_1.Router)();
 // Discovery endpoints (must be before dynamic routes)
 router.get("/discover/search", plantController_1.discoverPlants);
 router.get("/discover/filters", plantController_1.getDiscoverFilters);
+// Trending plants endpoint (must be before dynamic routes)
+router.get("/trending", plantController_1.getTrendingPlants);
 // Related plants endpoint (must be before dynamic routes)
 router.get("/related/:plantId", plantController_1.getRelatedPlants);
 // Standard endpoints
