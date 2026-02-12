@@ -61,6 +61,18 @@ model User {
   careReminders         CareReminder[]
   likes                 PlantLike[]
   usernameLastChangedAt DateTime?
+
+  // Social features
+  posts              Post[]
+  postLikes          PostLike[]
+  postComments       PostComment[]
+  forumThreads       ForumThread[]
+  forumReplies       ForumReply[]
+  forumThreadVotes   ForumThreadVote[]
+  forumReplyVotes    ForumReplyVote[]
+  notifications      Notification[]
+  supportTickets     SupportTicket[]
+  ticketMessages     TicketMessage[]
 }
 
 model Plant {
@@ -244,4 +256,219 @@ model CareReminder {
   @@index([userId])
   @@index([plantId])
   @@index([nextDue])
+}
+
+// ========== SOCIAL FEATURES ==========
+
+enum PostPrivacy {
+  PUBLIC
+  FOLLOWERS_ONLY
+  PRIVATE
+}
+
+model Post {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String      @db.Text
+  images    String[]
+  privacy   PostPrivacy @default(PUBLIC)
+  likes     PostLike[]
+  comments  PostComment[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model PostComment {
+  id        String        @id @default(uuid())
+  postId    String
+  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String        @db.Text
+  parentId  String?
+  parent    PostComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   PostComment[] @relation("CommentReplies")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([postId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+// ========== FORUM FEATURES ==========
+
+model ForumCategory {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  slug        String        @unique
+  description String?
+  icon        String?
+  threads     ForumThread[]
+  createdAt   DateTime      @default(now())
+}
+
+model ForumThread {
+  id         String            @id @default(uuid())
+  categoryId String
+  category   ForumCategory     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  content    String            @db.Text
+  isPinned   Boolean           @default(false)
+  isLocked   Boolean           @default(false)
+  views      Int               @default(0)
+  replies    ForumReply[]
+  votes      ForumThreadVote[]
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([categoryId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ForumReply {
+  id        String           @id @default(uuid())
+  threadId  String
+  thread    ForumThread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String           @db.Text
+  parentId  String?
+  parent    ForumReply?      @relation("ReplyReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   ForumReply[]     @relation("ReplyReplies")
+  votes     ForumReplyVote[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([threadId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+model ForumThreadVote {
+  id        String      @id @default(uuid())
+  threadId  String
+  thread    ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value     Int
+  createdAt DateTime    @default(now())
+
+  @@unique([threadId, userId])
+  @@index([threadId])
+}
+
+model ForumReplyVote {
+  id        String     @id @default(uuid())
+  replyId   String
+  reply     ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value     Int
+  createdAt DateTime   @default(now())
+
+  @@unique([replyId, userId])
+  @@index([replyId])
+}
+
+// ========== NOTIFICATIONS ==========
+
+enum NotificationType {
+  POST_LIKE
+  POST_COMMENT
+  FORUM_REPLY
+  CARE_REMINDER
+  SYSTEM
+  FOLLOW
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+// ========== SUPPORT TICKETS ==========
+
+enum TicketCategory {
+  BUG
+  FEATURE_REQUEST
+  ACCOUNT
+  PAYMENT
+  OTHER
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model SupportTicket {
+  id        String         @id @default(uuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  category  TicketCategory
+  priority  TicketPriority @default(MEDIUM)
+  status    TicketStatus   @default(OPEN)
+  messages  TicketMessage[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  closedAt  DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
+model TicketMessage {
+  id        String        @id @default(uuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String        @db.Text
+  isStaff   Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
 }

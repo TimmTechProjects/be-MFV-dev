@@ -15,6 +15,9 @@ import likeRoutes from "./routes/likeRoutes";
 import traitRoutes from "./routes/traitRoutes";
 import marketplaceRoutes from "./routes/marketplaceRoutes";
 import forumRoutes from "./routes/forumRoutes";
+import postRoutes from "./routes/postRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
+import supportRoutes from "./routes/supportRoutes";
 import statsRoutes from "./routes/statsRoutes";
 import { uploadthingHandler } from "./routes/uploadthing.routes";
 import { webhook } from "./controllers/subscriptionController";
@@ -107,6 +110,12 @@ app.use("/api/traits", traitRoutes);
 app.use("/api/marketplace", marketplaceRoutes);
 
 app.use("/api/forum", forumRoutes);
+
+app.use("/api/posts", postRoutes);
+
+app.use("/api/notifications", notificationRoutes);
+
+app.use("/api/support", supportRoutes);
 
 app.use("/api/stats", statsRoutes);
 
