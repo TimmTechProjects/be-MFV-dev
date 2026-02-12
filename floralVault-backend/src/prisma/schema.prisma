@@ -61,6 +61,12 @@ model User {
   careReminders         CareReminder[]
   likes                 PlantLike[]
   usernameLastChangedAt DateTime?
+  
+  // Forum relations
+  forumThreads          ForumThread[]
+  forumReplies          ForumReply[]
+  threadSubscriptions   ForumThread[]         @relation("ThreadSubscriptions")
+  forumLikes            Like[]
 }
 
 model Plant {
@@ -243,4 +249,78 @@ model CareReminder {
   @@index([userId])
   @@index([plantId])
   @@index([nextDue])
+}
+
+// Forum Models
+model ForumCategory {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  slug        String        @unique
+  description String?
+  icon        String?
+  order       Int           @default(0)
+  threads     ForumThread[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@index([slug])
+  @@index([order])
+}
+
+model ForumThread {
+  id            String         @id @default(cuid())
+  title         String
+  slug          String
+  content       String         @db.Text
+  images        String[]
+  authorId      String
+  author        User           @relation(fields: [authorId], references: [id])
+  categoryId    String
+  category      ForumCategory  @relation(fields: [categoryId], references: [id])
+  isPinned      Boolean        @default(false)
+  isLocked      Boolean        @default(false)
+  viewCount     Int            @default(0)
+  replies       ForumReply[]
+  subscribers   User[]         @relation("ThreadSubscriptions")
+  tags          String[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  lastReplyAt   DateTime?
+  
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([slug])
+  @@index([isPinned, createdAt])
+}
+
+model ForumReply {
+  id        String      @id @default(cuid())
+  content   String      @db.Text
+  images    String[]
+  threadId  String
+  thread    ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User        @relation(fields: [authorId], references: [id])
+  parentId  String?
+  parent    ForumReply? @relation("ReplyReplies", fields: [parentId], references: [id])
+  replies   ForumReply[] @relation("ReplyReplies")
+  likes     Like[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  
+  @@index([threadId])
+  @@index([authorId])
+}
+
+model Like {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replyId   String
+  reply     ForumReply  @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  
+  @@unique([userId, replyId])
+  @@index([userId])
+  @@index([replyId])
 }

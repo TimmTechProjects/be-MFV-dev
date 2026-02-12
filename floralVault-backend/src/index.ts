@@ -104,7 +104,8 @@ app.use("/api/traits", traitRoutes);
 
 app.use("/api/marketplace", marketplaceRoutes);
 
-app.use("/api/forum", forumRoutes);
+app.use("/api/forum", forumRoutes); // Legacy endpoint
+app.use("/api/forums", forumRoutes); // New forum system
 
 app.use("/api/stats", statsRoutes);
 

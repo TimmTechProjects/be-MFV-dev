@@ -1,173 +1,537 @@
 import prisma from "../prisma/client";
+import slugify from "slugify";
 
+// Types
 export interface ForumPost {
   id: string;
   title: string;
   content: string;
+  slug: string;
+  images: string[];
   author: {
+    id: string;
     username: string;
     avatarUrl: string | null;
     essence: number;
   };
-  category: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
   tags: string[];
-  replies: number;
-  views: number;
-  likes: number;
-  createdAt: Date;
-  lastActivity: Date;
+  replyCount: number;
+  viewCount: number;
   isPinned: boolean;
-  isAnswered: boolean;
+  isLocked: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  lastReplyAt: Date | null;
 }
 
-export const getForumPosts = async (limit: number = 7): Promise<ForumPost[]> => {
-  // TODO: Replace with actual database query when forum tables are created
-  // For now, returning mock data to unblock frontend development
+export interface CreateThreadInput {
+  title: string;
+  content: string;
+  categoryId: string;
+  tags?: string[];
+  images?: string[];
+}
+
+export interface CreateReplyInput {
+  content: string;
+  threadId: string;
+  parentId?: string;
+  images?: string[];
+}
+
+// Service Functions
+
+export const createCategory = async (data: {
+  name: string;
+  slug?: string;
+  description?: string;
+  icon?: string;
+  order?: number;
+}) => {
+  const slug = data.slug || slugify(data.name, { lower: true, strict: true });
   
-  const mockPosts: ForumPost[] = [
-    {
-      id: "1",
-      title: "Best fertilizer for Monstera deliciosa?",
-      content: "I've been growing Monsteras for a year now and looking to optimize my fertilizing routine. What do you all recommend?",
-      author: {
-        username: "tropicalplants",
-        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=tropicalplants",
-        essence: 1250
-      },
-      category: "Care Tips",
-      tags: ["monstera", "fertilizer", "indoor-plants"],
-      replies: 23,
-      views: 456,
-      likes: 12,
-      createdAt: new Date("2026-02-11T10:30:00"),
-      lastActivity: new Date("2026-02-11T15:45:00"),
-      isPinned: false,
-      isAnswered: true
+  return await prisma.forumCategory.create({
+    data: {
+      name: data.name,
+      slug,
+      description: data.description,
+      icon: data.icon,
+      order: data.order || 0,
     },
-    {
-      id: "2",
-      title: "📌 Welcome to the Floral Vault Community!",
-      content: "New here? Start by introducing yourself and your favorite plants! This community is all about sharing knowledge and growing together.",
-      author: {
-        username: "admin",
-        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
-        essence: 9999
-      },
-      category: "Announcements",
-      tags: ["welcome", "introduction", "community"],
-      replies: 148,
-      views: 2341,
-      likes: 89,
-      createdAt: new Date("2026-01-15T09:00:00"),
-      lastActivity: new Date("2026-02-11T14:20:00"),
-      isPinned: true,
-      isAnswered: false
-    },
-    {
-      id: "3",
-      title: "Help! My snake plant is turning yellow",
-      content: "I've had this snake plant for 3 months. Recently noticed yellowing leaves. I water once every 2 weeks. Photos attached.",
-      author: {
-        username: "newbieplanter",
-        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=newbieplanter",
-        essence: 85
-      },
-      category: "Plant Problems",
-      tags: ["snake-plant", "yellowing", "help"],
-      replies: 15,
-      views: 234,
-      likes: 8,
-      createdAt: new Date("2026-02-10T16:20:00"),
-      lastActivity: new Date("2026-02-11T12:10:00"),
-      isPinned: false,
-      isAnswered: true
-    },
-    {
-      id: "4",
-      title: "Show off your rare plants! 🌿✨",
-      content: "Let's see those rare beauties in your collection. I'll start with my variegated Monstera adansonii!",
-      author: {
-        username: "rarecollector",
-        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=rarecollector",
-        essence: 2340
-      },
-      category: "Show & Tell",
-      tags: ["rare-plants", "collection", "variegated"],
-      replies: 67,
-      views: 1523,
-      likes: 94,
-      createdAt: new Date("2026-02-09T11:15:00"),
-      lastActivity: new Date("2026-02-11T11:30:00"),
-      isPinned: false,
-      isAnswered: false
-    },
-    {
-      id: "5",
-      title: "DIY self-watering planter tutorial",
-      content: "Just finished making self-watering planters from recycled materials. Here's a step-by-step guide...",
-      author: {
-        username: "diygardener",
-        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=diygardener",
-        essence: 1876
-      },
-      category: "DIY Projects",
-      tags: ["diy", "self-watering", "tutorial"],
-      replies: 34,
-      views: 892,
-      likes: 56,
-      createdAt: new Date("2026-02-08T14:45:00"),
-      lastActivity: new Date("2026-02-11T09:15:00"),
-      isPinned: false,
-      isAnswered: false
-    },
-    {
-      id: "6",
-      title: "Best plants for low light apartments?",
-      content: "Moving to a new apartment with limited natural light. What plants would thrive in these conditions?",
-      author: {
-        username: "citydweller",
-        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=citydweller",
-        essence: 543
-      },
-      category: "Plant Selection",
-      tags: ["low-light", "apartment", "beginner"],
-      replies: 41,
-      views: 678,
-      likes: 28,
-      createdAt: new Date("2026-02-07T13:00:00"),
-      lastActivity: new Date("2026-02-10T18:45:00"),
-      isPinned: false,
-      isAnswered: true
-    },
-    {
-      id: "7",
-      title: "Propagation success stories thread 🌱",
-      content: "Share your propagation wins! What method works best for you? Water vs soil propagation debate welcome!",
-      author: {
-        username: "propagationpro",
-        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=propagationpro",
-        essence: 3120
-      },
-      category: "Propagation",
-      tags: ["propagation", "cuttings", "success"],
-      replies: 89,
-      views: 1845,
-      likes: 112,
-      createdAt: new Date("2026-02-06T10:30:00"),
-      lastActivity: new Date("2026-02-10T16:20:00"),
-      isPinned: false,
-      isAnswered: false
-    }
-  ];
-
-  // Sort by last activity (most recent first)
-  const sortedPosts = mockPosts.sort((a, b) => {
-    // Pinned posts always come first
-    if (a.isPinned && !b.isPinned) return -1;
-    if (!a.isPinned && b.isPinned) return 1;
-    // Then sort by last activity
-    return b.lastActivity.getTime() - a.lastActivity.getTime();
   });
+};
 
-  return sortedPosts.slice(0, limit);
+export const getCategories = async () => {
+  return await prisma.forumCategory.findMany({
+    orderBy: { order: "asc" },
+    include: {
+      _count: {
+        select: { threads: true },
+      },
+    },
+  });
+};
+
+export const createThread = async (authorId: string, input: CreateThreadInput) => {
+  const slug = slugify(input.title, { lower: true, strict: true }) + `-${Date.now()}`;
+  
+  return await prisma.forumThread.create({
+    data: {
+      title: input.title,
+      content: input.content,
+      slug,
+      categoryId: input.categoryId,
+      authorId,
+      tags: input.tags || [],
+      images: input.images || [],
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          essence: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      _count: {
+        select: { replies: true },
+      },
+    },
+  });
+};
+
+export const getThreads = async (filters?: {
+  categoryId?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: "recent" | "popular" | "replies";
+}) => {
+  const { categoryId, limit = 20, offset = 0, sortBy = "recent" } = filters || {};
+  
+  const where = categoryId ? { categoryId } : {};
+  
+  let orderBy: any = { createdAt: "desc" };
+  if (sortBy === "popular") {
+    orderBy = { viewCount: "desc" };
+  } else if (sortBy === "replies") {
+    orderBy = { lastReplyAt: "desc" };
+  }
+  
+  // Always show pinned threads first
+  const [pinnedThreads, regularThreads] = await Promise.all([
+    prisma.forumThread.findMany({
+      where: { ...where, isPinned: true },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            essence: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: { replies: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.forumThread.findMany({
+      where: { ...where, isPinned: false },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            essence: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: { replies: true },
+        },
+      },
+      orderBy,
+      take: limit,
+      skip: offset,
+    }),
+  ]);
+  
+  return [...pinnedThreads, ...regularThreads];
+};
+
+export const getThreadById = async (threadId: string) => {
+  const thread = await prisma.forumThread.findUnique({
+    where: { id: threadId },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          essence: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      replies: {
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              avatarUrl: true,
+              essence: true,
+            },
+          },
+          _count: {
+            select: {
+              likes: true,
+              replies: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "asc" },
+      },
+      _count: {
+        select: { replies: true },
+      },
+    },
+  });
+  
+  // Increment view count
+  if (thread) {
+    await prisma.forumThread.update({
+      where: { id: threadId },
+      data: { viewCount: { increment: 1 } },
+    });
+  }
+  
+  return thread;
+};
+
+export const updateThread = async (
+  threadId: string,
+  authorId: string,
+  data: { title?: string; content?: string; tags?: string[]; images?: string[] }
+) => {
+  // Check if user is the author
+  const thread = await prisma.forumThread.findUnique({
+    where: { id: threadId },
+  });
+  
+  if (!thread || thread.authorId !== authorId) {
+    throw new Error("Not authorized to update this thread");
+  }
+  
+  if (thread.isLocked) {
+    throw new Error("Thread is locked and cannot be edited");
+  }
+  
+  return await prisma.forumThread.update({
+    where: { id: threadId },
+    data: {
+      ...(data.title && { title: data.title }),
+      ...(data.content && { content: data.content }),
+      ...(data.tags && { tags: data.tags }),
+      ...(data.images && { images: data.images }),
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          essence: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+  });
+};
+
+export const deleteThread = async (threadId: string, userId: string) => {
+  const thread = await prisma.forumThread.findUnique({
+    where: { id: threadId },
+  });
+  
+  if (!thread || thread.authorId !== userId) {
+    throw new Error("Not authorized to delete this thread");
+  }
+  
+  await prisma.forumThread.delete({
+    where: { id: threadId },
+  });
+};
+
+export const createReply = async (authorId: string, input: CreateReplyInput) => {
+  const thread = await prisma.forumThread.findUnique({
+    where: { id: input.threadId },
+  });
+  
+  if (!thread) {
+    throw new Error("Thread not found");
+  }
+  
+  if (thread.isLocked) {
+    throw new Error("Thread is locked");
+  }
+  
+  const reply = await prisma.forumReply.create({
+    data: {
+      content: input.content,
+      threadId: input.threadId,
+      authorId,
+      parentId: input.parentId,
+      images: input.images || [],
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          essence: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
+          replies: true,
+        },
+      },
+    },
+  });
+  
+  // Update thread's lastReplyAt
+  await prisma.forumThread.update({
+    where: { id: input.threadId },
+    data: { lastReplyAt: new Date() },
+  });
+  
+  return reply;
+};
+
+export const updateReply = async (
+  replyId: string,
+  userId: string,
+  data: { content?: string; images?: string[] }
+) => {
+  const reply = await prisma.forumReply.findUnique({
+    where: { id: replyId },
+    include: { thread: true },
+  });
+  
+  if (!reply || reply.authorId !== userId) {
+    throw new Error("Not authorized to update this reply");
+  }
+  
+  if (reply.thread.isLocked) {
+    throw new Error("Thread is locked");
+  }
+  
+  return await prisma.forumReply.update({
+    where: { id: replyId },
+    data: {
+      ...(data.content && { content: data.content }),
+      ...(data.images && { images: data.images }),
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          essence: true,
+        },
+      },
+    },
+  });
+};
+
+export const deleteReply = async (replyId: string, userId: string) => {
+  const reply = await prisma.forumReply.findUnique({
+    where: { id: replyId },
+  });
+  
+  if (!reply || reply.authorId !== userId) {
+    throw new Error("Not authorized to delete this reply");
+  }
+  
+  await prisma.forumReply.delete({
+    where: { id: replyId },
+  });
+};
+
+export const pinThread = async (threadId: string) => {
+  return await prisma.forumThread.update({
+    where: { id: threadId },
+    data: { isPinned: true },
+  });
+};
+
+export const unpinThread = async (threadId: string) => {
+  return await prisma.forumThread.update({
+    where: { id: threadId },
+    data: { isPinned: false },
+  });
+};
+
+export const lockThread = async (threadId: string) => {
+  return await prisma.forumThread.update({
+    where: { id: threadId },
+    data: { isLocked: true },
+  });
+};
+
+export const unlockThread = async (threadId: string) => {
+  return await prisma.forumThread.update({
+    where: { id: threadId },
+    data: { isLocked: false },
+  });
+};
+
+export const subscribeToThread = async (threadId: string, userId: string) => {
+  await prisma.forumThread.update({
+    where: { id: threadId },
+    data: {
+      subscribers: {
+        connect: { id: userId },
+      },
+    },
+  });
+};
+
+export const unsubscribeFromThread = async (threadId: string, userId: string) => {
+  await prisma.forumThread.update({
+    where: { id: threadId },
+    data: {
+      subscribers: {
+        disconnect: { id: userId },
+      },
+    },
+  });
+};
+
+export const searchThreadsAndReplies = async (query: string, limit: number = 20) => {
+  const [threads, replies] = await Promise.all([
+    prisma.forumThread.findMany({
+      where: {
+        OR: [
+          { title: { contains: query, mode: "insensitive" } },
+          { content: { contains: query, mode: "insensitive" } },
+          { tags: { has: query } },
+        ],
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            essence: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: { replies: true },
+        },
+      },
+      take: limit,
+      orderBy: { viewCount: "desc" },
+    }),
+    prisma.forumReply.findMany({
+      where: {
+        content: { contains: query, mode: "insensitive" },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            essence: true,
+          },
+        },
+        thread: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
+      },
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+  
+  return { threads, replies };
+};
+
+// Legacy function for backward compatibility
+export const getForumPosts = async (limit: number = 7): Promise<ForumPost[]> => {
+  const threads = await getThreads({ limit });
+  
+  return threads.map((thread) => ({
+    id: thread.id,
+    title: thread.title,
+    content: thread.content,
+    slug: thread.slug,
+    images: thread.images,
+    author: thread.author,
+    category: thread.category,
+    tags: thread.tags,
+    replyCount: thread._count.replies,
+    viewCount: thread.viewCount,
+    isPinned: thread.isPinned,
+    isLocked: thread.isLocked,
+    createdAt: thread.createdAt,
+    updatedAt: thread.updatedAt,
+    lastReplyAt: thread.lastReplyAt,
+  }));
 };
