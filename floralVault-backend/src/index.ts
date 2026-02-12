@@ -18,6 +18,8 @@ import forumRoutes from "./routes/forumRoutes";
 import statsRoutes from "./routes/statsRoutes";
 import { uploadthingHandler } from "./routes/uploadthing.routes";
 import { webhook } from "./controllers/subscriptionController";
+import { startReminderScheduler } from "./services/reminderScheduler";
+import { processReminders } from "./services/reminderScheduler";
 
 dotenv.config();
 
@@ -110,6 +112,25 @@ app.use("/api/stats", statsRoutes);
 
 app.use("/api/uploadthing", uploadthingHandler);
 
+app.post("/api/cron/send-reminders", async (req, res, next) => {
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = req.headers.authorization;
+
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const result = await processReminders();
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error("[Cron Endpoint] Error processing reminders:", err);
+    res.status(500).json({ success: false, error: "Failed to process reminders" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  startReminderScheduler();
 });
