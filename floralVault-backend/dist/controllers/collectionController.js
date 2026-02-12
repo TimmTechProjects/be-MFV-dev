@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCollectionThumbnail = exports.addPlantToCollection = exports.getCollectionsForUser = exports.getCollectionWithPlants = exports.getCollections = exports.createCollection = void 0;
+exports.setCollectionThumbnail = exports.removePlantFromCollection = exports.addPlantToCollection = exports.getCollectionsForUser = exports.getCollectionWithPlants = exports.getCollections = exports.createCollection = void 0;
 const collectionService_1 = require("../services/collectionService");
 const plantService_1 = require("../services/plantService");
 const createCollection = async (req, res) => {
@@ -121,6 +121,45 @@ const addPlantToCollection = async (req, res) => {
     }
 };
 exports.addPlantToCollection = addPlantToCollection;
+const removePlantFromCollection = async (req, res) => {
+    const userId = req.user;
+    const { collectionId } = req.params;
+    const { plantId } = req.body;
+    if (!userId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+    if (!collectionId || !plantId) {
+        res
+            .status(400)
+            .json({ message: "Both collectionId and plantId are required." });
+        return;
+    }
+    try {
+        const result = await (0, collectionService_1.removePlantFromCollectionService)({
+            userId,
+            collectionId,
+            plantId,
+        });
+        res.status(200).json({
+            ...result.collection,
+            movedToUncategorized: result.movedToUncategorized,
+        });
+        return;
+    }
+    catch (error) {
+        if (error instanceof Error && error.message === "LAST_ALBUM") {
+            res.status(409).json({
+                message: "This plant must belong to at least one album. It has been kept in this album.",
+            });
+            return;
+        }
+        console.error("Failed to remove plant from collection:", error);
+        res.status(500).json({ message: "Server error" });
+        return;
+    }
+};
+exports.removePlantFromCollection = removePlantFromCollection;
 const setCollectionThumbnail = async (req, res) => {
     const userId = req.user;
     const { collectionId } = req.params;
@@ -129,17 +168,17 @@ const setCollectionThumbnail = async (req, res) => {
         res.status(401).json({ message: "Unauthorized" });
         return;
     }
-    if (!collectionId || !imageId) {
+    if (!collectionId) {
         res
             .status(400)
-            .json({ message: "Both collectionId and imageId are required." });
+            .json({ message: "collectionId is required." });
         return;
     }
     try {
         const result = await (0, collectionService_1.setCollectionThumbnailService)({
             userId,
             collectionId,
-            imageId,
+            imageId: imageId ?? null,
         });
         res.status(200).json(result);
         return;

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCollectionThumbnailService = exports.addPlantToCollectionService = exports.getUsersCollectionsById = exports.getCollectionWithPlants = exports.getUserCollections = exports.createNewCollection = void 0;
+exports.setCollectionThumbnailService = exports.removePlantFromCollectionService = exports.addPlantToCollectionService = exports.getUsersCollectionsById = exports.getCollectionWithPlants = exports.getUserCollections = exports.createNewCollection = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const createNewCollection = async (username, data, authenticatedUserId) => {
     const user = await client_1.default.user.findUnique({
@@ -42,6 +42,9 @@ const getUserCollections = async (username) => {
             collections: {
                 include: {
                     thumbnailImage: true,
+                    _count: {
+                        select: { plants: true },
+                    },
                     plants: {
                         orderBy: { createdAt: "desc" },
                         take: 1,
@@ -80,6 +83,9 @@ const getUsersCollectionsById = async (userId) => {
         where: { userId },
         include: {
             thumbnailImage: true,
+            plants: {
+                select: { id: true },
+            },
             _count: {
                 select: { plants: true },
             },
@@ -131,8 +137,36 @@ const addPlantToCollectionService = async ({ userId, collectionId, plantId, }) =
     return updatedCollection;
 };
 exports.addPlantToCollectionService = addPlantToCollectionService;
-const setCollectionThumbnailService = async ({ userId, collectionId, imageId, }) => {
-    // Confirm the collection belongs to the user
+const getOrCreateUncategorizedCollection = async (userId) => {
+    const slug = `uncategorized-${userId}`;
+    const existing = await client_1.default.collection.findFirst({
+        where: {
+            userId,
+            slug,
+        },
+    });
+    if (existing)
+        return existing;
+    try {
+        return await client_1.default.collection.create({
+            data: {
+                name: "Uncategorized",
+                slug,
+                description: "Plants that have been removed from all other albums",
+                userId,
+            },
+        });
+    }
+    catch {
+        const found = await client_1.default.collection.findFirst({
+            where: { userId, slug },
+        });
+        if (found)
+            return found;
+        throw new Error("Failed to create uncategorized collection");
+    }
+};
+const removePlantFromCollectionService = async ({ userId, collectionId, plantId, }) => {
     const collection = await client_1.default.collection.findFirst({
         where: {
             id: collectionId,
@@ -142,14 +176,82 @@ const setCollectionThumbnailService = async ({ userId, collectionId, imageId, })
     if (!collection) {
         throw new Error("Collection not found or access denied");
     }
-    // Verify the image exists
+    const plant = await client_1.default.plant.findUnique({
+        where: { id: plantId },
+    });
+    if (!plant) {
+        throw new Error("Plant not found");
+    }
+    if (plant.collectionId !== collectionId) {
+        throw new Error("Plant is not in this collection");
+    }
+    const isOwner = plant.userId === userId;
+    if (isOwner) {
+        const ownerCollectionsWithPlant = await client_1.default.collection.findMany({
+            where: {
+                userId,
+                plants: { some: { id: plantId } },
+            },
+        });
+        if (ownerCollectionsWithPlant.length <= 1) {
+            const uncategorized = await getOrCreateUncategorizedCollection(userId);
+            if (uncategorized.id === collectionId) {
+                throw new Error("LAST_ALBUM");
+            }
+            await client_1.default.plant.update({
+                where: { id: plantId },
+                data: { collectionId: uncategorized.id },
+            });
+            return { collection, movedToUncategorized: true };
+        }
+    }
+    const targetCollectionId = plant.originalCollectionId || collectionId;
+    if (targetCollectionId === collectionId) {
+        const otherCollection = await client_1.default.collection.findFirst({
+            where: {
+                userId,
+                plants: { some: { id: plantId } },
+                id: { not: collectionId },
+            },
+        });
+        if (otherCollection) {
+            await client_1.default.plant.update({
+                where: { id: plantId },
+                data: { collectionId: otherCollection.id },
+            });
+        }
+        return { collection, movedToUncategorized: false };
+    }
+    await client_1.default.plant.update({
+        where: { id: plantId },
+        data: { collectionId: targetCollectionId },
+    });
+    return { collection, movedToUncategorized: false };
+};
+exports.removePlantFromCollectionService = removePlantFromCollectionService;
+const setCollectionThumbnailService = async ({ userId, collectionId, imageId, }) => {
+    const collection = await client_1.default.collection.findFirst({
+        where: {
+            id: collectionId,
+            userId,
+        },
+    });
+    if (!collection) {
+        throw new Error("Collection not found or access denied");
+    }
+    if (imageId === null) {
+        return await client_1.default.collection.update({
+            where: { id: collectionId },
+            data: { thumbnailImageId: null },
+            include: { thumbnailImage: true },
+        });
+    }
     const image = await client_1.default.image.findUnique({
         where: { id: imageId },
     });
     if (!image) {
         throw new Error("Image not found");
     }
-    // Update the collection thumbnail
     return await client_1.default.collection.update({
         where: { id: collectionId },
         data: { thumbnailImageId: imageId },

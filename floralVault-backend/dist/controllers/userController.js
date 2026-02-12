@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.getCurrentUser = exports.getUserByUsername = exports.getAllUsers = void 0;
+exports.deleteUser = exports.updateUser = exports.getCurrentUser = exports.changeUsernameHandler = exports.checkUsername = exports.getUserByUsername = exports.getAllUsers = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const userService_1 = require("../services/userService");
 // GET all users
@@ -42,6 +42,58 @@ const getUserByUsername = async (req, res) => {
     }
 };
 exports.getUserByUsername = getUserByUsername;
+const checkUsername = async (req, res) => {
+    const { username } = req.params;
+    if (!username || username.length < 3 || username.length > 30) {
+        res.status(400).json({ available: false, message: "Invalid username format" });
+        return;
+    }
+    if (!/^[a-zA-Z][a-zA-Z0-9_-]+$/.test(username)) {
+        res.status(400).json({ available: false, message: "Invalid username format" });
+        return;
+    }
+    try {
+        const exists = await (0, userService_1.checkUsernameExists)(username);
+        res.status(200).json({
+            available: !exists,
+            message: exists ? "Username is already taken" : "Username is available",
+        });
+    }
+    catch (error) {
+        console.error("Error checking username:", error);
+        res.status(500).json({ available: false, message: "Internal Server Error" });
+    }
+};
+exports.checkUsername = checkUsername;
+const changeUsernameHandler = async (req, res) => {
+    const { id } = req.user;
+    const { username } = req.body;
+    if (!username) {
+        res.status(400).json({ message: "Username is required" });
+        return;
+    }
+    if (username.length < 3 || username.length > 30) {
+        res.status(400).json({ message: "Username must be 3-30 characters" });
+        return;
+    }
+    if (!/^[a-zA-Z][a-zA-Z0-9_-]+$/.test(username)) {
+        res.status(400).json({ message: "Invalid username format" });
+        return;
+    }
+    try {
+        const result = await (0, userService_1.changeUsername)(id, username);
+        if ("error" in result) {
+            res.status(400).json({ message: result.error });
+            return;
+        }
+        res.status(200).json({ user: result.user });
+    }
+    catch (error) {
+        console.error("Error changing username:", error);
+        res.status(500).json({ message: "Failed to change username" });
+    }
+};
+exports.changeUsernameHandler = changeUsernameHandler;
 // GET a user by ID
 const getCurrentUser = async (req, res) => {
     const { id } = req.user;

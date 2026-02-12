@@ -51,6 +51,7 @@ const loginUser = async (req, res, next) => {
                         essence: user.essence,
                         joinedAt: user.joinedAt,
                         plan: user.plan,
+                        usernameLastChangedAt: user.usernameLastChangedAt,
                     },
                 });
             }
@@ -100,6 +101,7 @@ const registerUser = async (req, res, next) => {
                 bio: newUser.bio,
                 avatarUrl: newUser.avatarUrl,
                 essence: newUser.essence,
+                usernameLastChangedAt: newUser.usernameLastChangedAt,
             },
         });
     }
@@ -141,6 +143,7 @@ const googleLogin = async (req, res, next) => {
                 essence: user.essence,
                 joinedAt: user.joinedAt,
                 plan: user.plan,
+                usernameLastChangedAt: user.usernameLastChangedAt,
             },
         });
     }

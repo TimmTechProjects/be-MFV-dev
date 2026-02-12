@@ -6,9 +6,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleWebhookEvent = exports.upgradeSubscription = exports.cancelSubscription = exports.getSubscriptionStatus = exports.createCheckoutSession = exports.getOrCreateStripeCustomer = exports.getStripePublishableKey = void 0;
 const stripe_1 = __importDefault(require("stripe"));
 const client_1 = __importDefault(require("../prisma/client"));
-const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2026-01-28.clover',
-});
+let _stripe = null;
+function getStripe() {
+    if (!_stripe) {
+        const key = process.env.STRIPE_SECRET_KEY;
+        if (!key) {
+            throw new Error('STRIPE_SECRET_KEY is not configured. Set it in your environment variables.');
+        }
+        _stripe = new stripe_1.default(key, {
+            apiVersion: '2026-01-28.clover',
+        });
+    }
+    return _stripe;
+}
 const getStripePublishableKey = () => {
     return process.env.STRIPE_PUBLISHABLE_KEY;
 };
@@ -32,7 +42,7 @@ const getOrCreateStripeCustomer = async (userId, email, name) => {
             return customer.stripeCustomerId;
         }
         // Create new Stripe customer
-        const stripeCustomer = await stripe.customers.create({
+        const stripeCustomer = await getStripe().customers.create({
             email,
             name,
             metadata: {
@@ -64,7 +74,7 @@ const createCheckoutSession = async (userId, plan, isAnnual, email, name, succes
         if (!priceId) {
             throw new Error(`No price ID configured for plan: ${plan}`);
         }
-        const session = await stripe.checkout.sessions.create({
+        const session = await getStripe().checkout.sessions.create({
             customer: customerId,
             payment_method_types: ['card'],
             billing_address_collection: 'required',
@@ -126,7 +136,7 @@ const cancelSubscription = async (userId) => {
             throw new Error('No active subscription found');
         }
         // Cancel in Stripe
-        const canceled = await stripe.subscriptions.update(subscription.stripeSubscriptionId, { cancel_at_period_end: true });
+        const canceled = await getStripe().subscriptions.update(subscription.stripeSubscriptionId, { cancel_at_period_end: true });
         // Update database
         await client_1.default.subscription.update({
             where: { id: subscription.id },
@@ -161,7 +171,7 @@ const upgradeSubscription = async (userId, newPlan) => {
             throw new Error(`No price ID configured for plan: ${newPlan}`);
         }
         // Update subscription in Stripe
-        const updated = await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        const updated = await getStripe().subscriptions.update(subscription.stripeSubscriptionId, {
             items: [
                 {
                     id: subscription.priceId,
@@ -341,4 +351,4 @@ const handlePaymentFailed = async (invoice) => {
         throw error;
     }
 };
-exports.default = stripe;
+exports.default = getStripe;
