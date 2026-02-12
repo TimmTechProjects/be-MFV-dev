@@ -45,6 +45,7 @@ model User {
   firstName             String
   lastName              String
   avatarUrl             String?
+  bannerUrl             String?
   bio                   String?
   essence               Int                   @default(0)
   joinedAt              DateTime              @default(now())

@@ -135,10 +135,37 @@ export const getCurrentUser = async (
   }
 };
 
+// GET profile by username (query param)
+export const getProfileByUsername = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const username = req.query.username as string;
+
+  if (!username) {
+    res.status(400).json({ message: "Username query parameter is required" });
+    return;
+  }
+
+  try {
+    const user = await getUserWithUsername(username);
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ message: "Failed to fetch profile" });
+  }
+};
+
 // PUT update a user
 export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.user;
-  const { username, firstName, lastName, email, bio, avatarUrl, password } =
+  const { username, firstName, lastName, email, bio, avatarUrl, bannerUrl, password } =
     req.body;
 
   try {
@@ -150,11 +177,12 @@ export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
       password,
       bio,
       avatarUrl,
+      bannerUrl,
     };
 
     const updatedUser = await updateUserById(id, dataToUpdate);
 
-    res.status(200).json(updatedUser);
+    res.status(200).json({ user: updatedUser });
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ message: "Failed to update user" });

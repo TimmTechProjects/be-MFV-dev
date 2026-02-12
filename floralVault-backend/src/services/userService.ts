@@ -26,6 +26,7 @@ export const getUserWithUsername = async (username: string) => {
       email: true,
       bio: true,
       avatarUrl: true,
+      bannerUrl: true,
       joinedAt: true,
       plan: true,
     },
