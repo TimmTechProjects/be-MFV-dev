@@ -19,6 +19,11 @@ import statsRoutes from "./routes/statsRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import apothecaryRoutes from "./routes/apothecaryRoutes";
 import supportRoutes from "./routes/supportRoutes";
+import weatherRoutes from "./routes/weatherRoutes";
+import journalRoutes from "./routes/journalRoutes";
+import challengeRoutes from "./routes/challengeRoutes";
+import wishlistRoutes from "./routes/wishlistRoutes";
+import diagnosisRoutes from "./routes/diagnosisRoutes";
 import { uploadthingHandler } from "./routes/uploadthing.routes";
 import { webhook } from "./controllers/subscriptionController";
 
@@ -117,6 +122,16 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/apothecary", apothecaryRoutes);
 
 app.use("/api/support", supportRoutes);
+
+app.use("/api/weather", weatherRoutes);
+
+app.use("/api/journal", journalRoutes);
+
+app.use("/api/challenges", challengeRoutes);
+
+app.use("/api/wishlist", wishlistRoutes);
+
+app.use("/api/diagnosis", diagnosisRoutes);
 
 app.use("/api/uploadthing", uploadthingHandler);
 

@@ -38,65 +38,90 @@ enum TraitCategory {
 }
 
 model User {
-  id                    String                @id @default(uuid())
-  username              String                @unique
-  email                 String                @unique
-  password              String
-  firstName             String
-  lastName              String
-  avatarUrl             String?
-  bannerUrl             String?
-  bio                   String?
-  essence               Int                   @default(0)
-  joinedAt              DateTime              @default(now())
-  plan                  Plan                  @default(free)
-  plants                Plant[]
-  collections           Collection[]
-  
+  id          String       @id @default(uuid())
+  username    String       @unique
+  email       String       @unique
+  password    String
+  firstName   String
+  lastName    String
+  avatarUrl   String?
+  bannerUrl   String?
+  bio         String?
+  essence     Int          @default(0)
+  joinedAt    DateTime     @default(now())
+  plan        Plan         @default(free)
+  plants      Plant[]
+  collections Collection[]
+
   // Stripe integration
-  stripeCustomerId      String?               @unique
+  stripeCustomerId      String?         @unique
   stripeCustomer        StripeCustomer?
   subscriptions         Subscription[]
   preferences           UserPreference?
   careReminders         CareReminder[]
   likes                 PlantLike[]
   usernameLastChangedAt DateTime?
-  
+
   // Forum relations
-  forumThreads          ForumThread[]
-  forumReplies          ForumReply[]
-  threadSubscriptions   ForumThread[]         @relation("ThreadSubscriptions")
-  forumLikes            Like[]
+  forumThreads        ForumThread[]
+  forumReplies        ForumReply[]
+  threadSubscriptions ForumThread[] @relation("ThreadSubscriptions")
+  forumLikes          Like[]
+
+  // Diagnosis relations
+  diagnoses         Diagnosis[]
+  diagnosisComments DiagnosisComment[]
+
+  // Journal relations
+  journalEntries JournalEntry[]
+
+  // Challenge relations
+  challenges           Challenge[]
+  challengeSubmissions ChallengeSubmission[]
+  challengeVotes       ChallengeVote[]
+
+  // Weather integration
+  location      UserLocation?
+  weatherAlerts WeatherAlert[]
+
+  // Wishlist relations
+  wishlist    Wishlist?
+  priceAlerts PriceAlert[]
 }
 
 model Plant {
-  id                   String     @id @default(cuid())
+  id                   String            @id @default(cuid())
   commonName           String
   botanicalName        String
   description          String
-  likes                Int        @default(0)
+  likes                Int               @default(0)
   slug                 String
   origin               String?
   family               String?
   type                 String?
   primaryType          PlantPrimaryType?
-  secondaryTraits      String[]   @default([])
+  secondaryTraits      String[]          @default([])
   plantTraits          PlantTrait[]
-  views                Int        @default(0)
-  isPublic             Boolean    @default(true)
-  isGarden             Boolean    @default(false)
+  views                Int               @default(0)
+  isPublic             Boolean           @default(true)
+  isGarden             Boolean           @default(false)
   userId               String
-  user                 User       @relation(fields: [userId], references: [id])
-  collection           Collection @relation(fields: [collectionId], references: [id])
+  user                 User              @relation(fields: [userId], references: [id])
+  collection           Collection        @relation(fields: [collectionId], references: [id])
   collectionId         String
   originalCollectionId String?
-  originalCollection   Collection? @relation("OriginalCollection", fields: [originalCollectionId], references: [id])
+  originalCollection   Collection?       @relation("OriginalCollection", fields: [originalCollectionId], references: [id])
 
-  tags   Tag[]   @relation("PlantTags")
-  images Image[]
-  careReminders CareReminder[]
-  plantLikes    PlantLike[]
-  medicinalProperty MedicinalProperty?
+  tags                 Tag[]                 @relation("PlantTags")
+  images               Image[]
+  careReminders        CareReminder[]
+  plantLikes           PlantLike[]
+  medicinalProperty    MedicinalProperty?
+  diagnoses            Diagnosis[]
+  journalEntries       JournalEntry[]
+  growDiary            GrowDiary?
+  challengeSubmissions ChallengeSubmission[]
+  wishlistItems        WishlistItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -121,21 +146,21 @@ model Tag {
 }
 
 model Trait {
-  id        String        @id @default(cuid())
-  name      String        @unique
-  slug      String        @unique
-  category  TraitCategory
-  plants    PlantTrait[]
+  id       String        @id @default(cuid())
+  name     String        @unique
+  slug     String        @unique
+  category TraitCategory
+  plants   PlantTrait[]
 
   @@index([slug])
   @@index([category])
 }
 
 model PlantTrait {
-  plantId   String
-  traitId   String
-  plant     Plant   @relation(fields: [plantId], references: [id], onDelete: Cascade)
-  trait     Trait   @relation(fields: [traitId], references: [id], onDelete: Cascade)
+  plantId String
+  traitId String
+  plant   Plant  @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  trait   Trait  @relation(fields: [traitId], references: [id], onDelete: Cascade)
 
   @@id([plantId, traitId])
   @@index([traitId])
@@ -163,59 +188,59 @@ model Collection {
 
 // Stripe models
 model StripeCustomer {
-  id                String    @id @default(cuid())
-  stripeCustomerId  String    @unique
-  userId            String    @unique
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id               String   @id @default(cuid())
+  stripeCustomerId String   @unique
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Subscription {
-  id                        String    @id @default(cuid())
-  stripeSubscriptionId      String    @unique
-  userId                    String
-  user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan                      Plan
-  status                    String    // active, past_due, canceled, unpaid, etc.
-  currentPeriodStart        DateTime
-  currentPeriodEnd          DateTime
-  canceledAt                DateTime?
-  cancelAtPeriodEnd         Boolean   @default(false)
-  trialEnd                  DateTime?
-  priceId                   String
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
-  
+  id                   String    @id @default(cuid())
+  stripeSubscriptionId String    @unique
+  userId               String
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                 Plan
+  status               String // active, past_due, canceled, unpaid, etc.
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  canceledAt           DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
+  trialEnd             DateTime?
+  priceId              String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
   @@index([userId])
   @@index([stripeSubscriptionId])
 }
 
 model StripeEvent {
-  id                String    @id @default(cuid())
-  stripeEventId     String    @unique
-  type              String
-  data              String    // JSON stringified event data
-  processed         Boolean   @default(false)
-  createdAt         DateTime  @default(now())
-  
+  id            String   @id @default(cuid())
+  stripeEventId String   @unique
+  type          String
+  data          String // JSON stringified event data
+  processed     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
   @@index([stripeEventId])
   @@index([processed])
 }
 
 model UserPreference {
-  id                String    @id @default(cuid())
-  userId            String    @unique
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  theme             String    @default("dark")
-  language          String    @default("en")
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme              String   @default("dark")
+  language           String   @default("en")
   emailNotifications Boolean  @default(true)
   pushNotifications  Boolean  @default(false)
-  careReminders     Boolean   @default(true)
-  reminderTime      String    @default("09:00")
-  timezone          String    @default("America/New_York")
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  careReminders      Boolean  @default(true)
+  reminderTime       String   @default("09:00")
+  timezone           String   @default("America/New_York")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model PlantLike {
@@ -232,20 +257,20 @@ model PlantLike {
 }
 
 model CareReminder {
-  id                String    @id @default(cuid())
-  userId            String
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plantId           String
-  plant             Plant     @relation(fields: [plantId], references: [id], onDelete: Cascade)
-  type              String
-  frequency         Int
-  frequencyUnit     String    @default("days")
-  lastCompleted     DateTime?
-  nextDue           DateTime
-  enabled           Boolean   @default(true)
-  notes             String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plantId       String
+  plant         Plant     @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  type          String
+  frequency     Int
+  frequencyUnit String    @default("days")
+  lastCompleted DateTime?
+  nextDue       DateTime
+  enabled       Boolean   @default(true)
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([userId])
   @@index([plantId])
@@ -253,15 +278,15 @@ model CareReminder {
 }
 
 model PushSubscription {
-  id         String   @id @default(cuid())
-  userId     String
-  endpoint   String
-  keys       Json
-  userAgent  String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String
+  keys      Json
+  userAgent String?
+  createdAt DateTime @default(now())
 
-  @@index([userId])
   @@unique([userId, endpoint])
+  @@index([userId])
 }
 
 model NotificationPreference {
@@ -295,7 +320,7 @@ model MedicinalProperty {
   references        String[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   @@index([plantId])
 }
 
@@ -313,7 +338,7 @@ model HerbalRecipe {
   safetyNotes  String?  @db.Text
   images       String[]
   createdAt    DateTime @default(now())
-  
+
   @@index([authorId])
 }
 
@@ -328,31 +353,31 @@ model ForumCategory {
   threads     ForumThread[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  
+
   @@index([slug])
   @@index([order])
 }
 
 model ForumThread {
-  id            String         @id @default(cuid())
-  title         String
-  slug          String
-  content       String         @db.Text
-  images        String[]
-  authorId      String
-  author        User           @relation(fields: [authorId], references: [id])
-  categoryId    String
-  category      ForumCategory  @relation(fields: [categoryId], references: [id])
-  isPinned      Boolean        @default(false)
-  isLocked      Boolean        @default(false)
-  viewCount     Int            @default(0)
-  replies       ForumReply[]
-  subscribers   User[]         @relation("ThreadSubscriptions")
-  tags          String[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  lastReplyAt   DateTime?
-  
+  id          String        @id @default(cuid())
+  title       String
+  slug        String
+  content     String        @db.Text
+  images      String[]
+  authorId    String
+  author      User          @relation(fields: [authorId], references: [id])
+  categoryId  String
+  category    ForumCategory @relation(fields: [categoryId], references: [id])
+  isPinned    Boolean       @default(false)
+  isLocked    Boolean       @default(false)
+  viewCount   Int           @default(0)
+  replies     ForumReply[]
+  subscribers User[]        @relation("ThreadSubscriptions")
+  tags        String[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  lastReplyAt DateTime?
+
   @@index([categoryId])
   @@index([authorId])
   @@index([slug])
@@ -360,32 +385,32 @@ model ForumThread {
 }
 
 model ForumReply {
-  id        String      @id @default(cuid())
-  content   String      @db.Text
+  id        String       @id @default(cuid())
+  content   String       @db.Text
   images    String[]
   threadId  String
-  thread    ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  thread    ForumThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
   authorId  String
-  author    User        @relation(fields: [authorId], references: [id])
+  author    User         @relation(fields: [authorId], references: [id])
   parentId  String?
-  parent    ForumReply? @relation("ReplyReplies", fields: [parentId], references: [id])
+  parent    ForumReply?  @relation("ReplyReplies", fields: [parentId], references: [id])
   replies   ForumReply[] @relation("ReplyReplies")
   likes     Like[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
   @@index([threadId])
   @@index([authorId])
 }
 
 model Like {
-  id        String      @id @default(cuid())
+  id        String     @id @default(cuid())
   userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   replyId   String
-  reply     ForumReply  @relation(fields: [replyId], references: [id], onDelete: Cascade)
-  createdAt DateTime    @default(now())
-  
+  reply     ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
   @@unique([userId, replyId])
   @@index([userId])
   @@index([replyId])
@@ -406,7 +431,7 @@ model SupportTicket {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   resolvedAt  DateTime?
-  
+
   @@index([userId])
   @@index([status])
   @@index([priority])
@@ -420,7 +445,7 @@ model TicketMessage {
   message   String        @db.Text
   isStaff   Boolean       @default(false)
   createdAt DateTime      @default(now())
-  
+
   @@index([ticketId])
   @@index([userId])
 }
@@ -435,7 +460,7 @@ model UserSuggestion {
   votes       Int      @default(0)
   adminNotes  String?  @db.Text
   createdAt   DateTime @default(now())
-  
+
   @@index([userId])
   @@index([status])
 }
@@ -451,8 +476,257 @@ model BugReport {
   screenshots      String[]
   browserInfo      String?
   createdAt        DateTime @default(now())
-  
+
   @@index([userId])
   @@index([status])
   @@index([severity])
+}
+
+// Plant Hospital / Diagnosis System
+model Diagnosis {
+  id          String             @id @default(cuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id])
+  plantId     String?
+  plant       Plant?             @relation(fields: [plantId], references: [id])
+  symptoms    String[] // yellowing, brown spots, wilting, etc.
+  photos      String[]
+  diagnosis   String?            @db.Text
+  treatment   String?            @db.Text
+  aiGenerated Boolean            @default(false)
+  status      String             @default("pending") // pending, diagnosed, resolved
+  severity    String? // mild, moderate, severe, critical
+  comments    DiagnosisComment[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model DiagnosisComment {
+  id          String    @id @default(cuid())
+  diagnosisId String
+  diagnosis   Diagnosis @relation(fields: [diagnosisId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  comment     String    @db.Text
+  isExpert    Boolean   @default(false)
+  helpful     Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([diagnosisId])
+  @@index([userId])
+}
+
+// AI Content Generation & Curation
+model AIGeneratedContent {
+  id            String    @id @default(cuid())
+  plantId       String
+  contentType   String // "medicinal_property"
+  status        String    @default("pending") // pending, approved, rejected
+  aiModel       String // gpt-4, gpt-4-turbo, etc.
+  generatedData Json // The AI-generated content
+  reviewedBy    String?
+  reviewNotes   String?   @db.Text
+  approvedAt    DateTime?
+  rejectedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([plantId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AIQueryCache {
+  id         String   @id @default(cuid())
+  queryHash  String   @unique
+  query      String   @db.Text
+  response   Json
+  model      String
+  tokenCount Int?
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+  hitCount   Int      @default(1)
+
+  @@index([queryHash])
+  @@index([createdAt])
+}
+
+model AIUsageLog {
+  id         String   @id @default(cuid())
+  endpoint   String
+  model      String
+  query      String   @db.Text
+  tokenCount Int
+  cost       Float
+  userId     String?
+  success    Boolean  @default(true)
+  error      String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([endpoint])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+// Wishlist & Price Alert Models
+model Wishlist {
+  id        String         @id @default(cuid())
+  userId    String         @unique
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     WishlistItem[]
+  createdAt DateTime       @default(now())
+}
+
+model WishlistItem {
+  id                String   @id @default(cuid())
+  wishlistId        String
+  wishlist          Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  plantId           String?
+  plant             Plant?   @relation(fields: [plantId], references: [id], onDelete: SetNull)
+  plantName         String // manual entry if plant doesn't exist
+  notes             String?  @db.Text
+  priority          String   @default("medium") // low, medium, high
+  priceTarget       Float?
+  marketplaceUrl    String?
+  notifyOnAvailable Boolean  @default(true)
+  addedAt           DateTime @default(now())
+
+  @@index([wishlistId])
+  @@index([plantId])
+}
+
+model PriceAlert {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plantName   String
+  targetPrice Float
+  listingId   String?
+  notified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([notified])
+}
+
+// Plant Challenges/Contests
+model Challenge {
+  id          String                @id @default(cuid())
+  title       String
+  description String                @db.Text
+  category    String // Best Monstera, Biggest Harvest, etc.
+  startDate   DateTime
+  endDate     DateTime
+  prizes      Json? // 1st, 2nd, 3rd place prizes
+  rules       String?               @db.Text
+  status      String                @default("upcoming") // upcoming, active, voting, ended
+  createdBy   String
+  creator     User                  @relation(fields: [createdBy], references: [id])
+  submissions ChallengeSubmission[]
+  createdAt   DateTime              @default(now())
+
+  @@index([status])
+  @@index([endDate])
+}
+
+model ChallengeSubmission {
+  id          String          @id @default(cuid())
+  challengeId String
+  challenge   Challenge       @relation(fields: [challengeId], references: [id])
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  plantId     String?
+  plant       Plant?          @relation(fields: [plantId], references: [id])
+  title       String
+  description String?         @db.Text
+  photos      String[]
+  votes       ChallengeVote[]
+  voteCount   Int             @default(0)
+  rank        Int?
+  createdAt   DateTime        @default(now())
+
+  @@unique([challengeId, userId])
+  @@index([challengeId])
+  @@index([voteCount])
+}
+
+model ChallengeVote {
+  id           String              @id @default(cuid())
+  submissionId String
+  submission   ChallengeSubmission @relation(fields: [submissionId], references: [id])
+  userId       String
+  user         User                @relation(fields: [userId], references: [id])
+  createdAt    DateTime            @default(now())
+
+  @@unique([submissionId, userId])
+}
+
+// Plant Journal/Diary (GrowDiaries-style)
+model JournalEntry {
+  id           String   @id @default(cuid())
+  plantId      String
+  plant        Plant    @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date         DateTime @default(now())
+  title        String?
+  notes        String?  @db.Text
+  photos       String[]
+  measurements Json? // height, width, health score
+  conditions   Json? // temp, humidity, light
+  activities   String[] // watered, fertilized, pruned, etc.
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([plantId])
+  @@index([userId])
+  @@index([date])
+}
+
+model GrowDiary {
+  id           String   @id @default(cuid())
+  plantId      String   @unique
+  plant        Plant    @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  userId       String
+  startDate    DateTime
+  currentStage String? // seedling, vegetative, flowering, etc.
+  isPublic     Boolean  @default(false)
+  stats        Json? // total entries, growth rate, etc.
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([startDate])
+}
+
+// Weather Integration
+model UserLocation {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city      String
+  state     String?
+  country   String
+  latitude  Float
+  longitude Float
+  timezone  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WeatherAlert {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alertType String // frost, heat, storm, etc.
+  message   String   @db.Text
+  severity  String // warning, watch, advisory
+  sentAt    DateTime @default(now())
+  dismissed Boolean  @default(false)
+
+  @@index([userId])
+  @@index([sentAt])
 }

@@ -34,25 +34,17 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const apothecaryController = __importStar(require("../controllers/apothecaryController"));
-const aiController = __importStar(require("../controllers/aiController"));
+const challengeController = __importStar(require("../controllers/challengeController"));
 const verifyToken_1 = require("../middleware/verifyToken");
 const router = (0, express_1.Router)();
-// Public routes - anyone can view medicinal information
-router.get('/plants/:plantId', apothecaryController.getPlantMedicinalInfo);
-router.get('/search', apothecaryController.searchByProperty);
-router.get('/properties/:property', apothecaryController.getPlantsByProperty);
-router.get('/recipes', apothecaryController.getRecipes);
-router.get('/recipes/:id', apothecaryController.getRecipeById);
+// Public routes - anyone can view challenges
+router.get('/', challengeController.getChallenges);
+router.get('/:id', challengeController.getChallengeById);
+router.get('/:id/leaderboard', challengeController.getLeaderboard);
 // Protected routes - require authentication
-router.post('/recipes', verifyToken_1.verifyToken, apothecaryController.createRecipe);
-router.post('/plants/:plantId/medicinal', verifyToken_1.verifyToken, apothecaryController.createOrUpdateMedicinalProperty);
-// AI routes - public Q&A, admin-only generation
-router.post('/ai/ask', aiController.askAI); // Public - anyone can ask AI questions
-router.post('/ai/generate/:plantId', verifyToken_1.verifyToken, aiController.generateContent); // Admin only
-router.post('/ai/generate/bulk', verifyToken_1.verifyToken, aiController.bulkGenerateContent); // Admin only
-router.get('/ai/pending', verifyToken_1.verifyToken, aiController.getPendingContent); // Admin only
-router.post('/ai/approve/:contentId', verifyToken_1.verifyToken, aiController.approveContent); // Admin only
-router.post('/ai/reject/:contentId', verifyToken_1.verifyToken, aiController.rejectContent); // Admin only
-router.get('/ai/stats', verifyToken_1.verifyToken, aiController.getUsageStats); // Admin only
+router.post('/', verifyToken_1.verifyToken, challengeController.createChallenge); // TODO: Add admin middleware
+router.post('/:id/submit', verifyToken_1.verifyToken, challengeController.submitEntry);
+router.post('/:id/vote/:submissionId', verifyToken_1.verifyToken, challengeController.voteForSubmission);
+router.delete('/:id/vote/:submissionId', verifyToken_1.verifyToken, challengeController.removeVote);
+router.get('/:id/submission', verifyToken_1.verifyToken, challengeController.getUserSubmission);
 exports.default = router;

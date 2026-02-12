@@ -23,6 +23,8 @@ const statsRoutes_1 = __importDefault(require("./routes/statsRoutes"));
 const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
 const apothecaryRoutes_1 = __importDefault(require("./routes/apothecaryRoutes"));
 const supportRoutes_1 = __importDefault(require("./routes/supportRoutes"));
+const journalRoutes_1 = __importDefault(require("./routes/journalRoutes"));
+const challengeRoutes_1 = __importDefault(require("./routes/challengeRoutes"));
 const uploadthing_routes_1 = require("./routes/uploadthing.routes");
 const subscriptionController_1 = require("./controllers/subscriptionController");
 dotenv_1.default.config();
@@ -91,6 +93,8 @@ app.use("/api/stats", statsRoutes_1.default);
 app.use("/api/notifications", notificationRoutes_1.default);
 app.use("/api/apothecary", apothecaryRoutes_1.default);
 app.use("/api/support", supportRoutes_1.default);
+app.use("/api/journal", journalRoutes_1.default);
+app.use("/api/challenges", challengeRoutes_1.default);
 app.use("/api/uploadthing", uploadthing_routes_1.uploadthingHandler);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
