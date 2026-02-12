@@ -7,6 +7,7 @@ const express_1 = require("express");
 const collectionController_1 = require("../controllers/collectionController");
 const verifyToken_1 = __importDefault(require("../middleware/verifyToken"));
 const router = (0, express_1.Router)();
+router.get("/public", collectionController_1.getPublicCollections);
 router.get("/me", verifyToken_1.default, collectionController_1.getCollectionsForUser);
 router.get("/:username", collectionController_1.getCollections);
 router.post("/:username/collections", verifyToken_1.default, collectionController_1.createCollection);
