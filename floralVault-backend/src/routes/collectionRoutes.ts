@@ -7,10 +7,13 @@ import {
   addPlantToCollection,
   removePlantFromCollection,
   setCollectionThumbnail,
+  getPublicCollections,
 } from "../controllers/collectionController";
 import verifyToken from "../middleware/verifyToken";
 
 const router = Router();
+
+router.get("/public", getPublicCollections);
 
 router.get("/me", verifyToken, getCollectionsForUser);
 

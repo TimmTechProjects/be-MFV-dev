@@ -272,6 +272,33 @@ export const removePlantFromCollectionService = async ({
   return { collection, movedToUncategorized: false };
 };
 
+export const getPublicCollections = async (limit = 8) => {
+  return prisma.collection.findMany({
+    where: { isPublic: true },
+    include: {
+      user: {
+        select: { username: true },
+      },
+      thumbnailImage: true,
+      plants: {
+        take: 1,
+        orderBy: { createdAt: "desc" },
+        include: {
+          images: {
+            where: { isMain: true },
+            take: 1,
+          },
+        },
+      },
+      _count: {
+        select: { plants: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+};
+
 export const setCollectionThumbnailService = async ({
   userId,
   collectionId,
