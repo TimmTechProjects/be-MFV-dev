@@ -9,7 +9,7 @@
     "seed": "ts-node prisma/seed.ts",
     "prisma:generate": "prisma generate --schema=src/prisma/schema.prisma",
     "prisma:push": "prisma db push --schema=src/prisma/schema.prisma",
-    "render-build": "npm run prisma:generate && prisma db push --schema=src/prisma/schema.prisma --accept-data-loss --skip-generate && npm run build"
+    "render-build": "npm run prisma:generate && npx prisma db push --schema=src/prisma/schema.prisma --accept-data-loss --skip-generate && npm run build"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
