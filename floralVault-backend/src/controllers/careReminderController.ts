@@ -94,7 +94,7 @@ export async function completeReminder(req: Request, res: Response) {
 
   const reminder = await prisma.careReminder.update({
     where: { id },
-    data: { lastCompleted: now, nextDue },
+    data: { lastCompleted: now, nextDue, notificationSent: false },
     include: { plant: { select: { commonName: true, botanicalName: true } } },
   });
 

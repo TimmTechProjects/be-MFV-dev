@@ -18,6 +18,8 @@ import forumRoutes from "./routes/forumRoutes";
 import statsRoutes from "./routes/statsRoutes";
 import { uploadthingHandler } from "./routes/uploadthing.routes";
 import { webhook } from "./controllers/subscriptionController";
+import cronRoutes from "./routes/cronRoutes";
+import { startReminderScheduler } from "./services/reminderScheduler";
 
 dotenv.config();
 
@@ -109,6 +111,10 @@ app.use("/api/forum", forumRoutes);
 app.use("/api/stats", statsRoutes);
 
 app.use("/api/uploadthing", uploadthingHandler);
+
+app.use("/api/cron", cronRoutes);
+
+startReminderScheduler();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
