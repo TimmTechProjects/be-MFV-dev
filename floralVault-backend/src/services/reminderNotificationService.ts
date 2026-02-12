@@ -3,10 +3,20 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 const FROM_EMAIL =
-  process.env.REMINDER_FROM_EMAIL || "My Floral Vault <reminders@myfloral-vault.com>";
+  process.env.REMINDER_FROM_EMAIL || "My Floral Vault <noreply@myfloralvault.com>";
 const APP_URL = process.env.APP_URL || "https://myfloralvault.com";
 
 interface ReminderEmailParams {
@@ -35,7 +45,7 @@ export async function sendReminderEmail(params: ReminderEmailParams): Promise<bo
   `;
 
   try {
-    const { error } = await resend.emails.send({
+    const { error } = await getResendClient().emails.send({
       from: FROM_EMAIL,
       to: userEmail,
       subject: `🌱 Reminder: ${reminderType} your ${plantName}`,
