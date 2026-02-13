@@ -1,0 +1,79 @@
+name: Trigger Devin on PR Comment
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  trigger-devin-pr-comment:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.issue.pull_request &&
+      !contains(github.event.comment.user.login, '[bot]') &&
+      github.event.comment.user.login != 'devin-ai-integration[bot]'
+    steps:
+      - name: Trigger Devin via webhook
+        run: |
+          curl -X POST "https://iris-dashboard-iota.vercel.app/api/webhooks/github" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: issue_comment" \
+            -d '{
+              "action": "created",
+              "comment": {
+                "id": ${{ github.event.comment.id }},
+                "body": ${{ toJSON(github.event.comment.body) }},
+                "user": {"login": "${{ github.event.comment.user.login }}"},
+                "html_url": "${{ github.event.comment.html_url }}"
+              },
+              "issue": {
+                "number": ${{ github.event.issue.number }},
+                "title": ${{ toJSON(github.event.issue.title) }},
+                "body": ${{ toJSON(github.event.issue.body) }},
+                "html_url": "${{ github.event.issue.html_url }}",
+                "pull_request": ${{ toJSON(github.event.issue.pull_request) }},
+                "labels": ${{ toJSON(github.event.issue.labels) }}
+              },
+              "repository": {
+                "full_name": "${{ github.repository }}",
+                "name": "${{ github.event.repository.name }}",
+                "owner": {"login": "${{ github.repository_owner }}"}
+              },
+              "sender": {"login": "${{ github.actor }}"}
+            }'
+
+  trigger-devin-review-comment:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'pull_request_review_comment' &&
+      !contains(github.event.comment.user.login, '[bot]') &&
+      github.event.comment.user.login != 'devin-ai-integration[bot]'
+    steps:
+      - name: Trigger Devin via webhook
+        run: |
+          curl -X POST "https://iris-dashboard-iota.vercel.app/api/webhooks/github" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: pull_request_review_comment" \
+            -d '{
+              "action": "created",
+              "comment": {
+                "id": ${{ github.event.comment.id }},
+                "body": ${{ toJSON(github.event.comment.body) }},
+                "user": {"login": "${{ github.event.comment.user.login }}"},
+                "html_url": "${{ github.event.comment.html_url }}",
+                "path": "${{ github.event.comment.path }}",
+                "position": ${{ github.event.comment.position || 'null' }}
+              },
+              "pull_request": {
+                "number": ${{ github.event.pull_request.number }},
+                "title": ${{ toJSON(github.event.pull_request.title) }},
+                "html_url": "${{ github.event.pull_request.html_url }}"
+              },
+              "repository": {
+                "full_name": "${{ github.repository }}",
+                "name": "${{ github.event.repository.name }}",
+                "owner": {"login": "${{ github.repository_owner }}"}
+              },
+              "sender": {"login": "${{ github.actor }}"}
+            }'
