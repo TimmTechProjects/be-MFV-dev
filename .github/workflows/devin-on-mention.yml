@@ -1,0 +1,38 @@
+name: Trigger Devin on @mention
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  trigger-devin:
+    runs-on: ubuntu-latest
+    if: contains(github.event.comment.body, '@devin')
+    steps:
+      - name: Trigger Devin via webhook
+        run: |
+          curl -X POST "https://iris-dashboard-iota.vercel.app/api/webhooks/github" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: issue_comment" \
+            -d '{
+              "action": "created",
+              "comment": {
+                "id": ${{ github.event.comment.id }},
+                "body": ${{ toJSON(github.event.comment.body) }},
+                "user": {"login": "${{ github.event.comment.user.login }}"},
+                "html_url": "${{ github.event.comment.html_url }}"
+              },
+              "issue": {
+                "number": ${{ github.event.issue.number }},
+                "title": ${{ toJSON(github.event.issue.title) }},
+                "body": ${{ toJSON(github.event.issue.body) }},
+                "html_url": "${{ github.event.issue.html_url }}",
+                "labels": ${{ toJSON(github.event.issue.labels) }}
+              },
+              "repository": {
+                "full_name": "${{ github.repository }}",
+                "name": "${{ github.event.repository.name }}",
+                "owner": {"login": "${{ github.repository_owner }}"}
+              },
+              "sender": {"login": "${{ github.actor }}"}
+            }'

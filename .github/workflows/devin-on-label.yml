@@ -1,0 +1,42 @@
+name: Trigger Devin on Issue Label
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  trigger-devin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for devin label
+        id: check
+        run: |
+          LABEL_NAME="${{ github.event.label.name }}"
+          HAS_DEVIN="false"
+          if [ "$LABEL_NAME" = "devin" ]; then
+            HAS_DEVIN="true"
+          fi
+          echo "has_devin=$HAS_DEVIN" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger Devin via webhook
+        if: steps.check.outputs.has_devin == 'true'
+        run: |
+          curl -X POST "https://iris-dashboard-iota.vercel.app/api/webhooks/github" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: issues" \
+            -d '{
+              "action": "labeled",
+              "label": {"name": "${{ github.event.label.name }}"},
+              "issue": {
+                "number": ${{ github.event.issue.number }},
+                "title": ${{ toJSON(github.event.issue.title) }},
+                "body": ${{ toJSON(github.event.issue.body) }},
+                "html_url": "${{ github.event.issue.html_url }}"
+              },
+              "repository": {
+                "full_name": "${{ github.repository }}",
+                "name": "${{ github.event.repository.name }}",
+                "owner": {"login": "${{ github.repository_owner }}"}
+              },
+              "sender": {"login": "${{ github.actor }}"}
+            }'
