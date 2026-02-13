@@ -21,3 +21,13 @@ services:
         sync: false
       - key: UPLOADTHING_APP_ID
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SUPPORT_FROM_EMAIL
+        sync: false
+      - key: SUPPORT_ADMIN_EMAIL
+        sync: false
+      - key: SUPPORT_WEBHOOK_SECRET
+        sync: false
+      - key: APP_URL
+        sync: false
