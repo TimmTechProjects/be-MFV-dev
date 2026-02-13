@@ -1,0 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const verifyToken_1 = __importDefault(require("../middleware/verifyToken"));
+const rateLimiter_1 = require("../middleware/rateLimiter");
+const postController_1 = require("../controllers/postController");
+const router = (0, express_1.Router)();
+router.get("/", rateLimiter_1.publicApiLimiter, (req, res, next) => { (0, postController_1.getPosts)(req, res).catch(next); });
+router.get("/user/:username", rateLimiter_1.publicApiLimiter, (req, res, next) => { (0, postController_1.getUserPosts)(req, res).catch(next); });
+router.get("/:id", rateLimiter_1.publicApiLimiter, (req, res, next) => { (0, postController_1.getPost)(req, res).catch(next); });
+router.get("/:id/comments", rateLimiter_1.publicApiLimiter, (req, res, next) => { (0, postController_1.getComments)(req, res).catch(next); });
+router.post("/", verifyToken_1.default, (req, res, next) => { (0, postController_1.createPost)(req, res).catch(next); });
+router.put("/:id", verifyToken_1.default, (req, res, next) => { (0, postController_1.updatePost)(req, res).catch(next); });
+router.delete("/:id", verifyToken_1.default, (req, res, next) => { (0, postController_1.deletePost)(req, res).catch(next); });
+router.post("/:id/like", verifyToken_1.default, (req, res, next) => { (0, postController_1.toggleLike)(req, res).catch(next); });
+router.post("/:id/save", verifyToken_1.default, (req, res, next) => { (0, postController_1.toggleSave)(req, res).catch(next); });
+router.post("/:id/share", verifyToken_1.default, (req, res, next) => { (0, postController_1.sharePost)(req, res).catch(next); });
+router.post("/:id/comments", verifyToken_1.default, (req, res, next) => { (0, postController_1.addComment)(req, res).catch(next); });
+router.delete("/:id/comments/:commentId", verifyToken_1.default, (req, res, next) => { (0, postController_1.deleteComment)(req, res).catch(next); });
+exports.default = router;

@@ -19,9 +19,14 @@ const likeRoutes_1 = __importDefault(require("./routes/likeRoutes"));
 const traitRoutes_1 = __importDefault(require("./routes/traitRoutes"));
 const marketplaceRoutes_1 = __importDefault(require("./routes/marketplaceRoutes"));
 const forumRoutes_1 = __importDefault(require("./routes/forumRoutes"));
+const postRoutes_1 = __importDefault(require("./routes/postRoutes"));
+const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
+const supportRoutes_1 = __importDefault(require("./routes/supportRoutes"));
 const statsRoutes_1 = __importDefault(require("./routes/statsRoutes"));
 const uploadthing_routes_1 = require("./routes/uploadthing.routes");
 const subscriptionController_1 = require("./controllers/subscriptionController");
+const reminderScheduler_1 = require("./services/reminderScheduler");
+const reminderScheduler_2 = require("./services/reminderScheduler");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
@@ -83,8 +88,28 @@ app.use("/api/likes", likeRoutes_1.default);
 app.use("/api/traits", traitRoutes_1.default);
 app.use("/api/marketplace", marketplaceRoutes_1.default);
 app.use("/api/forum", forumRoutes_1.default);
+app.use("/api/posts", postRoutes_1.default);
+app.use("/api/notifications", notificationRoutes_1.default);
+app.use("/api/support", supportRoutes_1.default);
 app.use("/api/stats", statsRoutes_1.default);
 app.use("/api/uploadthing", uploadthing_routes_1.uploadthingHandler);
+app.post("/api/cron/send-reminders", async (req, res, next) => {
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = req.headers.authorization;
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+    try {
+        const result = await (0, reminderScheduler_2.processReminders)();
+        res.json({ success: true, ...result });
+    }
+    catch (err) {
+        console.error("[Cron Endpoint] Error processing reminders:", err);
+        res.status(500).json({ success: false, error: "Failed to process reminders" });
+    }
+});
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    (0, reminderScheduler_1.startReminderScheduler)();
 });

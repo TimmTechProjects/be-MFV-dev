@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.getCurrentUser = exports.changeUsernameHandler = exports.checkUsername = exports.getUserByUsername = exports.getAllUsers = void 0;
+exports.deleteUser = exports.updateUser = exports.getProfileByUsername = exports.getCurrentUser = exports.changeUsernameHandler = exports.checkUsername = exports.getUserByUsername = exports.getAllUsers = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const userService_1 = require("../services/userService");
 // GET all users
@@ -110,10 +110,31 @@ const getCurrentUser = async (req, res) => {
     }
 };
 exports.getCurrentUser = getCurrentUser;
+// GET profile by username (query param)
+const getProfileByUsername = async (req, res) => {
+    const username = req.query.username;
+    if (!username) {
+        res.status(400).json({ message: "Username query parameter is required" });
+        return;
+    }
+    try {
+        const user = await (0, userService_1.getUserWithUsername)(username);
+        if (!user) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+        res.status(200).json({ user });
+    }
+    catch (error) {
+        console.error("Error fetching profile:", error);
+        res.status(500).json({ message: "Failed to fetch profile" });
+    }
+};
+exports.getProfileByUsername = getProfileByUsername;
 // PUT update a user
 const updateUser = async (req, res) => {
     const { id } = req.user;
-    const { username, firstName, lastName, email, bio, avatarUrl, password } = req.body;
+    const { username, firstName, lastName, email, bio, avatarUrl, bannerUrl, password } = req.body;
     try {
         const dataToUpdate = {
             username,
@@ -123,9 +144,10 @@ const updateUser = async (req, res) => {
             password,
             bio,
             avatarUrl,
+            bannerUrl,
         };
         const updatedUser = await (0, userService_1.updateUserById)(id, dataToUpdate);
-        res.status(200).json(updatedUser);
+        res.status(200).json({ user: updatedUser });
     }
     catch (error) {
         console.error("Error updating user:", error);

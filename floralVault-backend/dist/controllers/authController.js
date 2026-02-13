@@ -48,6 +48,7 @@ const loginUser = async (req, res, next) => {
                         email: user.email,
                         bio: user.bio,
                         avatarUrl: user.avatarUrl,
+                        bannerUrl: user.bannerUrl,
                         essence: user.essence,
                         joinedAt: user.joinedAt,
                         plan: user.plan,
@@ -86,6 +87,7 @@ const registerUser = async (req, res, next) => {
     }
     if (errors.length > 0) {
         res.status(409).json({ errors });
+        return;
     }
     try {
         const newUser = await (0, authService_1.createNewUser)(dataToCreate);
@@ -100,6 +102,7 @@ const registerUser = async (req, res, next) => {
                 email: newUser.email,
                 bio: newUser.bio,
                 avatarUrl: newUser.avatarUrl,
+                bannerUrl: newUser.bannerUrl,
                 essence: newUser.essence,
                 usernameLastChangedAt: newUser.usernameLastChangedAt,
             },
@@ -140,6 +143,7 @@ const googleLogin = async (req, res, next) => {
                 email: user.email,
                 bio: user.bio,
                 avatarUrl: user.avatarUrl,
+                bannerUrl: user.bannerUrl,
                 essence: user.essence,
                 joinedAt: user.joinedAt,
                 plan: user.plan,

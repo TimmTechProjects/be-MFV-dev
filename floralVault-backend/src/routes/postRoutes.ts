@@ -1,5 +1,6 @@
 import { Router } from "express";
 import verifyToken from "../middleware/verifyToken";
+import { publicApiLimiter } from "../middleware/rateLimiter";
 import {
   createPost,
   getPosts,
@@ -17,10 +18,10 @@ import {
 
 const router = Router();
 
-router.get("/", (req, res, next) => { getPosts(req, res).catch(next); });
-router.get("/user/:username", (req, res, next) => { getUserPosts(req, res).catch(next); });
-router.get("/:id", (req, res, next) => { getPost(req, res).catch(next); });
-router.get("/:id/comments", (req, res, next) => { getComments(req, res).catch(next); });
+router.get("/", publicApiLimiter, (req, res, next) => { getPosts(req, res).catch(next); });
+router.get("/user/:username", publicApiLimiter, (req, res, next) => { getUserPosts(req, res).catch(next); });
+router.get("/:id", publicApiLimiter, (req, res, next) => { getPost(req, res).catch(next); });
+router.get("/:id/comments", publicApiLimiter, (req, res, next) => { getComments(req, res).catch(next); });
 
 router.post("/", verifyToken, (req, res, next) => { createPost(req, res).catch(next); });
 router.put("/:id", verifyToken, (req, res, next) => { updatePost(req, res).catch(next); });

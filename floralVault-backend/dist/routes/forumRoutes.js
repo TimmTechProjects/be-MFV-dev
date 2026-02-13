@@ -1,8 +1,25 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const verifyToken_1 = __importDefault(require("../middleware/verifyToken"));
+const rateLimiter_1 = require("../middleware/rateLimiter");
 const forumController_1 = require("../controllers/forumController");
 const router = (0, express_1.Router)();
-// GET /api/forum/posts?limit=7
-router.get("/posts", forumController_1.getPosts);
+router.get("/categories", rateLimiter_1.publicApiLimiter, (req, res, next) => { (0, forumController_1.getCategories)(req, res).catch(next); });
+router.post("/categories", verifyToken_1.default, (req, res, next) => { (0, forumController_1.createCategory)(req, res).catch(next); });
+router.get("/search", rateLimiter_1.searchLimiter, (req, res, next) => { (0, forumController_1.searchThreads)(req, res).catch(next); });
+router.post("/report", verifyToken_1.default, (req, res, next) => { (0, forumController_1.reportContent)(req, res).catch(next); });
+router.get("/threads", rateLimiter_1.publicApiLimiter, (req, res, next) => { (0, forumController_1.getThreads)(req, res).catch(next); });
+router.post("/threads", verifyToken_1.default, (req, res, next) => { (0, forumController_1.createThread)(req, res).catch(next); });
+router.get("/threads/:id", rateLimiter_1.publicApiLimiter, (req, res, next) => { (0, forumController_1.getThread)(req, res).catch(next); });
+router.put("/threads/:id", verifyToken_1.default, (req, res, next) => { (0, forumController_1.updateThread)(req, res).catch(next); });
+router.delete("/threads/:id", verifyToken_1.default, (req, res, next) => { (0, forumController_1.deleteThread)(req, res).catch(next); });
+router.get("/threads/:id/replies", rateLimiter_1.publicApiLimiter, (req, res, next) => { (0, forumController_1.getReplies)(req, res).catch(next); });
+router.post("/threads/:id/replies", verifyToken_1.default, (req, res, next) => { (0, forumController_1.addReply)(req, res).catch(next); });
+router.post("/threads/:id/vote", verifyToken_1.default, (req, res, next) => { (0, forumController_1.voteThread)(req, res).catch(next); });
+router.put("/threads/:id/pin", verifyToken_1.default, (req, res, next) => { (0, forumController_1.pinThread)(req, res).catch(next); });
+router.post("/replies/:id/vote", verifyToken_1.default, (req, res, next) => { (0, forumController_1.voteReply)(req, res).catch(next); });
 exports.default = router;
