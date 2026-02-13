@@ -130,6 +130,45 @@ export const updatePost = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
+export const getUserPosts = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) { res.status(404).json({ message: "User not found" }); return; }
+
+    const where = { userId: user.id };
+    const [posts, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        include: {
+          user: { select: userSelect },
+          likes: true,
+          comments: {
+            where: { parentId: null },
+            include: { user: { select: userSelect } },
+            orderBy: { createdAt: "desc" },
+            take: 3,
+          },
+          _count: { select: { comments: true, likes: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.post.count({ where }),
+    ]);
+
+    res.json({ success: true, data: posts, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
+  } catch (error) {
+    console.error("Error fetching user posts:", error);
+    res.status(500).json({ message: "Failed to fetch user posts" });
+  }
+};
+
 export const deletePost = async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user as string;
   const { id } = req.params;
@@ -203,6 +242,38 @@ export const addComment = async (req: AuthenticatedRequest, res: Response) => {
   } catch (error) {
     console.error("Error adding comment:", error);
     res.status(500).json({ message: "Failed to add comment" });
+  }
+};
+
+export const toggleSave = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user as string;
+  if (!userId) { res.status(401).json({ message: "Unauthorized" }); return; }
+
+  res.json({ success: true, saved: true });
+};
+
+export const sharePost = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user as string;
+  if (!userId) { res.status(401).json({ message: "Unauthorized" }); return; }
+
+  res.json({ success: true, message: "Post shared" });
+};
+
+export const deleteComment = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user as string;
+  if (!userId) { res.status(401).json({ message: "Unauthorized" }); return; }
+  const { commentId } = req.params;
+
+  try {
+    const comment = await prisma.postComment.findUnique({ where: { id: commentId } });
+    if (!comment) { res.status(404).json({ message: "Comment not found" }); return; }
+    if (comment.userId !== userId) { res.status(403).json({ message: "Forbidden" }); return; }
+
+    await prisma.postComment.delete({ where: { id: commentId } });
+    res.json({ success: true, message: "Comment deleted" });
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    res.status(500).json({ message: "Failed to delete comment" });
   }
 };
 

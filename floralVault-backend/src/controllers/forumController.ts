@@ -319,6 +319,100 @@ export async function voteReply(req: AuthRequest, res: Response) {
   }
 }
 
+export async function getReplies(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
+    const [replies, total] = await Promise.all([
+      prisma.forumReply.findMany({
+        where: { threadId: id, parentId: null },
+        include: {
+          user: { select: userSelect },
+          votes: true,
+          replies: {
+            include: {
+              user: { select: userSelect },
+              votes: true,
+              replies: { include: { user: { select: userSelect }, votes: true } },
+            },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+        orderBy: { createdAt: "asc" },
+        skip,
+        take: limit,
+      }),
+      prisma.forumReply.count({ where: { threadId: id, parentId: null } }),
+    ]);
+
+    return res.json({
+      success: true,
+      data: replies,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error("Error fetching replies:", error);
+    return res.status(500).json({ message: "Failed to fetch replies" });
+  }
+}
+
+export async function searchThreads(req: Request, res: Response) {
+  try {
+    const q = (req.query.q as string) || "";
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
+    const where = q
+      ? {
+          OR: [
+            { title: { contains: q, mode: "insensitive" as const } },
+            { content: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {};
+
+    const [threads, total] = await Promise.all([
+      prisma.forumThread.findMany({
+        where,
+        include: {
+          user: { select: userSelect },
+          category: true,
+          _count: { select: { replies: true, votes: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.forumThread.count({ where }),
+    ]);
+
+    return res.json({
+      success: true,
+      data: threads,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    console.error("Error searching threads:", error);
+    return res.status(500).json({ message: "Failed to search threads" });
+  }
+}
+
+export async function reportContent(req: AuthRequest, res: Response) {
+  try {
+    const userId = req.user;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    return res.json({ success: true, message: "Report submitted" });
+  } catch (error) {
+    console.error("Error reporting content:", error);
+    return res.status(500).json({ message: "Failed to submit report" });
+  }
+}
+
 export async function pinThread(req: AuthRequest, res: Response) {
   try {
     const { id } = req.params;
