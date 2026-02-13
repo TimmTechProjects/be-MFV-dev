@@ -72,7 +72,8 @@ model User {
   forumReplyVotes    ForumReplyVote[]
   notifications      Notification[]
   supportTickets     SupportTicket[]
-  ticketMessages     TicketMessage[]
+  supportReplies     SupportReply[]
+  assignedTickets    SupportTicket[]   @relation("AssignedTickets")
 }
 
 model Plant {
@@ -443,32 +444,67 @@ enum TicketStatus {
 }
 
 model SupportTicket {
-  id        String         @id @default(uuid())
-  userId    String
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subject   String
-  category  TicketCategory
-  priority  TicketPriority @default(MEDIUM)
-  status    TicketStatus   @default(OPEN)
-  messages  TicketMessage[]
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  closedAt  DateTime?
+  id              String            @id @default(uuid())
+  ticketNumber    String            @unique
+  userId          String?
+  user            User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedToId    String?
+  assignedTo      User?             @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
+  subject         String
+  category        TicketCategory
+  priority        TicketPriority    @default(MEDIUM)
+  status          TicketStatus      @default(OPEN)
+  email           String
+  name            String
+  emailThreadId   String?           @unique
+  replies         SupportReply[]
+  attachments     SupportAttachment[] @relation("TicketAttachments")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  closedAt        DateTime?
 
   @@index([userId])
   @@index([status])
   @@index([priority])
+  @@index([ticketNumber])
+  @@index([email])
 }
 
-model TicketMessage {
-  id        String        @id @default(uuid())
-  ticketId  String
-  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  message   String        @db.Text
-  isStaff   Boolean       @default(false)
-  createdAt DateTime      @default(now())
+model SupportReply {
+  id          String              @id @default(uuid())
+  ticketId    String
+  ticket      SupportTicket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message     String              @db.Text
+  isStaff     Boolean             @default(false)
+  senderName  String?
+  senderEmail String?
+  source      ReplySource         @default(WEB)
+  attachments SupportAttachment[] @relation("ReplyAttachments")
+  createdAt   DateTime            @default(now())
 
   @@index([ticketId])
+}
+
+model SupportAttachment {
+  id         String         @id @default(uuid())
+  ticketId   String?
+  ticket     SupportTicket? @relation("TicketAttachments", fields: [ticketId], references: [id], onDelete: Cascade)
+  replyId    String?
+  reply      SupportReply?  @relation("ReplyAttachments", fields: [replyId], references: [id], onDelete: Cascade)
+  fileName   String
+  fileUrl    String
+  fileSize   Int?
+  mimeType   String?
+  createdAt  DateTime       @default(now())
+
+  @@index([ticketId])
+  @@index([replyId])
+}
+
+enum ReplySource {
+  WEB
+  EMAIL
+  ADMIN
 }
