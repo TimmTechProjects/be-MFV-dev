@@ -108,6 +108,7 @@ export const registerUser = async (
 
   if (errors.length > 0) {
     res.status(409).json({ errors });
+    return;
   }
 
   try {
