@@ -48,7 +48,7 @@ const corsOptions = {
     if (
       allowedOrigins.includes(origin) ||
       origin.match(/^https:\/\/fe-mfv-.*\.vercel\.app$/) ||
-      origin.match(/^https:\/\/fe-.*-jztimms-projects\.vercel\.app$/)
+      origin.match(/^https:\/\/.*-jr?temms-projects\.vercel\.app$/)
     ) {
       return callback(null, true);
     }
