@@ -1,3 +1,31 @@
+# ⚠️ DEPRECATED REPOSITORY ⚠️
+
+## 🚨 DO NOT USE THIS REPO FOR NEW DEVELOPMENT 🚨
+
+**This repository is DEPRECATED and should not be used for new development or AI agent tasks.**
+
+### ✅ Use This Instead:
+**Active Repository:** [`TimmTechProjects/my-floral-vault-v2`](https://github.com/TimmTechProjects/my-floral-vault-v2)
+
+The project has moved to a **monorepo structure** where both frontend and backend code live together.
+
+### 🤖 For AI Agents (Devin, etc):
+**ALL DEVELOPMENT WORK MUST BE DONE IN:**
+```
+https://github.com/TimmTechProjects/my-floral-vault-v2
+```
+
+**DO NOT CREATE PRs OR MAKE CHANGES IN THIS REPO**
+
+### Migration Status:
+- ❌ This repo is frozen and outdated
+- ✅ All active development happens in `my-floral-vault-v2`
+- ✅ New features, bug fixes, and updates go to the monorepo only
+
+---
+
+## Original README (For Reference Only)
+
 # 🌿 FloralVault
 
 > A personal plant tracker and herbal remedy discovery app built for plant lovers, home herbalists, and wellness explorers.
