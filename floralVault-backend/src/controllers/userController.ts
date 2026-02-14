@@ -189,6 +189,66 @@ export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
+// PATCH update avatar
+export const updateAvatar = async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.user;
+  const { username } = req.params;
+  const { avatarUrl, avatarKey } = req.body;
+
+  if (!avatarUrl || typeof avatarUrl !== "string") {
+    res.status(400).json({ message: "avatarUrl is required" });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id }, select: { username: true } });
+    if (!user || user.username !== username) {
+      res.status(403).json({ message: "You can only update your own profile picture" });
+      return;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { avatarUrl },
+    });
+
+    res.status(200).json({ avatarUrl: updatedUser.avatarUrl });
+  } catch (error) {
+    console.error("Error updating avatar:", error);
+    res.status(500).json({ message: "Failed to update profile picture" });
+  }
+};
+
+// PATCH update banner
+export const updateBanner = async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.user;
+  const { username } = req.params;
+  const { bannerUrl, bannerKey } = req.body;
+
+  if (!bannerUrl || typeof bannerUrl !== "string") {
+    res.status(400).json({ message: "bannerUrl is required" });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id }, select: { username: true } });
+    if (!user || user.username !== username) {
+      res.status(403).json({ message: "You can only update your own banner" });
+      return;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { bannerUrl },
+    });
+
+    res.status(200).json({ bannerUrl: updatedUser.bannerUrl });
+  } catch (error) {
+    console.error("Error updating banner:", error);
+    res.status(500).json({ message: "Failed to update banner" });
+  }
+};
+
 // DELETE a user
 export const deleteUser = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.user;
