@@ -407,13 +407,15 @@ export const searchAndFilterPlants = async (
     }
   }
 
-  // Type filter (common name contains or tag match)
+  // Type filter (plant type field or tag match) - use AND to combine with search
   if (filters?.type && filters.type.trim()) {
-    if (!whereConditions.OR) whereConditions.OR = [];
-    whereConditions.OR.push(
-      { type: { contains: filters.type, mode: "insensitive" } },
-      { tags: { some: { name: { contains: filters.type, mode: "insensitive" } } } }
-    );
+    if (!whereConditions.AND) whereConditions.AND = [];
+    whereConditions.AND.push({
+      OR: [
+        { type: { contains: filters.type, mode: "insensitive" } },
+        { tags: { some: { name: { contains: filters.type, mode: "insensitive" } } } },
+      ],
+    });
   }
 
   // Light requirements filter (via tags or description)

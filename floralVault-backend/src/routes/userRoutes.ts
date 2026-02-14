@@ -7,6 +7,8 @@ import {
   getCurrentUser,
   updateUser,
   checkUsername,
+  updateAvatar,
+  updateBanner,
 } from "../controllers/userController";
 
 const router = express.Router();
@@ -28,5 +30,11 @@ router.put("/me", verifyToken, updateUser);
 
 // DELETE /api/users/me
 router.delete("/me", verifyToken, deleteUser);
+
+// PATCH /api/users/:username/avatar
+router.patch("/:username/avatar", verifyToken, updateAvatar);
+
+// PATCH /api/users/:username/banner
+router.patch("/:username/banner", verifyToken, updateBanner);
 
 export default router;
